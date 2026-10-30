@@ -1,0 +1,50 @@
+/* Saturday Signature v1.0.3. Tailwind v4 theme. Generated, do not edit.
+   In your main CSS:
+     @import "tailwindcss";
+     @import "../saturday/css/tokens.css";
+     @import "../saturday/tokens/tailwind-theme.css";
+   Then use classes such as bg-sat-glass-1, text-sat-muted, font-display, rounded-sat-lg. */
+@theme inline {
+  --color-sat-bg: var(--sat-bg);
+  --color-sat-mesh-1: var(--sat-mesh-1);
+  --color-sat-mesh-2: var(--sat-mesh-2);
+  --color-sat-mesh-3: var(--sat-mesh-3);
+  --color-sat-text: var(--sat-text);
+  --color-sat-muted: var(--sat-muted);
+  --color-sat-faint: var(--sat-faint);
+  --color-sat-line: var(--sat-line);
+  --color-sat-line-strong: var(--sat-line-strong);
+  --color-sat-glass-1: var(--sat-glass-1);
+  --color-sat-glass-2: var(--sat-glass-2);
+  --color-sat-glass-edge: var(--sat-glass-edge);
+  --color-sat-glass-hi: var(--sat-glass-hi);
+  --color-sat-solid-1: var(--sat-solid-1);
+  --color-sat-solid-2: var(--sat-solid-2);
+  --color-sat-well: var(--sat-well);
+  --color-sat-hover: var(--sat-hover);
+  --color-sat-accent: var(--sat-accent);
+  --color-sat-accent-fill: var(--sat-accent-fill);
+  --color-sat-accent-fill-hover: var(--sat-accent-fill-hover);
+  --color-sat-on-accent: var(--sat-on-accent);
+  --color-sat-accent-text: var(--sat-accent-text);
+  --color-sat-accent-soft: var(--sat-accent-soft);
+  --color-sat-focus: var(--sat-focus);
+  --color-sat-mark: var(--sat-mark);
+  --color-sat-pos: var(--sat-pos);
+  --color-sat-neg: var(--sat-neg);
+  --color-sat-warn: var(--sat-warn);
+  --font-display: var(--sat-font-display);
+  --font-sans: var(--sat-font-ui);
+  --font-mono: var(--sat-font-mono);
+  --radius-sat-xs: var(--sat-radius-xs);
+  --radius-sat-sm: var(--sat-radius-sm);
+  --radius-sat-md: var(--sat-radius-md);
+  --radius-sat-lg: var(--sat-radius-lg);
+  --radius-sat-xl: var(--sat-radius-xl);
+  --radius-sat-pill: var(--sat-radius-pill);
+  --shadow-sat: var(--sat-shadow);
+  --shadow-sat-lg: var(--sat-shadow-lg);
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 1024px;
+  --breakpoint-lg: 1440px;
+}

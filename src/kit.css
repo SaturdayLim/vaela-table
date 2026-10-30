@@ -1,0 +1,98 @@
+/* Kit layer, carried over from the player kit page (Saturday Signature v1.0.3, --sat-* tokens only). */
+/* Player kit layer on the Saturday Signature kit (v1.0.3, Saturday skin), as the Vaela Compendium uses it (D21).
+   Layout: glass header with the five sections as a segmented control; one glass-2 reading card per section;
+   on phones the sections move to a bottom sheet and the primary action sits in the bottom bar.
+   --sat-* tokens only. */
+.sat-shell {
+  padding-left: max(var(--sat-gutter-mobile), env(safe-area-inset-left, 0px));
+  padding-right: max(var(--sat-gutter-mobile), env(safe-area-inset-right, 0px));
+}
+@media (min-width: 640px) { .sat-shell { padding-left: max(var(--sat-gutter-tablet), env(safe-area-inset-left, 0px)); padding-right: max(var(--sat-gutter-tablet), env(safe-area-inset-right, 0px)); } }
+@media (min-width: 1024px) { .sat-shell { padding-left: max(var(--sat-gutter-desktop), env(safe-area-inset-left, 0px)); padding-right: max(var(--sat-gutter-desktop), env(safe-area-inset-right, 0px)); } }
+.safe-band { position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 41; background: var(--sat-bg); }
+.sat-header { top: env(safe-area-inset-top, 0px); }
+@media (max-width: 639px) { .sat-bottombar { bottom: calc(var(--sat-space-3) + env(safe-area-inset-bottom, 0px)); left: max(var(--sat-space-3), env(safe-area-inset-left, 0px)); right: max(var(--sat-space-3), env(safe-area-inset-right, 0px)); } }
+
+/* ---- header ---- */
+.sat-header-bar { flex-wrap: wrap; }
+.sat-header .sat-brand { text-decoration: none; color: var(--sat-text); }
+.vaela-mark { color: var(--sat-accent-text); }
+.sections { order: 3; flex-basis: 100%; }
+@media (min-width: 1024px) { .sections { order: 0; flex-basis: auto; margin-left: auto; } }
+.sections > button { flex: 1; justify-content: center; }
+@media (min-width: 1024px) { .sections > button { flex: none; } }
+
+/* ---- hero (Start only) ---- */
+.hero { padding-block: var(--sat-space-8) var(--sat-space-6); --sat-gap: var(--sat-space-4); }
+.hero .sat-display { max-width: 14ch; }
+.stats { --sat-min: 150px; --sat-gap: var(--sat-space-3); margin-top: var(--sat-space-2); }
+
+/* ---- reading cards ---- */
+main { padding-block: var(--sat-space-4) var(--sat-space-16); }
+.view { min-width: 0; }
+.prose { font-size: var(--sat-fs-body); }
+.prose > * + * { margin-top: var(--sat-space-4); }
+.prose > :first-child { margin-top: 0; }
+.prose h2 { font-family: var(--sat-font-display); font-weight: 400; font-synthesis: none; font-size: var(--sat-fs-h2); line-height: var(--sat-lh-snug); text-wrap: balance; }
+.prose h3 { font-size: var(--sat-fs-h3); font-weight: 600; line-height: var(--sat-lh-snug); margin-top: var(--sat-space-10); text-wrap: balance; }
+.prose h4 { font-size: var(--sat-fs-body); font-weight: 600; margin-top: var(--sat-space-6); }
+.prose h4 .sat-badge { margin-left: var(--sat-space-2); vertical-align: 1px; }
+.prose p, .prose li { max-width: var(--sat-read); text-wrap: pretty; }
+.prose :where(ul, ol) { padding-left: var(--sat-space-6); }
+.prose li + li { margin-top: var(--sat-space-2); }
+.prose hr { height: 1px; border: 0; background: var(--sat-line); margin-block: var(--sat-space-10); }
+.prose .sat-table td, .prose .sat-table th { vertical-align: top; }
+.prose .sat-table td:first-child { font-weight: 600; }
+.prose .sat-table.plain td:first-child { font-weight: 400; }
+.lede-book { font-family: var(--sat-font-display); font-style: italic; font-size: calc(var(--sat-fs-body) * 1.3); line-height: 1.4; color: var(--sat-muted); max-width: var(--sat-read); }
+.note { font-size: var(--sat-fs-small); color: var(--sat-muted); }
+.qq { font-family: var(--sat-font-mono); font-weight: 600; color: var(--sat-accent-text); }
+.callout { padding: var(--sat-space-4); border-radius: var(--sat-radius-md); background: var(--sat-well); border-left: 3px solid var(--sat-accent); }
+.rule-line { font-family: var(--sat-font-mono); font-size: var(--sat-fs-small); padding: var(--sat-space-3) var(--sat-space-4); border-radius: var(--sat-radius-md); background: var(--sat-well); overflow-x: auto; white-space: nowrap; }
+.inline-list { display: flex; flex-wrap: wrap; gap: var(--sat-space-2); list-style: none; padding: 0 !important; }
+.inline-list li { margin: 0 !important; }
+.checklist { list-style: none; padding-left: 0 !important; }
+.checklist li { display: flex; gap: var(--sat-space-3); align-items: baseline; }
+.checklist li::before { content: ""; flex: none; width: 14px; height: 14px; border: 1.5px solid var(--sat-line-strong); border-radius: 4px; transform: translateY(2px); }
+
+/* ---- the in-world handout: a third layer, so solid ---- */
+.handout { padding: var(--sat-space-6); position: relative; overflow: hidden; }
+.handout > * + * { margin-top: var(--sat-space-4); }
+.handout .doc-title { font-family: var(--sat-font-display); font-weight: 400; font-synthesis: none; font-size: var(--sat-fs-h2); line-height: var(--sat-lh-snug); }
+.handout .sig { font-family: var(--sat-font-display); font-style: italic; font-size: calc(var(--sat-fs-body) * 1.15); color: var(--sat-muted); }
+.handout .options { display: flex; flex-wrap: wrap; gap: var(--sat-space-2); list-style: none; padding: 0; }
+.handout .options li { padding: var(--sat-space-1) var(--sat-space-3); border: 1px solid var(--sat-line-strong); border-radius: var(--sat-radius-pill); font-size: var(--sat-fs-small); margin: 0; }
+.stamps { position: relative; height: 96px; }
+.stamp { position: absolute; width: 88px; height: 88px; border-radius: 50%; border: 3px double var(--sat-line-strong); color: var(--sat-muted); display: grid; place-items: center; text-align: center; font-family: var(--sat-font-mono); font-size: var(--sat-fs-caption); letter-spacing: 0.1em; line-height: 1.3; text-transform: uppercase; }
+.stamp b { display: block; font-family: var(--sat-font-display); font-weight: 400; font-size: 1.1rem; letter-spacing: 0; text-transform: none; }
+.stamp.one { right: 40px; top: 0; transform: rotate(-12deg); }
+.stamp.two { right: 28px; top: 8px; transform: rotate(7deg); opacity: 0.6; }
+
+/* ---- sheet ---- */
+.sheet-head { display: flex; flex-wrap: wrap; gap: var(--sat-space-4); align-items: flex-end; justify-content: space-between; }
+.sheet-head > div:first-child { min-width: 0; max-width: 60ch; }
+fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+legend { padding: 0; margin-bottom: var(--sat-space-4); }
+.sheet-form { --sat-gap: var(--sat-space-8); margin-top: var(--sat-space-6); }
+.fields { --sat-min: 240px; --sat-gap: var(--sat-space-4) var(--sat-space-5); }
+.fields .full { grid-column: 1 / -1; }
+.req { color: var(--sat-accent-text); }
+.scores { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: var(--sat-space-3); }
+@media (max-width: 639px) { .scores { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.score { display: flex; flex-direction: column; align-items: center; gap: var(--sat-space-2); padding: var(--sat-space-3) var(--sat-space-2); }
+.score .sat-input { text-align: center; font-family: var(--sat-font-mono); font-variant-numeric: tabular-nums; padding: 0 var(--sat-space-1); background: var(--sat-glass-2); }
+.score .mod { font-family: var(--sat-font-mono); font-variant-numeric: tabular-nums; font-weight: 600; color: var(--sat-accent-text); min-height: 1.4em; }
+.badge-warn { background: color-mix(in srgb, var(--sat-warn) 16%, transparent); color: var(--sat-warn); }
+.badge-ok { background: color-mix(in srgb, var(--sat-pos) 16%, transparent); color: var(--sat-pos); }
+.actions { padding-top: var(--sat-space-6); border-top: 1px solid var(--sat-line); }
+.status { font-size: var(--sat-fs-small); color: var(--sat-pos); }
+.status.err { color: var(--sat-warn); }
+#fallback { font-family: var(--sat-font-mono); font-size: var(--sat-fs-small); min-height: 12em; }
+.armed { color: var(--sat-neg) !important; }
+
+/* ---- sections sheet (phones) ---- */
+.section-links { list-style: none; margin: 0; padding: 0; }
+.section-links a { display: flex; align-items: center; min-height: 48px; padding: 0 var(--sat-space-3); border-radius: var(--sat-radius-sm); color: var(--sat-text); text-decoration: none; font-weight: 600; }
+.section-links a[aria-current="page"] { background: var(--sat-accent-soft); color: var(--sat-accent-text); }
+
+footer { padding-block: 0 var(--sat-space-12); }

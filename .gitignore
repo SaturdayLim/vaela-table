@@ -1,0 +1,7 @@
+# Plaintext letters, sheets and inbox codes: never committed (sealed copies live in sealed/)
+private/
+node_modules/
+dist/
+# Generated at build time from story/ and sealed/
+public/content/
+*.tmp

@@ -1,0 +1,387 @@
+/* Saturday Signature v1.0.3: fonts, base and components.
+   Load order: tokens.css, then this file, then any skin-*.css.
+   Every value comes from a --sat-* token. Change tokens/tokens.json, not this file, to retheme. */
+
+/* ---------- Fonts (bundled, OFL, see licenses/) ---------- */
+@font-face { font-family: 'Instrument Serif'; font-style: normal; font-weight: 400; font-display: swap; src: url('../fonts/InstrumentSerif-Regular.woff2') format('woff2'); }
+@font-face { font-family: 'Instrument Serif'; font-style: italic; font-weight: 400; font-display: swap; src: url('../fonts/InstrumentSerif-Italic.woff2') format('woff2'); }
+@font-face { font-family: 'Geist'; font-style: normal; font-weight: 100 900; font-display: swap; src: url('../fonts/Geist-Variable.woff2') format('woff2'); }
+@font-face { font-family: 'Geist Mono'; font-style: normal; font-weight: 100 900; font-display: swap; src: url('../fonts/GeistMono-Variable.woff2') format('woff2'); }
+@font-face { font-family: 'Libre Baskerville'; font-style: normal; font-weight: 400 700; font-display: swap; src: url('../fonts/LibreBaskerville-Variable.woff2') format('woff2'); }
+@font-face { font-family: 'Libre Baskerville'; font-style: italic; font-weight: 400; font-display: swap; src: url('../fonts/LibreBaskerville-Italic.woff2') format('woff2'); }
+
+/* ---------- Base ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+body.sat {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--sat-bg);
+  color: var(--sat-text);
+  font: 400 var(--sat-fs-body) / var(--sat-lh-body) var(--sat-font-ui);
+  font-feature-settings: 'ss01' on;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color var(--sat-dur-slow) var(--sat-ease), color var(--sat-dur-slow) var(--sat-ease);
+}
+/* The mesh: three soft colour fields fixed behind everything. Glass needs something to frost. */
+body.sat::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(42vmax 42vmax at 8% 4%, var(--sat-mesh-1), transparent 70%),
+    radial-gradient(46vmax 46vmax at 96% 92%, var(--sat-mesh-2), transparent 70%),
+    radial-gradient(30vmax 30vmax at 70% 18%, var(--sat-mesh-3), transparent 70%),
+    var(--sat-bg);
+}
+body.sat.sat--no-mesh::before { background: var(--sat-bg); }
+
+.sat :where(h1, h2, h3, h4, p, figure, blockquote, dl, dd) { margin: 0; }
+.sat :where(button, input, select, textarea) { font: inherit; color: inherit; }
+.sat :where(button) { cursor: pointer; background: none; border: 0; padding: 0; }
+.sat :where(img, svg, video) { display: block; max-width: 100%; }
+.sat :where(a) { color: var(--sat-accent-text); text-underline-offset: 0.18em; text-decoration-thickness: 1px; }
+.sat :where(a:hover) { text-decoration-thickness: 2px; }
+.sat :focus { outline: none; }
+.sat :focus-visible { outline: 2px solid var(--sat-focus); outline-offset: 2px; border-radius: var(--sat-radius-xs); }
+.sat ::selection { background: var(--sat-accent-soft); color: var(--sat-text); }
+.sat input[type="checkbox"], .sat input[type="radio"], .sat input[type="range"], .sat progress { accent-color: var(--sat-accent-fill); }
+
+.sat-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+/* ---------- Surfaces ----------
+   glass-1  panels and cards (default)
+   glass-2  anything floating above glass-1: popovers, sheets, dialogs, sticky bars
+   well     a recessed tray that holds controls (segmented controls, inputs)
+   flat     information only; never looks pressable
+   Rule: at most two glass layers stacked. A third layer uses solid. */
+.sat-glass, .sat-glass-2 {
+  position: relative;
+  background: var(--sat-glass-1);
+  border: 1px solid var(--sat-glass-edge);
+  box-shadow: var(--sat-shadow), inset 0 1px 0 var(--sat-glass-hi);
+  -webkit-backdrop-filter: blur(var(--sat-blur)) saturate(var(--sat-saturate));
+  backdrop-filter: blur(var(--sat-blur)) saturate(var(--sat-saturate));
+  border-radius: var(--sat-radius-lg);
+}
+.sat-glass-2 { background: var(--sat-glass-2); box-shadow: var(--sat-shadow-lg), inset 0 1px 0 var(--sat-glass-hi); }
+.sat-solid { background: var(--sat-solid-1); border: 1px solid var(--sat-line); border-radius: var(--sat-radius-lg); box-shadow: var(--sat-shadow); }
+.sat-well { background: var(--sat-well); border: 1px solid transparent; border-radius: var(--sat-radius-md); box-shadow: inset 0 1px 2px rgba(0,0,0,0.06); }
+.sat-flat { background: transparent; border: 1px solid var(--sat-line); border-radius: var(--sat-radius-lg); }
+
+/* No backdrop-filter support, or the viewer asked for less transparency: go solid. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .sat-glass { background: var(--sat-solid-1); }
+  .sat-glass-2 { background: var(--sat-solid-2); }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .sat-glass, .sat-glass-2 { -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .sat-glass { background: var(--sat-solid-1); }
+  .sat-glass-2 { background: var(--sat-solid-2); }
+}
+@media (prefers-contrast: more) {
+  .sat-glass, .sat-glass-2, .sat-flat { border-color: var(--sat-line-strong); }
+  .sat-glass { background: var(--sat-solid-1); }
+  .sat-glass-2 { background: var(--sat-solid-2); }
+}
+
+/* ---------- Layout ---------- */
+.sat-shell { width: 100%; max-width: var(--sat-max); margin-inline: auto; padding-inline: var(--sat-gutter-mobile); }
+@media (min-width: 640px) { .sat-shell { padding-inline: var(--sat-gutter-tablet); } }
+@media (min-width: 1024px) { .sat-shell { padding-inline: var(--sat-gutter-desktop); } }
+
+.sat-stack { display: flex; flex-direction: column; gap: var(--sat-gap, var(--sat-space-4)); }
+.sat-cluster { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sat-gap, var(--sat-space-3)); }
+.sat-split { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sat-space-3); }
+.sat-grid { display: grid; gap: var(--sat-gap, var(--sat-space-4)); grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--sat-min, 240px)), 1fr)); }
+.sat-read { max-width: var(--sat-read); }
+
+.sat-card { padding: var(--sat-space-5); }
+@media (min-width: 1024px) { .sat-card { padding: var(--sat-space-6); } }
+.sat-card > .sat-card-head { display: flex; align-items: center; justify-content: space-between; gap: var(--sat-space-3); margin-bottom: var(--sat-space-4); }
+
+/* ---------- Type ----------
+   Instrument Serif has one weight. Never bold it: font-synthesis stops the browser faking it. */
+.sat-display, .sat-h1, .sat-h2, .sat-kpi, .sat-wordmark {
+  font-family: var(--sat-font-display);
+  font-weight: 400;
+  font-synthesis: none;
+  letter-spacing: var(--sat-track-display);
+  text-wrap: balance;
+}
+.sat-display { font-size: var(--sat-fs-display); line-height: var(--sat-lh-tight); }
+.sat-h1 { font-size: var(--sat-fs-h1); line-height: var(--sat-lh-tight); }
+.sat-h2 { font-size: var(--sat-fs-h2); line-height: var(--sat-lh-snug); }
+.sat-h3 { font-family: var(--sat-font-ui); font-size: var(--sat-fs-h3); font-weight: 600; line-height: var(--sat-lh-snug); letter-spacing: -0.01em; }
+.sat-display em, .sat-h1 em, .sat-h2 em { font-style: italic; color: var(--sat-accent-text); }
+.sat-lede { font-size: calc(var(--sat-fs-body) * 1.15); line-height: 1.5; color: var(--sat-muted); max-width: var(--sat-read); text-wrap: pretty; }
+.sat-body { font-size: var(--sat-fs-body); line-height: var(--sat-lh-body); text-wrap: pretty; }
+.sat-small { font-size: var(--sat-fs-small); line-height: 1.45; }
+.sat-muted { color: var(--sat-muted); }
+.sat-wordmark { font-size: 1.5rem; line-height: 1; }
+
+/* Caption = the uppercase label above a value or naming a group. */
+.sat-caption {
+  font-family: var(--sat-font-caption);
+  font-size: var(--sat-fs-caption);
+  font-weight: 600;
+  line-height: var(--sat-lh-caption);
+  letter-spacing: var(--sat-track-caption);
+  text-transform: uppercase;
+  color: var(--sat-muted);
+}
+/* Bracketed qualifier inside an uppercase caption or table header keeps its own case: STOCK COVER (months), VOLUME (9Lc). */
+.sat-caption .sat-qual, .sat-table th .sat-qual { text-transform: none; letter-spacing: 0.02em; }
+/* Figure caption = sentence-case line under a chart, table or image. */
+.sat-figcaption { font-size: var(--sat-fs-small); line-height: 1.45; color: var(--sat-muted); margin-top: var(--sat-space-3); text-wrap: pretty; }
+.sat-figcaption b { color: var(--sat-text); font-weight: 600; }
+.sat-source { font-size: var(--sat-fs-caption); line-height: 1.4; color: var(--sat-muted); }
+
+/* Numbers */
+.sat-num { font-variant-numeric: tabular-nums lining-nums; }
+.sat-mono { font-family: var(--sat-font-mono); font-variant-numeric: tabular-nums; }
+.sat-kpi { font-size: var(--sat-fs-kpi); line-height: 1.05; font-variant-numeric: lining-nums tabular-nums; }
+.sat-unit { font-family: var(--sat-font-ui); font-size: 0.45em; color: var(--sat-muted); margin-left: 0.2em; letter-spacing: 0; }
+.sat-delta { display: inline-flex; flex-wrap: wrap; column-gap: 0.4em; font-family: var(--sat-font-mono); font-size: var(--sat-fs-small); font-weight: 500; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.sat-delta--up { color: var(--sat-pos); }
+.sat-delta--down { color: var(--sat-neg); }
+.sat-delta--flat { color: var(--sat-muted); }
+/* The comparison ("v F25 (32,942)") drops to its own line when the tile is narrow. */
+.sat-delta small { font-size: 1em; color: var(--sat-muted); }
+
+/* KPI tile: caption, number, delta, one line of context. */
+.sat-stat { display: flex; flex-direction: column; gap: var(--sat-space-1); padding: var(--sat-space-4) var(--sat-space-5); }
+.sat-stat .sat-caption { margin-bottom: var(--sat-space-1); }
+.sat-stat .sat-note { font-size: var(--sat-fs-small); color: var(--sat-muted); margin-top: var(--sat-space-1); }
+
+/* ---------- Buttons ---------- */
+.sat-btn {
+  --h: 40px;
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--sat-space-2);
+  min-height: var(--h); padding: 0 var(--sat-space-4);
+  border-radius: var(--sat-radius-sm);
+  font-size: var(--sat-fs-small); font-weight: 600; line-height: 1; white-space: nowrap;
+  color: var(--sat-text);
+  background: var(--sat-glass-2);
+  border: 1px solid var(--sat-line);
+  box-shadow: inset 0 1px 0 var(--sat-glass-hi);
+  transition: background-color var(--sat-dur-fast) var(--sat-ease), transform var(--sat-dur-fast) var(--sat-ease), border-color var(--sat-dur-fast) var(--sat-ease);
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+.sat-btn:active { transform: scale(0.97); }
+.sat-btn svg { width: 16px; height: 16px; flex: none; }
+.sat-btn--primary { background: var(--sat-accent-fill); color: var(--sat-on-accent); border-color: transparent; box-shadow: inset 0 1px 0 rgba(255,255,255,0.18); }
+.sat-btn--ghost { background: transparent; border-color: transparent; box-shadow: none; }
+.sat-btn--sm { --h: 32px; padding: 0 var(--sat-space-3); border-radius: var(--sat-radius-xs); }
+.sat-btn--lg { --h: 48px; padding: 0 var(--sat-space-6); font-size: var(--sat-fs-body); border-radius: var(--sat-radius-md); }
+.sat-btn--block { width: 100%; }
+.sat-btn[aria-disabled="true"] { opacity: 0.5; cursor: not-allowed; }
+.sat-iconbtn { width: 40px; height: 40px; padding: 0; border-radius: var(--sat-radius-sm); }
+@media (hover: hover) and (pointer: fine) {
+  .sat-btn:hover { border-color: var(--sat-line-strong); }
+  .sat-btn--primary:hover { background: var(--sat-accent-fill-hover); }
+  .sat-btn--ghost:hover { background: var(--sat-hover); }
+}
+/* Fingers need 44px. */
+@media (pointer: coarse) {
+  .sat-btn { --h: 44px; }
+  .sat-btn--sm { --h: 40px; }
+  .sat-iconbtn { width: 44px; height: 44px; }
+}
+
+/* ---------- Toggle 1: switch (on/off setting that applies at once) ----------
+   <button class="sat-switch" role="switch" aria-checked="false"><span class="sat-sr-only">Show labels</span></button> */
+.sat-switch {
+  --w: 44px; --h: 26px; --p: 3px;
+  position: relative; flex: none;
+  width: var(--w); height: var(--h);
+  border-radius: var(--sat-radius-pill);
+  background: var(--sat-line-strong);
+  transition: background-color var(--sat-dur-base) var(--sat-ease);
+}
+.sat-switch::after {
+  content: ''; position: absolute; top: var(--p); left: var(--p);
+  width: calc(var(--h) - var(--p) * 2); height: calc(var(--h) - var(--p) * 2);
+  border-radius: 50%; background: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  transition: transform var(--sat-dur-base) var(--sat-ease-spring);
+}
+.sat-switch::before { content: ''; position: absolute; inset: -9px -4px; } /* 44px hit area */
+.sat-switch[aria-checked="true"] { background: var(--sat-accent-fill); }
+.sat-switch[aria-checked="true"]::after { transform: translateX(calc(var(--w) - var(--h))); }
+.sat-switch-row { display: flex; align-items: center; justify-content: space-between; gap: var(--sat-space-4); min-height: 44px; cursor: pointer; }
+
+/* ---------- Toggle 2: segmented control (pick one of 2 to 5 views) ----------
+   <div class="sat-seg" role="radiogroup" aria-label="Measure">
+     <button role="radio" aria-checked="true">Volume</button><button role="radio" aria-checked="false">Value</button></div> */
+.sat-seg { display: inline-flex; gap: 2px; padding: 3px; border-radius: var(--sat-radius-sm); background: var(--sat-well); max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+.sat-seg::-webkit-scrollbar { display: none; }
+.sat-seg > button {
+  display: inline-flex; align-items: center; gap: 6px;
+  min-height: 32px; padding: 0 var(--sat-space-3);
+  border-radius: calc(var(--sat-radius-sm) - 3px);
+  font-size: var(--sat-fs-small); font-weight: 600; white-space: nowrap;
+  color: var(--sat-muted);
+  border: 1px solid transparent;
+  transition: color var(--sat-dur-fast) var(--sat-ease), background-color var(--sat-dur-fast) var(--sat-ease);
+}
+.sat-seg > button svg { width: 15px; height: 15px; }
+.sat-seg > button[aria-checked="true"] { color: var(--sat-text); background: var(--sat-glass-2); border-color: var(--sat-glass-edge); box-shadow: 0 1px 3px rgba(0,0,0,0.12), inset 0 1px 0 var(--sat-glass-hi); }
+@media (hover: hover) and (pointer: fine) { .sat-seg > button:not([aria-checked="true"]):hover { color: var(--sat-text); background: var(--sat-hover); } }
+@media (pointer: coarse) { .sat-seg > button { min-height: 40px; } }
+.sat-seg--block { display: flex; width: 100%; }
+.sat-seg--block > button { flex: 1; justify-content: center; }
+
+/* ---------- Toggle 3: chip (filters you can stack) ----------
+   <button class="sat-chip" aria-pressed="false">Top 10</button> */
+.sat-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  min-height: 32px; padding: 0 var(--sat-space-3);
+  border-radius: var(--sat-radius-pill);
+  font-size: var(--sat-fs-small); font-weight: 500;
+  color: var(--sat-text);
+  border: 1px solid var(--sat-line-strong);
+  background: transparent;
+  transition: all var(--sat-dur-fast) var(--sat-ease);
+}
+.sat-chip[aria-pressed="true"] { background: var(--sat-accent-soft); border-color: var(--sat-accent); color: var(--sat-accent-text); font-weight: 600; }
+.sat-chip[aria-pressed="true"]::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+@media (hover: hover) and (pointer: fine) { .sat-chip:not([aria-pressed="true"]):hover { background: var(--sat-hover); } }
+@media (pointer: coarse) { .sat-chip { min-height: 40px; } }
+
+/* ---------- Toggle 4: theme (Auto / Light / Dark) ----------
+   Use .sat-seg with data-sat-theme on each button, or one .sat-iconbtn with data-sat-theme-cycle. saturday.js wires both. */
+.sat-theme-icon { display: none; }
+:root:not([data-theme]) .sat-theme-icon--auto,
+:root[data-theme="light"] .sat-theme-icon--light,
+:root[data-theme="dark"] .sat-theme-icon--dark { display: block; }
+
+/* ---------- Inputs ---------- */
+.sat-field { display: flex; flex-direction: column; gap: var(--sat-space-2); }
+.sat-field > label { font-size: var(--sat-fs-small); font-weight: 600; }
+.sat-field .sat-hint { font-size: var(--sat-fs-caption); color: var(--sat-muted); }
+.sat-field .sat-error { font-size: var(--sat-fs-caption); color: var(--sat-neg); font-weight: 600; }
+.sat-input {
+  width: 100%; min-height: 40px; padding: 0 var(--sat-space-3);
+  border-radius: var(--sat-radius-sm);
+  background: var(--sat-well);
+  border: 1px solid var(--sat-line);
+  color: var(--sat-text);
+  font-size: var(--sat-fs-body);
+}
+textarea.sat-input { padding: var(--sat-space-3); min-height: 96px; resize: vertical; line-height: var(--sat-lh-body); }
+.sat-input::placeholder { color: var(--sat-faint); }
+.sat-input:focus-visible { outline: 2px solid var(--sat-focus); outline-offset: 1px; }
+.sat-input[aria-invalid="true"] { border-color: var(--sat-neg); }
+@media (pointer: coarse) { .sat-input { min-height: 44px; font-size: 16px; } }
+
+/* ---------- Info tip (works by hover, focus AND tap) ----------
+   <span class="sat-tip"><button class="sat-tip-btn" aria-expanded="false" aria-label="About this figure">i</button>
+   <span class="sat-tip-body" role="tooltip">One sentence.</span></span> */
+.sat-tip { position: relative; display: inline-flex; vertical-align: middle; }
+.sat-tip-btn { display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; border: 1px solid var(--sat-muted); color: var(--sat-muted); font: italic 600 11px/1 var(--sat-font-display); }
+.sat-tip-btn::after { content: ''; position: absolute; inset: -13px; } /* 44px hit area */
+/* Closed tips use display:none so they never widen the page; saturday.js places an open tip inside the screen edge. */
+.sat-tip-body {
+  display: none;
+  position: absolute; z-index: 50; top: calc(100% + 8px); left: 50%; transform: translateX(-50%);
+  width: max-content; max-width: min(280px, 80vw);
+  padding: var(--sat-space-2) var(--sat-space-3);
+  border-radius: var(--sat-radius-sm);
+  background: var(--sat-solid-2); color: var(--sat-text);
+  border: 1px solid var(--sat-line); box-shadow: var(--sat-shadow-lg);
+  font-size: var(--sat-fs-small); font-weight: 400; line-height: 1.4; text-transform: none; letter-spacing: 0;
+  animation: sat-fade var(--sat-dur-fast) var(--sat-ease);
+}
+@keyframes sat-fade { from { opacity: 0; } }
+.sat-tip.is-open .sat-tip-body { display: block; }
+@media (hover: hover) and (pointer: fine) { .sat-tip:hover .sat-tip-body { display: block; } }
+
+/* ---------- Header ---------- */
+.sat-header { position: sticky; top: 0; z-index: 40; padding-block: var(--sat-space-3); }
+.sat-header-bar { display: flex; align-items: center; gap: var(--sat-space-3); padding: var(--sat-space-2) var(--sat-space-2) var(--sat-space-2) var(--sat-space-4); border-radius: var(--sat-radius-lg); }
+.sat-header-bar .sat-brand { display: flex; align-items: center; gap: var(--sat-space-2); margin-right: auto; min-width: 0; }
+
+/* Logo mark (Saturday Shakes shaker). Inline the SVG from assets/saturday-shakes-mark.svg and add class="sat-mark".
+   The stroke stays the same pixel width at any size. */
+.sat-mark { display: block; flex: none; height: var(--sat-mark-h, 32px); width: auto; color: var(--sat-mark); stroke: currentColor; fill: none; }
+.sat-mark path { vector-effect: non-scaling-stroke; stroke-width: var(--sat-mark-stroke, 1.75px); stroke-linecap: round; stroke-linejoin: round; }
+.sat-header-bar .sat-brand small { font-size: var(--sat-fs-caption); color: var(--sat-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ---------- Table (data lives on glass-2 or solid, never on glass-1) ---------- */
+.sat-table-wrap { overflow-x: auto; border-radius: var(--sat-radius-md); }
+.sat-table { width: 100%; border-collapse: collapse; font-size: var(--sat-fs-small); font-variant-numeric: tabular-nums; }
+.sat-table th { font-family: var(--sat-font-caption); font-size: var(--sat-fs-caption); font-weight: 600; text-transform: uppercase; letter-spacing: var(--sat-track-caption); color: var(--sat-muted); text-align: left; padding: var(--sat-space-3); border-bottom: 1px solid var(--sat-line-strong); white-space: nowrap; position: sticky; top: 0; background: var(--sat-solid-2); }
+.sat-table td { padding: var(--sat-space-3); border-bottom: 1px solid var(--sat-line); }
+.sat-table tr:last-child td { border-bottom: 0; }
+.sat-table .n { text-align: right; white-space: nowrap; }
+.sat-table th.n { text-align: right; }
+@media (hover: hover) and (pointer: fine) { .sat-table tbody tr:hover td { background: var(--sat-hover); } }
+
+/* ---------- Badge ---------- */
+.sat-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: var(--sat-radius-pill); font-size: var(--sat-fs-caption); font-weight: 600; background: var(--sat-accent-soft); color: var(--sat-accent-text); white-space: nowrap; }
+.sat-badge--muted { background: var(--sat-well); color: var(--sat-muted); }
+
+/* ---------- Divider ---------- */
+.sat-rule { height: 1px; border: 0; background: var(--sat-line); margin: var(--sat-space-4) 0; }
+
+/* ---------- Sheet: bottom sheet on phones, centred dialog on desktop ----------
+   <dialog class="sat-sheet sat-glass-2" id="filters">...</dialog>  Open with data-sat-open="filters". */
+.sat-sheet {
+  position: fixed; /* .sat-glass-2 sets relative; a modal dialog must stay pinned to the viewport */
+  color: var(--sat-text);
+  padding: var(--sat-space-6);
+  width: min(520px, calc(100vw - 32px));
+  max-height: min(80dvh, 720px);
+  border-radius: var(--sat-radius-xl);
+  margin: auto;
+  overflow: auto;
+}
+.sat-sheet::backdrop { background: rgba(0,0,0,0.35); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
+.sat-sheet[open] { animation: sat-pop var(--sat-dur-base) var(--sat-ease); }
+@media (max-width: 639px) {
+  .sat-sheet { width: 100%; max-width: 100%; margin: auto 0 0; border-radius: var(--sat-radius-xl) var(--sat-radius-xl) 0 0; padding: var(--sat-space-5) var(--sat-space-4) calc(var(--sat-space-5) + env(safe-area-inset-bottom)); }
+  .sat-sheet[open] { animation: sat-rise var(--sat-dur-slow) var(--sat-ease); }
+  .sat-sheet::before { content: ''; display: block; width: 36px; height: 4px; border-radius: 2px; background: var(--sat-line-strong); margin: 0 auto var(--sat-space-4); }
+}
+@keyframes sat-pop { from { opacity: 0; transform: scale(0.97); } }
+@keyframes sat-rise { from { transform: translateY(100%); } }
+
+/* ---------- Bottom action bar: phones only (primary action in thumb reach) ---------- */
+.sat-bottombar { display: none; }
+@media (max-width: 639px) {
+  .sat-bottombar {
+    display: flex; gap: var(--sat-space-2);
+    position: fixed; z-index: 45; left: var(--sat-space-3); right: var(--sat-space-3);
+    bottom: calc(var(--sat-space-3) + env(safe-area-inset-bottom));
+    padding: var(--sat-space-2);
+    border-radius: var(--sat-radius-lg);
+  }
+  .sat-bottombar > * { flex: 1; }
+  body.sat.has-bottombar { padding-bottom: calc(88px + env(safe-area-inset-bottom)); }
+  .sat-desktop-only { display: none !important; }
+}
+@media (min-width: 640px) { .sat-mobile-only { display: none !important; } }
+
+/* ---------- Swatch (palette sheets) ---------- */
+.sat-swatch { display: flex; flex-direction: column; gap: var(--sat-space-2); }
+.sat-swatch i { display: block; height: 56px; border-radius: var(--sat-radius-sm); border: 1px solid var(--sat-line); }
+.sat-swatch code { font-family: var(--sat-font-mono); font-size: var(--sat-fs-caption); color: var(--sat-muted); overflow-wrap: anywhere; }
+
+/* ---------- Motion entrance (opt-in) ---------- */
+.sat-rise { animation: sat-fade-up var(--sat-dur-slow) var(--sat-ease) both; animation-delay: calc(var(--i, 0) * 50ms); }
+@keyframes sat-fade-up { from { opacity: 0; transform: translateY(8px); } }
+
+/* ---------- Scrollbars ---------- */
+.sat { scrollbar-color: var(--sat-line-strong) transparent; }
+
+/* ---------- Print: no glass, no mesh ---------- */
+@media print {
+  body.sat::before { display: none; }
+  body.sat { background: #fff; color: #000; }
+  .sat-glass, .sat-glass-2 { background: #fff; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; border-color: #ccc; }
+  .sat-header, .sat-bottombar, .sat-theme-toggle { display: none !important; }
+}

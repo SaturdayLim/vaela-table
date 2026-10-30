@@ -1,0 +1,53 @@
+/* App layer: feed, inbox, tab bar. --sat-* tokens only (Saturday Signature v1.0.3). */
+
+/* The kit's layout classes set display; [hidden] must still win (as in the Compendium's skin.css). */
+[hidden] { display: none !important; }
+
+.page-head { padding-top: var(--sat-space-6); }
+main { --sat-gap: var(--sat-space-5); }
+main > .view, main > [data-view] { margin-top: var(--sat-space-4); }
+
+/* new-content dot on nav items */
+.dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--sat-accent-fill); margin-left: 6px; vertical-align: 2px; }
+.dot[hidden] { display: none; }
+
+/* kit sub-navigation */
+.kit-nav { margin-top: var(--sat-space-6); }
+.kit-nav .sat-seg { max-width: 640px; }
+
+/* feed */
+.post-meta { display: block; margin-bottom: var(--sat-space-2); }
+details.letter > summary { list-style: none; cursor: pointer; display: flex; flex-direction: column; gap: var(--sat-space-1); min-height: 44px; justify-content: center; }
+details.letter > summary::-webkit-details-marker { display: none; }
+details.letter > summary .letter-title { font-weight: 600; font-size: var(--sat-fs-h3); line-height: var(--sat-lh-snug); }
+details.letter > summary::after { content: "Show"; font-size: var(--sat-fs-small); color: var(--sat-accent-text); font-weight: 600; }
+details.letter[open] > summary::after { content: "Hide"; }
+details.letter[open] > summary { margin-bottom: var(--sat-space-4); padding-bottom: var(--sat-space-4); border-bottom: 1px solid var(--sat-line); }
+
+/* inbox picker */
+.inbox-grid { --sat-min: 220px; }
+.inbox-card { display: flex; flex-direction: column; align-items: flex-start; gap: var(--sat-space-2); text-align: left; padding: var(--sat-space-5); min-height: 96px; color: var(--sat-text); }
+.inbox-card .sat-h2 { font-size: var(--sat-fs-h3); font-family: var(--sat-font-display); }
+@media (hover: hover) and (pointer: fine) { .inbox-card:hover { border-color: var(--sat-line-strong); } }
+#inbox-unlock { max-width: 520px; }
+#code { letter-spacing: 0.08em; }
+
+/* phone tab bar (the kit's bottom bar, holding four destinations, as Felt does) */
+.tabbar { display: none; }
+@media (max-width: 639px) {
+  .tabbar {
+    display: flex; position: fixed; z-index: 45;
+    left: max(var(--sat-space-3), env(safe-area-inset-left, 0px));
+    right: max(var(--sat-space-3), env(safe-area-inset-right, 0px));
+    bottom: calc(var(--sat-space-3) + env(safe-area-inset-bottom, 0px));
+    padding: var(--sat-space-1); border-radius: var(--sat-radius-lg);
+  }
+  .tabbar a {
+    flex: 1; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+    min-height: 52px; border-radius: var(--sat-radius-md);
+    color: var(--sat-muted); text-decoration: none; font-size: var(--sat-fs-caption); font-weight: 600;
+  }
+  .tabbar a svg { width: 22px; height: 22px; }
+  .tabbar a[aria-current="page"] { color: var(--sat-accent-text); background: var(--sat-accent-soft); }
+  .tabbar .dot { position: absolute; top: 8px; right: calc(50% - 18px); margin: 0; }
+}

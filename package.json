@@ -1,0 +1,25 @@
+{
+  "name": "vaela-table",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/build-index.mjs && vite --host",
+    "build": "node scripts/build-index.mjs && tsc --noEmit && vite build",
+    "preview": "vite preview --host",
+    "test": "vitest run",
+    "seal": "node scripts/seal.mjs",
+    "leak-check": "node scripts/leak-check.mjs",
+    "icons": "node scripts/make-icons.mjs"
+  },
+  "dependencies": {
+    "marked": "14.1.4"
+  },
+  "devDependencies": {
+    "sharp": "0.33.5",
+    "typescript": "5.6.3",
+    "vite": "5.4.21",
+    "vite-plugin-pwa": "0.21.2",
+    "vitest": "2.1.9"
+  }
+}

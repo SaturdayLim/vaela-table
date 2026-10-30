@@ -1,0 +1,693 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Vaela Table</title>
+  <meta name="description" content="Table feed, private inboxes and player kit for A Finding of Good Standing.">
+  <script>try{var t=localStorage.getItem('sat-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="./apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Vaela Table">
+</head>
+<body class="sat has-bottombar">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-auto" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.75"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/></g></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M19 14.5A7.5 7.5 0 0 1 9.5 5a7.5 7.5 0 1 0 9.5 9.5z" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M5 7h14M5 12h14M5 17h14" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></g></symbol>
+  <symbol id="i-feed" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 9h8M8 13h8M8 17h5"/></g></symbol>
+  <symbol id="i-inbox" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"><rect x="3.5" y="6" width="17" height="12" rx="2"/><path d="M4 7l8 6 8-6"/></g></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"><path d="M12 6.5C10 5 7 4.7 4 5.2v13c3-.5 6-.2 8 1.3 2-1.5 5-1.8 8-1.3v-13c-3-.5-6-.2-8 1.3z"/><path d="M12 6.5v13"/></g></symbol>
+  <symbol id="i-sheet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3.5H7a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8.5z"/><path d="M14 3.5v5h5M9 13h6M9 17h4"/></g></symbol>
+</svg>
+<div class="safe-band" aria-hidden="true"></div>
+
+<header class="sat-header sat-shell">
+  <div class="sat-header-bar sat-glass">
+    <a class="sat-brand" href="#table" aria-label="Vaela Table, the table feed">
+      <svg class="sat-mark vaela-mark" viewBox="0 0 64 48" aria-hidden="true"><path d="M32 12 C24 6 13 5 4 7 V41 C13 39 24 40 32 46"/><path d="M32 12 C40 6 51 5 60 7 V41 C51 39 40 40 32 46"/><path d="M19 17 L32 39 L45 17"/></svg>
+      <span class="sat-wordmark">Vaela</span>
+      <small>Saturday Solutions</small>
+    </a>
+    <div class="sat-seg sections sat-desktop-only" role="radiogroup" aria-label="App sections" id="sections">
+      <button role="radio" aria-checked="true" data-value="table">Table<i class="dot" data-dot="table" hidden></i></button>
+      <button role="radio" aria-checked="false" data-value="inbox">Inbox<i class="dot" data-dot="inbox" hidden></i></button>
+      <button role="radio" aria-checked="false" data-value="kit">Player kit</button>
+      <button role="radio" aria-checked="false" data-value="sheet">New sheet</button>
+    </div>
+    <div class="sat-seg sat-desktop-only" role="radiogroup" aria-label="Theme">
+      <button role="radio" data-sat-theme="auto" aria-checked="true" aria-label="Theme: auto"><svg><use href="#i-auto"/></svg></button>
+      <button role="radio" data-sat-theme="light" aria-checked="false" aria-label="Theme: light"><svg><use href="#i-sun"/></svg></button>
+      <button role="radio" data-sat-theme="dark" aria-checked="false" aria-label="Theme: dark"><svg><use href="#i-moon"/></svg></button>
+    </div>
+    <button class="sat-btn sat-btn--ghost sat-iconbtn sat-mobile-only" type="button" data-sat-theme-cycle aria-label="Change theme">
+      <svg class="sat-theme-icon sat-theme-icon--auto"><use href="#i-auto"/></svg>
+      <svg class="sat-theme-icon sat-theme-icon--light"><use href="#i-sun"/></svg>
+      <svg class="sat-theme-icon sat-theme-icon--dark"><use href="#i-moon"/></svg>
+    </button>
+  </div>
+</header>
+
+<main class="sat-shell">
+
+<!-- ================= TABLE (shared feed) ================= -->
+<section class="view sat-stack" data-view="table" aria-labelledby="table-title">
+  <div class="page-head sat-split">
+    <div class="sat-stack" style="--sat-gap: var(--sat-space-2)">
+      <span class="sat-caption">A Finding of Good Standing</span>
+      <h1 class="sat-h1" id="table-title">The Serret Vale Table</h1>
+    </div>
+    <div class="sat-cluster">
+      <span class="sat-small sat-muted" id="feed-status" role="status">Loading the table</span>
+      <button class="sat-btn sat-btn--sm" type="button" id="refresh">Check now</button>
+    </div>
+  </div>
+  <article class="sat-glass-2 sat-card prose" id="feed-latest" aria-live="polite">
+    <p class="sat-muted">Loading the latest turn.</p>
+  </article>
+  <section class="sat-stack" id="feed-earlier-wrap" hidden>
+    <h2 class="sat-h3">Earlier turns</h2>
+    <div class="sat-stack" id="feed-earlier" style="--sat-gap: var(--sat-space-3)"></div>
+  </section>
+</section>
+
+<!-- ================= INBOX (sealed, per player) ================= -->
+<section class="view sat-stack" data-view="inbox" aria-labelledby="inbox-title" hidden>
+  <div class="page-head sat-stack" style="--sat-gap: var(--sat-space-2)">
+    <span class="sat-caption">Private</span>
+    <h1 class="sat-h1" id="inbox-title">Inbox</h1>
+    <p class="sat-muted sat-read">Each inbox opens only with its own code. Open yours, and only yours.</p>
+  </div>
+
+  <div class="sat-grid inbox-grid" id="inbox-pick"></div>
+
+  <form class="sat-glass-2 sat-card sat-stack" id="inbox-unlock" hidden autocomplete="off">
+    <h2 class="sat-h2" id="unlock-title"></h2>
+    <div class="sat-field">
+      <label for="code">Inbox code</label>
+      <input class="sat-input sat-mono" id="code" name="code" type="text" inputmode="text" autocapitalize="characters" spellcheck="false" placeholder="(e.g. K7QF-M2XD-9PRA)">
+      <span class="sat-hint">The host sends you this code. Case, spaces and dashes do not matter.</span>
+      <span class="sat-error" id="code-error" role="alert" hidden></span>
+    </div>
+    <div class="sat-switch-row">
+      <span>Remember on this device</span>
+      <button type="button" class="sat-switch" role="switch" aria-checked="true" id="remember"><span class="sat-sr-only">Remember on this device</span></button>
+    </div>
+    <div class="sat-cluster">
+      <button type="submit" class="sat-btn sat-btn--primary" id="unlock-go">Open inbox</button>
+      <button type="button" class="sat-btn sat-btn--ghost" id="unlock-back">Back</button>
+    </div>
+  </form>
+
+  <section class="sat-stack" id="inbox-open" hidden>
+    <div class="sat-split">
+      <div class="sat-cluster">
+        <h2 class="sat-h2" id="open-title"></h2>
+        <span class="sat-badge" id="open-new" hidden></span>
+      </div>
+      <button type="button" class="sat-btn" id="lock">Lock inbox</button>
+    </div>
+    <div class="sat-stack" id="open-letters" style="--sat-gap: var(--sat-space-3)"></div>
+    <details class="sat-glass-2 sat-card letter" id="open-sheet" hidden>
+      <summary><span class="sat-caption">Character sheet</span><span class="letter-title" id="open-sheet-title"></span></summary>
+      <div class="prose" id="open-sheet-body"></div>
+    </details>
+  </section>
+</section>
+
+<!-- ================= PLAYER KIT ================= -->
+<div class="kit-nav" id="kit-nav" hidden>
+  <div class="sat-seg sat-seg--block" role="radiogroup" aria-label="Player kit sections" id="kitnav">
+    <button role="radio" aria-checked="true" data-value="start">Start here</button>
+    <button role="radio" aria-checked="false" data-value="world">World guide</button>
+    <button role="radio" aria-checked="false" data-value="rules">Rules</button>
+    <button role="radio" aria-checked="false" data-value="session">Session 0</button>
+  </div>
+</div>
+<!-- ================= START HERE ================= -->
+<div data-view="start">
+  <section class="hero sat-stack" aria-labelledby="kit-title">
+    <span class="sat-caption">Player kit <span class="sat-qual">(Survey Dispatch Board)</span></span>
+    <h1 class="sat-display" id="kit-title">A Finding of <em>Good Standing</em></h1>
+    <p class="sat-lede">You and a partner are licensed freelancers. The Board wants three places in the Serret Vale visited and a charity's standing attested. Watch what you attest: the Board will believe the paper.</p>
+    <div class="sat-grid stats">
+      <div class="sat-glass sat-stat"><span class="sat-caption">Players</span><span class="sat-kpi">2-3</span><span class="sat-note">Each with a character of their own</span></div>
+      <div class="sat-glass sat-stat"><span class="sat-caption">Session <span class="sat-qual">(hours)</span></span><span class="sat-kpi">3</span><span class="sat-note">One sitting, plus Session 0</span></div>
+      <div class="sat-glass sat-stat"><span class="sat-caption">Level</span><span class="sat-kpi">3</span><span class="sat-note">D&amp;D 5e with the Vaela rules</span></div>
+      <div class="sat-glass sat-stat"><span class="sat-caption">Pay <span class="sat-qual">(SM each)</span></span><span class="sat-kpi">60</span><span class="sat-note">Plus 20 SM expenses</span></div>
+    </div>
+  </section>
+
+  <article class="view sat-glass-2 sat-card prose">
+    <h2>Start here</h2>
+    <p class="sat-lede">A complete, standalone pack. You need nothing outside it. Read in the order below, make a character, and arrive at Session 0 ready to play.</p>
+
+    <h3>Read in this order (40 minutes)</h3>
+    <div class="sat-table-wrap"><table class="sat-table">
+      <thead><tr><th>Step</th><th>What</th><th class="n">Time <span class="sat-qual">(min)</span></th></tr></thead>
+      <tbody>
+        <tr><td><a href="#world">World guide</a></td><td>The world from nothing: magic, factions, law, money, the vale. Sections 1 to 3 are essential.</td><td class="n">15</td></tr>
+        <tr><td>This page</td><td>Make your character (seven steps below).</td><td class="n">15</td></tr>
+        <tr><td><a href="#rules">Rules</a></td><td>The few rules that differ from 5e: scores and casting.</td><td class="n">5</td></tr>
+        <tr><td><a href="#sheet">Your sheet</a></td><td>Fill it in here, then send it to the DM as a file.</td><td class="n">10</td></tr>
+        <tr><td><a href="#session">Session 0</a></td><td>How the table runs, what happens first, safety.</td><td class="n">5</td></tr>
+      </tbody>
+    </table></div>
+    <p class="note">The DM hands out other in-world papers during play.</p>
+
+    <div class="callout"><p><strong>The rule of this kit: write what you know, and leave the rest open.</strong> You may mark up to <strong>three things</strong> on your sheet as <span class="qq">??</span>. The DM fills those in once play begins.</p></div>
+
+    <h3>Make your character in seven steps</h3>
+
+    <h4>1. Who are you? <span class="sat-badge">Required</span></h4>
+    <p>Name, pronouns, species, and <strong>one sentence a stranger would say about you.</strong> <em>"A tall, tired woman with ink on her cuffs."</em></p>
+    <div class="sat-table-wrap"><table class="sat-table">
+      <thead><tr><th>Species</th><th>In a line</th></tr></thead>
+      <tbody>
+        <tr><td>Human <span class="note">(Vaelan-adapted)</span></td><td>Everywhere; the most varied</td></tr>
+        <tr><td>Elf</td><td>Valo forests or Tacenda; long-lived; a strong True Name tradition</td></tr>
+        <tr><td>Dwarf</td><td>Golgotha and the mountains; stocky; excellent craft resonance</td></tr>
+        <tr><td>Centaur</td><td>Tacenda plains; nomadic couriers and cavalry</td></tr>
+        <tr><td>Merfolk</td><td>Ocean-going; water resonance; or human with merfolk heritage</td></tr>
+      </tbody>
+    </table></div>
+    <p class="note">Echo-Souled and demigod-touched characters are the DM's to assign. Ask before play.</p>
+
+    <h4>2. What do you do? <span class="sat-badge">Required</span></h4>
+    <p>Pick a <strong>class</strong>. You start at <strong>Level 3</strong>. Specialisation paths open at Level 5, so you do not pick one now.</p>
+    <div class="sat-table-wrap"><table class="sat-table">
+      <thead><tr><th>Class</th><th>Play this if you want to</th></tr></thead>
+      <tbody>
+        <tr><td>Artificer</td><td>Build, modify and interrogate devices</td></tr>
+        <tr><td>Alchemist</td><td>Brew, analyse, poison, cure</td></tr>
+        <tr><td>Mage</td><td>Cast with institutional training</td></tr>
+        <tr><td>Warlock</td><td>Cast with a patron's borrowed power <em>(name the patron)</em></td></tr>
+        <tr><td>Healer</td><td>Mend bodies, secular and practical</td></tr>
+        <tr><td>Cleric</td><td>Channel the divine (the Order or the Celestial College)</td></tr>
+        <tr><td>Paladin</td><td>Swear an oath that costs you something</td></tr>
+        <tr><td>Ranger</td><td>Track, survive, work the wild edges</td></tr>
+        <tr><td>Fighter</td><td>Hit things reliably; no resonance needed</td></tr>
+        <tr><td>Rogue</td><td>Acquire, infiltrate, talk your way through</td></tr>
+        <tr><td>Bard</td><td>Sense truth; testify; perform (a <em>licensed witness</em>)</td></tr>
+        <tr><td>Blood Hunter</td><td>Hunt what should not exist</td></tr>
+        <tr><td>Monk</td><td>Master the self instead of the ley</td></tr>
+        <tr><td>Druid</td><td>Speak the Old Ways with the land</td></tr>
+        <tr><td>Barbarian</td><td>Be the avalanche</td></tr>
+        <tr><td>Necromancer</td><td>Study soul-echo and what lingers <em>(expect attention)</em></td></tr>
+      </tbody>
+    </table></div>
+    <p class="note">All 16 are open. Some attract more institutional attention than others.</p>
+
+    <h4>3. Where are you from? <span class="sat-badge">Required</span></h4>
+    <p>Pick <strong>one region</strong> and <strong>one reason you left.</strong></p>
+    <div class="sat-table-wrap"><table class="sat-table">
+      <thead><tr><th>Region</th><th>Known for</th></tr></thead>
+      <tbody>
+        <tr><td>Flaneur</td><td>Trade, academia, the Charter</td></tr>
+        <tr><td>Victory Isles</td><td>Navy, strict law</td></tr>
+        <tr><td>Golgotha</td><td>Mining guilds</td></tr>
+        <tr><td>Kreimhilde</td><td>Crystal clans</td></tr>
+        <tr><td>Levanter</td><td>Oasis sultanates</td></tr>
+        <tr><td>Aquias</td><td>Sea trade, merfolk contact</td></tr>
+        <tr><td>Tacenda</td><td>Plains, the Old Ways</td></tr>
+        <tr><td>Nemalos and Valo</td><td>Old forests, older memories</td></tr>
+        <tr><td>Frozen Crescents</td><td>Ice, kinship</td></tr>
+        <tr><td>The Border Zone</td><td>Near the Rift; you have seen things</td></tr>
+      </tbody>
+    </table></div>
+    <p class="note">Golgotha is where you are working now. It is a fine home but not required.</p>
+
+    <h4>4. How does your magic work? <span class="sat-badge">Required if you cast</span></h4>
+    <div class="sat-table-wrap"><table class="sat-table">
+      <thead><tr><th>Choose</th><th>Options</th></tr></thead>
+      <tbody>
+        <tr><td>Vaelan proficiency</td><td><strong>None</strong> (no casting; certified artefacts only), <strong>Apprentice</strong> (Simple incantations, 1 RP) or <strong>Journeyman</strong> (Complex too, 3 RP)</td></tr>
+        <tr><td>Force</td><td><strong>Arcaen</strong> (trained), <strong>Vitalen</strong> (inherited, old blood), <strong>Somalen</strong> (belief, ritual) or <strong>Magic-Mute</strong> (no resonance; you perceive what casters cannot)</td></tr>
+        <tr><td>Dialect</td><td>Eldorian (the standard), or Verdant, Frostholm, Emberisle or Crystalian from your home</td></tr>
+      </tbody>
+    </table></div>
+    <p class="note">Adept and Aelum are not available here. The <a href="#world">World guide</a> explains each.</p>
+
+    <h4>5. Three hooks: Anchor, Scar, Question <span class="sat-badge">Required</span></h4>
+    <ul>
+      <li><strong>Anchor:</strong> who or what you will not lose.</li>
+      <li><strong>Scar:</strong> something that happened and is not finished.</li>
+      <li><strong>Question:</strong> something you need answered. Concrete beats grand. "Can institutions be trusted?" works. "Where did my father's last letter come from?" works better.</li>
+    </ul>
+    <p><strong>Make at least one about trust in paper:</strong> contracts, licences, records, who wrote what. That is what this job is.</p>
+
+    <h4>6. Your licence <span class="sat-badge">Required</span></h4>
+    <p>You hold a <strong>Board freelance licence</strong>, a stamped card. Choose:</p>
+    <ul>
+      <li><strong>Who sponsored you:</strong> a guild, a college, a captain, a temple, nobody.</li>
+      <li><strong>One reason the Board hired you cheaply:</strong> new, unlucky, unaffiliated, in debt, overlooked.</li>
+    </ul>
+
+    <h4>7. Numbers <span class="sat-badge sat-badge--muted">The DM finishes these</span></h4>
+    <p>Roll or assign your six scores using the <a href="#rules">rules</a>. <strong>Leave HP, AC, RP and SP blank.</strong> The DM fills them from your class. Add <strong>one signature item</strong>, a short description of your kit, and <strong>50 Silver Marks.</strong></p>
+
+    <h4>An optional prior tie <span class="sat-badge sat-badge--muted">Optional</span></h4>
+    <p>If you want a starting relationship with one faction, pick one: a <em>member</em>, an <em>associate</em>, a <em>former affiliate</em>, a <em>suspicious bystander</em>, or someone who <em>specifically avoids them.</em></p>
+    <ul class="inline-list">
+      <li class="sat-badge sat-badge--muted">Celestial College</li><li class="sat-badge sat-badge--muted">Arcane University</li><li class="sat-badge sat-badge--muted">Bardic College</li><li class="sat-badge sat-badge--muted">Order of the Eternal Flame</li><li class="sat-badge sat-badge--muted">Hollow Hand</li><li class="sat-badge sat-badge--muted">Rift Watchers</li><li class="sat-badge sat-badge--muted">None</li>
+    </ul>
+
+    <h3>Decided for you</h3>
+    <ul>
+      <li><strong>Your job and your pay:</strong> one commission, one finding.</li>
+      <li><strong>Where you start:</strong> the Cressen charter hall, at dusk, on the evening of a celebration that has nothing to do with you.</li>
+      <li><strong>Your partner:</strong> you arrive together; you do not need to have met. If you want to know each other, say so, and agree <strong>one</strong> shared fact.</li>
+    </ul>
+    <h3>Left open on purpose</h3>
+    <ul>
+      <li><strong>Your past beyond one line.</strong> The DM asks follow-up questions in play.</li>
+      <li><strong>Your enemies, your debts, your family.</strong> Mark them <span class="qq">??</span>.</li>
+      <li><strong>Anyone else in the vale.</strong> Say "I think I know someone in Tarvish" and the DM decides.</li>
+    </ul>
+    <p><a class="sat-btn" href="#sheet">Go to the sheet</a></p>
+  </article>
+</div>
+
+<!-- ================= WORLD ================= -->
+<article class="view sat-glass-2 sat-card prose" data-view="world" hidden>
+  <span class="sat-caption">Office of Records <span class="sat-qual">(Third Edition)</span></span>
+  <h2>A Public Guide to Vaelora, the Serret Vale and the Survey Dispatch Board</h2>
+  <p class="lede-book">Compiled for newly retained freelancers. It tells you what any literate adult in southwestern Golgotha knows, and it is fairly accurate. The Office reminds readers that "fairly" is a word.</p>
+  <div class="callout"><p>Read <strong>sections 1 to 3</strong> before you make a character. Skim 4 to 9 before Session 0.</p></div>
+
+  <h3>1. The world in one page</h3>
+  <p><strong>Vaelora</strong> is a world where magic is <strong>infrastructure</strong>, not spectacle. A magical energy called <strong>resonance</strong> flows through underground channels called <strong>ley lines</strong>, pools where several cross (<strong>nexus points</strong>), and thins where they do not. Most people live near nexus points because crops grow, trade runs, and magic is easy there. Magic is real, regulated and a little tiring. It is a trade, with licences, and sometimes it fails.</p>
+  <p>It is <strong>Year 392 of the Third Age.</strong></p>
+  <div class="sat-table-wrap"><table class="sat-table">
+    <thead><tr><th>Age</th><th>What everyone is taught</th></tr></thead>
+    <tbody>
+      <tr><td>The First Age</td><td><strong>Giants</strong> built the Crystal Spires and the great First Library, and mapped the ley lines. Then the <strong>Rupture</strong>, a catastrophic magical event about three thousand years ago, ended their civilisation and tore a permanent wound in the world: the <strong>Rift</strong>.</td></tr>
+      <tr><td>The Second Age</td><td>Chaos. <strong>False Kings</strong> claimed authority from gods they had made rather than worshipped. A bard called <strong>the Truth-Singer</strong> exposed the fraud. It ended with new laws: no ruler may claim divine right.</td></tr>
+      <tr><td>The Third Age (now)</td><td>Recovery. Institutions that write everything down. A Rift in the far south that everyone is managing and no one has solved.</td></tr>
+    </tbody>
+  </table></div>
+  <p><strong>The Rift.</strong> In the deep south (South Tyriania), reality is damaged: spatial distortion, failing magic, creatures changed in ways that do not follow natural law. It has been monitored for about eighty years. It grows slowly. Everyone says it is stable; most of the people saying so are being careful with the word.</p>
+  <p><strong>Three long-running troubles</strong> your character has heard about and mostly ignores:</p>
+  <ol>
+    <li>The <strong>First Library</strong>, a rediscovered Giant archive, is fought over by the great institutions.</li>
+    <li>The <strong>Hollow Veins</strong>, dead ley lines under the continents, are said to be changing.</li>
+    <li>Old institutional bargains are straining under a century of magical progress.</li>
+  </ol>
+  <p><strong>Tone.</strong> Investigative. Morally complicated. Magic-rich. Not grimdark: bad things happen, but there is hope and warmth. Institutions do bad things for reasons you can follow.</p>
+
+  <h3>2. How magic works</h3>
+  <ul>
+    <li>Everyone carries <strong>Resonitae</strong>, a biological substrate that answers to language and intent. People with strong resonance are <strong>Resonant-Marked.</strong> People with none are <strong>Magic-Mute.</strong> Neither is better. Magic-Mute people often perceive what casters miss, and many are respected seers, craftspeople and bards.</li>
+    <li>You cast by speaking <strong>Vaelan</strong>, the common language, in a precise register. <strong>Every incantation is spoken twice</strong>: the first pass shapes intent, the second releases it. Interrupt the second pass and it <strong>misfires.</strong></li>
+  </ul>
+  <div class="sat-table-wrap"><table class="sat-table">
+    <thead><tr><th>Force</th><th>In a sentence</th></tr></thead>
+    <tbody>
+      <tr><td>Arcaen <span class="note">(Building)</span></td><td>Trained, structured, licensed; the institutions' kind</td></tr>
+      <tr><td>Vitalen <span class="note">(Growing)</span></td><td>Inherited and accumulated over generations; old blood, old families, mountain and ice communities</td></tr>
+      <tr><td>Somalen <span class="note">(Dreaming)</span></td><td>Collective belief and ritual; priests, wind-readers, shrine communities</td></tr>
+      <tr><td>Aelum <span class="note">(Being)</span></td><td>Ancient and rare; very few living people carry it. <em>Not available to new characters</em></td></tr>
+    </tbody>
+  </table></div>
+  <ul>
+    <li><strong>Dialects</strong> of Vaelan: <strong>Eldorian</strong> (the standard, used by institutions), <strong>Verdant</strong> (Valo elves), <strong>Frostholm</strong> (the frozen north), <strong>Emberisle</strong> (forge and volcano communities), <strong>Crystalian</strong> (the ice islands). Mixing dialects in an incantation is allowed and inadvisable.</li>
+    <li><strong>The First Tongue</strong> is older and different: where Vaelan <em>requests</em>, it <em>decrees.</em> Fragments exist. They are <strong>classified</strong>; if you find one, the law says to report it to a licensed institution.</li>
+    <li><strong>Where magic runs thin or thick:</strong> thick near nexus points and big cities; disrupted near the Rift (more misfires); nothing at all in the dead Hollow Veins.</li>
+    <li><strong>What magic can do:</strong> enhance bodies, make barriers, send messages, read resonance, heal slowly, enchant objects. <strong>What it cannot easily do:</strong> raise the dead, convincingly lie to a truth-sensitive listener, or open a Rift (illegal, catastrophic, absolutely prohibited).</li>
+  </ul>
+  <p><strong>Your licence matters.</strong> A caster certified Journeyman or above is a licensed professional. Casting uncertified in public is illegal in some places. Nobody asks for it in this one-shot, but people notice.</p>
+
+  <h3>3. Who runs things</h3>
+  <div class="sat-table-wrap"><table class="sat-table">
+    <thead><tr><th>Faction</th><th>What everyone knows</th><th>What people quietly suspect</th></tr></thead>
+    <tbody>
+      <tr><td>The Celestial College</td><td>The oldest and most cautious institution; gatekeeper of "dangerous knowledge"</td><td>It has things it has not told anyone</td></tr>
+      <tr><td>The Arcane University</td><td>The innovative rival; recruits widely; "creative, accessible, occasionally reckless"</td><td>Its director is building something</td></tr>
+      <tr><td>The Bardic College</td><td>Truth-keepers. A licensed bard's sworn account is primary evidence in any court. Impartial; good at parties</td><td>They keep records of everything</td></tr>
+      <tr><td>The Order of the Eternal Flame</td><td>Temples, shrines and community welfare; its theology says belief shapes the divine</td><td>It is hiding something about the Second Age</td></tr>
+      <tr><td>The Hollow Hand</td><td>Officially does not exist. The black market for magical items and information</td><td>They already know who you are</td></tr>
+      <tr><td>The Rift Watchers</td><td>Small cells that monitor the Rift; heroes on the border, embarrassing in the capitals</td><td>They disagree among themselves about what to do</td></tr>
+    </tbody>
+  </table></div>
+  <p><strong>Money:</strong> Gold Crown (rare; institutions), Silver Mark (SM; everyday), Copper Bit (small change). <span class="sat-mono">1 Crown = 100 Marks = 1,000 Bits.</span> A decent meal and a bed in an average city costs 2 to 3 SM. A good rune-inscribed item starts near 150 SM. Resonance Chips pay for magical services.</p>
+  <p><strong>Law</strong> is regional, but the same few rules appear almost everywhere:</p>
+  <ol>
+    <li><strong>No divine authority:</strong> a ruler's power must be justified by what they do.</li>
+    <li><strong>Bardic witness is primary evidence.</strong> A bard who announces they are witnessing makes everything said afterward legally weighty. People ask bards to leave before delicate talks.</li>
+    <li><strong>Sealed arts are prohibited</strong>, and the institutions enforce it.</li>
+    <li><strong>Open roads:</strong> the Flaneur Charter guarantees merchants freedom of passage and enforces contracts.</li>
+  </ol>
+  <p><strong>Standing</strong> is earned three ways: magical ability, institutional affiliation, economic power. They do not always agree. A Magic-Mute master craftsperson outranks a Resonant-Marked apprentice in practical terms.</p>
+  <p><strong>Customs that carry weight:</strong> a <strong>meal-sealed bargain</strong> (struck over a shared meal before any witness) is binding. Do not name the dead aloud for three days. Do not enter a shrine whose god has faded. Do not speak incantations in anger. The <strong>Day of Veiling</strong> (the Rupture's anniversary) is for lanterns and no spells.</p>
+  <p><strong>Travel:</strong> between big cities, expect 4 to 16 days, depending on route (sea is faster). Roads are better near live ley lines, worse near dead ones.</p>
+
+  <hr>
+  <h3>4. Golgotha: the country that is a business</h3>
+  <p>A mountain continent of <strong>mining guilds</strong> with <strong>no central government.</strong> Whichever guild holds the mineral rights holds the ground. Forge-cities stand at shaft-heads. Law is guild law, plus the Flaneur Charter where a guild has signed it. Its north is ice, its middle lava, its south arable. You are working in the <strong>southwest.</strong></p>
+
+  <h3>5. The Serret Vale</h3>
+  <p>A valley running from a southern coast up into the mountain terraces. It has been quiet for a hundred years, which is why the last few months have been talked about.</p>
+  <div class="sat-table-wrap"><table class="sat-table">
+    <thead><tr><th>Place</th><th>What it is</th></tr></thead>
+    <tbody>
+      <tr><td>Cressen</td><td>A charter port at the vale mouth, about 2,400 people. Fish, tools, a netting quarter. The <strong>charter hall</strong> (two-stamp door) verifies bounty licences.</td></tr>
+      <tr><td>Tarvish</td><td>A way-town around a <strong>toll fort</strong>, where the vale road climbs into the passes. About 900 people. Carters, farriers, a still-house.</td></tr>
+      <tr><td>Meridole</td><td>An upper-terrace shrine town and spring.</td></tr>
+      <tr><td>Krel</td><td>A vein-side hamlet built into a spur mouth.</td></tr>
+    </tbody>
+  </table></div>
+  <p><strong>The tremors.</strong> For some months the ground has been <em>counting</em>: harness-bells ring in still air, harbour glass ripples. Cressen thinks the mountain's troubles are far away. Tarvish's carters call it "the mountain counting."</p>
+
+  <h3>6. The Vale Reclamation Trust</h3>
+  <p>A charity chartered at Cressen in <strong>Year 389</strong>, "restoring what the mountain shook loose." It funds a <strong>remedy trade</strong> (tonics and compounds through licensed apothecaries), <strong>reclamation works</strong> in the upper vale, and <strong>lawful bounties</strong> on persons it says have robbed or obstructed its work. Notices are posted at charter offices and drafted by a notary.</p>
+  <p>It is well regarded, and people have real reasons: the coast road was safe last week for the first time in a year.</p>
+
+  <h3>7. The Survey Dispatch Board</h3>
+  <p>A joint clearing office in Golgotha's charter south, run by agreement of two institutions and answering to neither, which is how it likes it. It <strong>contracts licensed freelancers to look at things and attest.</strong> It stamps everything twice.</p>
+  <p><strong>An attestation</strong> states what you <em>observed</em>, signed. It does not state what you were <em>told.</em> A report with the wrong half in it is rejected.</p>
+  <div class="sat-table-wrap"><table class="sat-table">
+    <thead><tr><th>Form</th><th>What it is</th></tr></thead>
+    <tbody>
+      <tr><td><span class="sat-mono">11-C</span></td><td>Notice of breach</td></tr>
+      <tr><td><span class="sat-mono">11-D</span></td><td>Incapacity</td></tr>
+      <tr><td><span class="sat-mono">11-E</span></td><td>Attestation of standing (your commission)</td></tr>
+      <tr><td><span class="sat-mono">11-F</span></td><td>Undertaking concluded</td></tr>
+    </tbody>
+  </table></div>
+  <p><strong>Your pay:</strong> half on commission, half on filing. <strong>A lapse</strong> is a missed four-day report.</p>
+
+  <h3>8. Who you are likely to meet</h3>
+  <div class="sat-table-wrap"><table class="sat-table">
+    <thead><tr><th>Person</th><th>First impression</th></tr></thead>
+    <tbody>
+      <tr><td>Berrin, charter clerk of Cressen</td><td>Cheerful; keeps the town's heroic history in a ledger</td></tr>
+      <tr><td>Pell Sarratt, notary</td><td>Precise; small handwriting; drafts the Trust's paper</td></tr>
+      <tr><td>Warden Kolm Feddick, Tarvish</td><td>Garrison-loud; his writ ends at the last switchback</td></tr>
+      <tr><td>Saff Odum, apothecary</td><td>Defensive; smells everything</td></tr>
+      <tr><td>Essa Bray, hedge-wife of Meridole</td><td>Short sentences; proverbs; pays in kind</td></tr>
+      <tr><td>A merchant of the remedy line</td><td>Road-worn; pleasant; has a cold-weather palsy</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note">Nothing in this list is a secret. It is only incomplete.</p>
+
+  <h3>9. Words the Board prefers you to know</h3>
+  <div class="sat-table-wrap"><table class="sat-table">
+    <thead><tr><th>Word</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td>Attest</td><td>State what you observed. Not what you were told</td></tr>
+      <tr><td>Retainer</td><td>Half your fee, paid on commission</td></tr>
+      <tr><td>Lapsed</td><td>A commission on which you missed a report</td></tr>
+      <tr><td>Stamped twice</td><td>Received, and then received again</td></tr>
+      <tr><td>Good standing</td><td>A status the Board's paper can confer and its inspectors cannot verify</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note">This guide has been checked against the Board's files and found consistent with them. The Office has not checked the files against the vale.</p>
+</article>
+
+<!-- ================= RULES ================= -->
+<article class="view sat-glass-2 sat-card prose" data-view="rules" hidden>
+  <h2>Rules on one page</h2>
+  <p class="sat-lede">The game is D&amp;D 5e. This page lists only what is different.</p>
+
+  <h3>Scores</h3>
+  <p>Roll a <strong>d20</strong> for each of the six abilities, or assign <span class="sat-mono">16, 15, 13, 12, 11, 10</span> in any order. Then read the modifier:</p>
+  <div class="sat-table-wrap"><table class="sat-table plain">
+    <thead><tr><th class="n">Roll</th><th class="n">Mod</th><th class="n">Roll</th><th class="n">Mod</th></tr></thead>
+    <tbody>
+      <tr><td class="n">20</td><td class="n">+5</td><td class="n">8-9</td><td class="n">-1</td></tr>
+      <tr><td class="n">18-19</td><td class="n">+4</td><td class="n">6-7</td><td class="n">-2</td></tr>
+      <tr><td class="n">16-17</td><td class="n">+3</td><td class="n">4-5</td><td class="n">-3</td></tr>
+      <tr><td class="n">14-15</td><td class="n">+2</td><td class="n">2-3</td><td class="n">-4</td></tr>
+      <tr><td class="n">12-13</td><td class="n">+1</td><td class="n">1</td><td class="n">-5</td></tr>
+      <tr><td class="n">10-11</td><td class="n">+0</td><td class="n"></td><td class="n"></td></tr>
+    </tbody>
+  </table></div>
+  <p>Modifier = (score - 10) / 2, rounded down. Your class sets a minimum for its key scores: if your roll is lower, the DM raises it to the class number. HP, AC and your resource pools are finished by the DM.</p>
+
+  <h3>The three pools</h3>
+  <ul>
+    <li><strong>HP:</strong> as 5e.</li>
+    <li><strong>RP (Resonance Points):</strong> your casting resource. One pool, from Intelligence and class.</li>
+    <li><strong>SP (Stamina Points):</strong> for physical exertion; used by martial classes.</li>
+  </ul>
+
+  <h3>Casting</h3>
+  <p>An incantation has up to five parts, said <strong>twice</strong>:</p>
+  <div class="rule-line">Invocation, Direction, Target, (Modifier), Binding</div>
+  <div class="sat-table-wrap"><table class="sat-table">
+    <thead><tr><th>Tier</th><th class="n">Cost <span class="sat-qual">(RP)</span></th><th>Needs</th></tr></thead>
+    <tbody>
+      <tr><td>Simple</td><td class="n">1</td><td>Apprentice</td></tr>
+      <tr><td>Complex</td><td class="n">3</td><td>Journeyman</td></tr>
+      <tr><td>Ritual</td><td class="n">6+</td><td>Adept <em>(not available here)</em></td></tr>
+    </tbody>
+  </table></div>
+  <ul>
+    <li>The <strong>first</strong> recitation shapes the intent; the <strong>second</strong> releases it. <strong>Hold</strong> between them to amplify. <strong>Interrupted?</strong> It misfires (the DM rolls a d10: +2 near the Rift, -1 at a nexus).</li>
+    <li>You do not need to speak real Vaelan. Describe what you say. <strong>A badly worded incantation does exactly what was said.</strong></li>
+    <li><strong>You invent your own incantations.</strong> Write each as one line: what you say, and what it does.</li>
+  </ul>
+
+  <h3>Checks and DCs</h3>
+  <div class="sat-table-wrap"><table class="sat-table plain">
+    <thead><tr><th class="n">Easy</th><th class="n">Medium</th><th class="n">Hard</th></tr></thead>
+    <tbody><tr><td class="n">10</td><td class="n">15</td><td class="n">20</td></tr></tbody>
+  </table></div>
+  <p><strong>Failing forward:</strong> a miss means progress and a cost, never "nothing happens."</p>
+
+  <h3>Money, level and rest</h3>
+  <p><span class="sat-mono">1 Gold Crown = 100 Silver Marks = 1,000 Copper Bits.</span> You start with 50 Silver Marks. Rune-inscribed goods cost 2 to 5 times the mundane version.</p>
+  <p>You are <strong>Level 3.</strong> Specialisation paths open at Level 5; this one-shot does not reach that. Rest rules are 5e.</p>
+
+  <h3>At the table</h3>
+  <ul>
+    <li><strong>Lines and Veils:</strong> tell the DM anything you do not want in play. An X-card or a thumbs-down pauses the scene, no questions.</li>
+    <li><strong>Players roll their own dice.</strong> The DM shows every enemy roll.</li>
+    <li>You may ask the DM "what would my character know about this?" any time.</li>
+  </ul>
+</article>
+
+<!-- ================= SHEET ================= -->
+<article class="view sat-glass-2 sat-card" data-view="sheet" hidden>
+  <div class="sheet-head">
+    <div class="sat-stack" style="--sat-gap: var(--sat-space-2)">
+      <h2 class="sat-h2">Your character</h2>
+      <p class="sat-muted">Fill this in, then press <strong>Copy sheet for the DM</strong>. Paste it into a <span class="sat-mono">.txt</span> file and send the file to the host, who passes it to the DM unopened. Your draft stays in this browser. Type <span class="qq">??</span> in up to three fields to let the DM decide them.</p>
+    </div>
+    <div class="sat-cluster" aria-live="polite" style="--sat-gap: var(--sat-space-2)">
+      <span class="sat-badge sat-badge--muted" id="m-req">0 of 15 required</span>
+      <span class="sat-badge sat-badge--muted" id="m-qq">?? used: 0 of 3</span>
+    </div>
+  </div>
+
+  <form id="sheet" class="sheet-form sat-stack" autocomplete="off">
+    <fieldset>
+      <legend class="sat-h3">Identity</legend>
+      <div class="sat-grid fields">
+        <div class="sat-field"><label for="f-name">Name <span class="req" aria-label="required">*</span></label><input class="sat-input" type="text" id="f-name" data-label="Name" data-req></div>
+        <div class="sat-field"><label for="f-pronouns">Pronouns <span class="req" aria-label="required">*</span></label><input class="sat-input" type="text" id="f-pronouns" data-label="Pronouns" data-req></div>
+        <div class="sat-field"><label for="f-species">Species <span class="req" aria-label="required">*</span></label>
+          <select class="sat-input" id="f-species" data-label="Species" data-req><option value=""></option><option>Human (Vaelan-adapted)</option><option>Elf</option><option>Dwarf</option><option>Centaur</option><option>Merfolk</option><option>??</option></select></div>
+        <div class="sat-field"><label for="f-class">Class (Level 3) <span class="req" aria-label="required">*</span></label>
+          <select class="sat-input" id="f-class" data-label="Class" data-req><option value=""></option><option>Artificer</option><option>Alchemist</option><option>Mage</option><option>Warlock</option><option>Healer</option><option>Cleric</option><option>Paladin</option><option>Ranger</option><option>Fighter</option><option>Rogue</option><option>Bard</option><option>Blood Hunter</option><option>Monk</option><option>Druid</option><option>Barbarian</option><option>Necromancer</option></select></div>
+        <div class="sat-field full"><label for="f-stranger">One sentence a stranger would say about you <span class="req" aria-label="required">*</span></label><input class="sat-input" type="text" id="f-stranger" data-label="A stranger would say" data-req placeholder="A tall, tired woman with ink on her cuffs."></div>
+        <div class="sat-field"><label for="f-region">Home region <span class="req" aria-label="required">*</span></label>
+          <select class="sat-input" id="f-region" data-label="Home region" data-req><option value=""></option><option>Flaneur</option><option>Victory Isles</option><option>Golgotha</option><option>Kreimhilde</option><option>Levanter</option><option>Aquias</option><option>Tacenda</option><option>Nemalos and Valo</option><option>Frozen Crescents</option><option>The Border Zone</option><option>??</option></select></div>
+        <div class="sat-field"><label for="f-left">The reason you left <span class="req" aria-label="required">*</span></label><input class="sat-input" type="text" id="f-left" data-label="Why I left" data-req></div>
+        <div class="sat-field"><label for="f-sponsor">Licence sponsor <span class="req" aria-label="required">*</span></label><input class="sat-input" type="text" id="f-sponsor" data-label="Licence sponsor" data-req placeholder="(a guild, a college, a captain, a temple, nobody)"><span class="sat-hint">Who vouched for you to the Board.</span></div>
+        <div class="sat-field"><label for="f-cheap">Why the Board hired you cheaply <span class="req" aria-label="required">*</span></label><input class="sat-input" type="text" id="f-cheap" data-label="Why hired cheaply" data-req placeholder="(new, unlucky, unaffiliated, in debt, overlooked)"></div>
+        <div class="sat-field full"><label for="f-desc">Description</label><textarea class="sat-input" id="f-desc" data-label="Description" placeholder="What you look like, how you carry yourself."></textarea></div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend class="sat-h3">Resonance</legend>
+      <div class="sat-grid fields">
+        <div class="sat-field"><label for="f-prof">Vaelan proficiency <span class="req" aria-label="required">*</span></label>
+          <select class="sat-input" id="f-prof" data-label="Vaelan proficiency" data-req><option value=""></option><option>None</option><option>Apprentice</option><option>Journeyman</option></select></div>
+        <div class="sat-field"><label for="f-force">Force <span class="req" aria-label="required">*</span></label>
+          <select class="sat-input" id="f-force" data-label="Force" data-req><option value=""></option><option>Arcaen</option><option>Vitalen</option><option>Somalen</option><option>Magic-Mute</option><option>??</option></select></div>
+        <div class="sat-field"><label for="f-dialect">Dialect</label>
+          <select class="sat-input" id="f-dialect" data-label="Dialect"><option value=""></option><option>Eldorian</option><option>Verdant</option><option>Frostholm</option><option>Emberisle</option><option>Crystalian</option></select></div>
+        <div class="sat-field"><label for="f-incant">Known incantations</label><input class="sat-input" type="text" id="f-incant" data-label="Known incantations" placeholder="(what you say, and what it does)"><span class="sat-hint">Simple costs 1 RP, Complex 3 RP.</span></div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend class="sat-h3">Numbers</legend>
+      <p class="sat-small sat-muted" style="margin-bottom: var(--sat-space-4)">Roll a d20 each, or assign 16, 15, 13, 12, 11, 10. The modifier fills in from the Vaela table.</p>
+      <div class="scores">
+        <div class="score sat-well"><label class="sat-caption" for="f-str">Str</label><input class="sat-input" type="number" id="f-str" min="1" max="20" data-label="STR" inputmode="numeric"><span class="mod" data-mod="f-str"></span></div>
+        <div class="score sat-well"><label class="sat-caption" for="f-dex">Dex</label><input class="sat-input" type="number" id="f-dex" min="1" max="20" data-label="DEX" inputmode="numeric"><span class="mod" data-mod="f-dex"></span></div>
+        <div class="score sat-well"><label class="sat-caption" for="f-con">Con</label><input class="sat-input" type="number" id="f-con" min="1" max="20" data-label="CON" inputmode="numeric"><span class="mod" data-mod="f-con"></span></div>
+        <div class="score sat-well"><label class="sat-caption" for="f-int">Int</label><input class="sat-input" type="number" id="f-int" min="1" max="20" data-label="INT" inputmode="numeric"><span class="mod" data-mod="f-int"></span></div>
+        <div class="score sat-well"><label class="sat-caption" for="f-wis">Wis</label><input class="sat-input" type="number" id="f-wis" min="1" max="20" data-label="WIS" inputmode="numeric"><span class="mod" data-mod="f-wis"></span></div>
+        <div class="score sat-well"><label class="sat-caption" for="f-cha">Cha</label><input class="sat-input" type="number" id="f-cha" min="1" max="20" data-label="CHA" inputmode="numeric"><span class="mod" data-mod="f-cha"></span></div>
+      </div>
+      <ul class="inline-list" style="margin-top: var(--sat-space-4)" aria-label="Filled in by the DM">
+        <li class="sat-badge sat-badge--muted">HP: DM</li><li class="sat-badge sat-badge--muted">AC: DM</li><li class="sat-badge sat-badge--muted">RP and SP: DM</li><li class="sat-badge sat-badge--muted">Speed: DM</li><li class="sat-badge sat-badge--muted">Proficiency +2</li>
+      </ul>
+      <div class="sat-grid fields" style="margin-top: var(--sat-space-5)">
+        <div class="sat-field"><label for="f-skills">Skills (3 or 4)</label><input class="sat-input" type="text" id="f-skills" data-label="Skills"></div>
+        <div class="sat-field"><label for="f-tools">Tools and languages</label><input class="sat-input" type="text" id="f-tools" data-label="Tools and languages"></div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend class="sat-h3">Gear</legend>
+      <p class="sat-small sat-muted" style="margin-bottom: var(--sat-space-4)">You carry 50 Silver Marks.</p>
+      <div class="sat-grid fields">
+        <div class="sat-field"><label for="f-item">Signature item <span class="req" aria-label="required">*</span></label><input class="sat-input" type="text" id="f-item" data-label="Signature item" data-req></div>
+        <div class="sat-field"><label for="f-kit">Kit</label><input class="sat-input" type="text" id="f-kit" data-label="Kit"><span class="sat-hint">The DM confirms it.</span></div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend class="sat-h3">Hooks</legend>
+      <div class="sat-grid fields">
+        <div class="sat-field full"><label for="f-anchor">Anchor <span class="req" aria-label="required">*</span></label><input class="sat-input" type="text" id="f-anchor" data-label="Anchor" data-req><span class="sat-hint">Who or what you will not lose.</span></div>
+        <div class="sat-field full"><label for="f-scar">Scar <span class="req" aria-label="required">*</span></label><input class="sat-input" type="text" id="f-scar" data-label="Scar" data-req><span class="sat-hint">What happened and is not finished.</span></div>
+        <div class="sat-field full"><label for="f-question">Question <span class="req" aria-label="required">*</span></label><input class="sat-input" type="text" id="f-question" data-label="Question" data-req><span class="sat-hint">Make at least one hook about trust in paper: contracts, licences, records, who wrote what.</span></div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend class="sat-h3">Optional</legend>
+      <div class="sat-grid fields">
+        <div class="sat-field"><label for="f-partner">Your partner: how you know them</label><input class="sat-input" type="text" id="f-partner" data-label="Partner" placeholder="(strangers, or one shared fact)"></div>
+        <div class="sat-field"><label for="f-tie">Prior faction tie</label><input class="sat-input" type="text" id="f-tie" data-label="Faction tie" placeholder="(e.g. former affiliate, Bardic College)"></div>
+        <div class="sat-field"><label for="f-hope">One thing you hope your character gets to do</label><input class="sat-input" type="text" id="f-hope" data-label="Hope to do"></div>
+        <div class="sat-field"><label for="f-hate">One thing you would hate to see happen</label><input class="sat-input" type="text" id="f-hate" data-label="Hate to see"></div>
+        <div class="sat-field"><label for="f-lines">Lines</label><input class="sat-input" type="text" id="f-lines" data-label="Lines"><span class="sat-hint">Never in play.</span></div>
+        <div class="sat-field"><label for="f-veils">Veils</label><input class="sat-input" type="text" id="f-veils" data-label="Veils"><span class="sat-hint">Off-screen only.</span></div>
+      </div>
+    </fieldset>
+
+    <div class="actions sat-cluster">
+      <button type="button" class="sat-btn sat-btn--primary" id="copy"><svg><use href="#i-copy"/></svg>Copy sheet for the DM</button>
+      <button type="button" class="sat-btn sat-btn--ghost" id="clear">Clear sheet</button>
+      <span class="status" id="status" role="status"></span>
+    </div>
+    <textarea class="sat-input" id="fallback" readonly hidden aria-label="Your sheet as text"></textarea>
+  </form>
+</article>
+
+<!-- ================= SESSION 0 ================= -->
+<article class="view sat-glass-2 sat-card prose" data-view="session" hidden>
+  <h2>Session 0: what to expect</h2>
+  <p class="sat-lede">Session 0 is where your character walks into the world. It takes about 20 minutes before play, and nothing in it is a test.</p>
+
+  <h3>How this table runs (5 minutes to set up)</h3>
+  <p>We play on a voice call. You talk and roll on the call. Everything the DM writes arrives in this app: the shared turns in <a href="#table">Table</a>, and private letters in your <a href="#inbox">Inbox</a>.</p>
+  <ol>
+    <li><strong>Install the app.</strong> On iPhone, open this page in Safari, tap <strong>Share</strong>, then <strong>Add to Home Screen</strong>. On Android, use the browser menu, then <strong>Install app</strong>.</li>
+    <li><strong>Open your inbox.</strong> Go to <a href="#inbox">Inbox</a>, choose your character and type your inbox code (the host sends it to you). Your finished sheet and the DM's letters are there.</li>
+    <li><strong>Keep the app open during play.</strong> New turns and letters appear within about two minutes of the DM posting them.</li>
+    <li><strong>Reply privately with a file.</strong> Save your reply as a <span class="sat-mono">.md</span> or <span class="sat-mono">.txt</span> file and send it to the host. The host passes it to the DM without opening it.</li>
+    <li><strong>Treat the call as public.</strong> Secret actions, secret answers, and your Lines and Veils can go by file instead.</li>
+  </ol>
+  <p class="note">Inboxes are sealed: each one opens only with its own code. The host plays too, so the host never reads your sheet or your letters.</p>
+
+  <h3>How Session 0 runs</h3>
+  <ol>
+    <li><strong>The DM reads your sheet</strong> and asks at most <strong>three questions</strong> about anything marked <span class="qq">??</span> or unclear. Answer in a line; "I do not know yet" is a valid answer.</li>
+    <li><strong>Each player gets a short introduction</strong>, one or two paragraphs written from your sheet: where your character is and what they are doing in the hours before the job begins. You react to it; you do not need to prepare.</li>
+    <li><strong>The introductions converge.</strong> Your characters arrive at the same place on the same evening.</li>
+    <li><strong>Play begins.</strong> The DM sets the scene and asks what you do.</li>
+  </ol>
+  <p>You do <strong>not</strong> have to share your character's secrets with the other player. If the DM sends you a private letter, you can use it, keep it, or reveal it.</p>
+
+  <h3>Where you start</h3>
+  <p><strong>Cressen</strong>, a coastal charter port in the southwest of Golgotha, <strong>at dusk.</strong> The town is in the middle of a celebration that has nothing to do with you. You hold a commission, a stamped card and 50 Silver Marks. You are expected at the charter hall.</p>
+
+  <h3>The tone</h3>
+  <p>This is a <strong>story-first</strong> game. You play <strong>people</strong>: they have fears, loyalties and bad days.</p>
+  <p><strong>Expect:</strong> mysteries with real answers; factions that are neither purely good nor purely evil; decisions with consequences, including ones you did not intend; a little wonder, a little weight.</p>
+  <p><strong>Do not expect:</strong> a chosen-hero power fantasy; a clean villain at the end of every scene; rules mastery as the path to winning.</p>
+  <p><strong>Failure is part of the story.</strong> A failed roll means something happened that was not what you intended, not that nothing happened. You cannot fail the game; you can only change the shape of the story. <strong>Most sessions have no more than one fight.</strong></p>
+  <h4>How to play it well</h4>
+  <ul>
+    <li>Be <strong>specific about intent.</strong> Not "I attack" but "I try to disarm him so he drops the evidence."</li>
+    <li>Describe what your character <strong>says</strong> when they cast; you do not need real Vaelan.</li>
+    <li>Ask "What would my character know about this?" any time.</li>
+    <li>Dramatic irony is a feature. Your character acts on what <em>they</em> know.</li>
+  </ul>
+
+  <h3>Safety</h3>
+  <p><strong>Lines</strong> are things that do not appear in this game at all. <strong>Veils</strong> are things that may happen off-screen but are not shown. Put yours on your sheet, or send them to the DM by file before play; you do not need to explain.</p>
+  <p>Think about: violence (how detailed), horror (the Rift is unsettling), religious and divine themes, political betrayal and moral grey, and character death.</p>
+  <p><strong>X-card or thumbs-down:</strong> at any time, anyone can pause or cut a scene, no questions asked. On a voice call, say "X" or "pause."</p>
+
+  <h3>How the DM runs the game</h3>
+  <ul>
+    <li><strong>You roll your own dice.</strong> The DM shows every enemy roll.</li>
+    <li>The DM rules quickly: DC 10 easy, 15 medium, 20 hard; when unsure, DC 12, with advantage for a clever idea.</li>
+    <li><strong>Decisions are yours.</strong> The DM presents situations; you choose.</li>
+    <li>If a rule would slow a good scene, the DM may bend it, and tells you after.</li>
+    <li><strong>This is a trial game.</strong> If something is confusing or does not work, say so.</li>
+  </ul>
+
+  <h3>Checklist</h3>
+  <ul class="checklist">
+    <li>Read the World guide, sections 1 to 3</li>
+    <li>Sheet filled in and sent to the DM as a file</li>
+    <li>App installed, and your own inbox opened</li>
+    <li>Lines, Veils and X-card agreed</li>
+    <li>One thing you hope your character gets to do, and one thing you would hate to see happen</li>
+  </ul>
+
+  <hr>
+  <h3 id="commission">Handout 1: your commission</h3>
+  <p class="note">The paper in your pocket when play begins.</p>
+  <div class="handout sat-solid">
+    <span class="sat-caption">Survey Dispatch Board <span class="sat-qual">(Office of Records, charter south)</span></span>
+    <p class="doc-title">Form 11-E: Commission to Attest Standing</p>
+    <p class="note">In duplicate. Both copies stamped, and the stamps are the same stamp.</p>
+    <p><strong>Retained:</strong> the bearers of this form, being licensed freelancers on the Board's roster.</p>
+    <p><strong>Subject:</strong> the <strong>Vale Reclamation Trust</strong>, chartered at Cressen, Year 389, which has applied to the Board for a <strong>Certificate of Good Standing</strong> for its notices.</p>
+    <p><strong>Undertaking:</strong> visit <strong>three sites</strong> in the Serret Vale: (1) the notary and charter hall at <strong>Cressen</strong>; (2) the toll fort at <strong>Tarvish</strong>; (3) any <strong>remedy train</strong> of the Trust on the pass road. At each, <strong>observe</strong> and <strong>attest</strong> the Trust's standing.</p>
+    <p><strong>Terms:</strong> <span class="sat-mono">60 SM</span> per retained party, <span class="sat-mono">20 SM</span> expenses, half on filing. Report at intervals of <strong>four days</strong>. A missed interval is a <em>lapse</em>.</p>
+    <p><strong>Standard instruction:</strong> <em>Attest what you observe. Do not attest what you are told.</em> A report containing the second shall be returned.</p>
+    <p><strong>Filing:</strong> return Form 11-E (attached) to the Board's post-box at the Cressen charter hall. The Board will reply in due course.</p>
+    <p class="sig">By the hand of the under-clerk, Office of Records, who has read the Trust's application twice and finds nothing in it to object to, and would therefore like someone else to confirm that.</p>
+    <hr class="sat-rule">
+    <span class="sat-caption">Attached <span class="sat-qual">(the attestation form)</span></span>
+    <div class="sat-table-wrap"><table class="sat-table">
+      <thead><tr><th>Site</th><th>I observed</th><th>I was told</th></tr></thead>
+      <tbody>
+        <tr><td>Cressen</td><td></td><td></td></tr>
+        <tr><td>Tarvish</td><td></td><td></td></tr>
+        <tr><td>The remedy train</td><td></td><td></td></tr>
+      </tbody>
+    </table></div>
+    <p><strong>Finding (circle one):</strong></p>
+    <ul class="options"><li>In good standing</li><li>In good standing with a note</li><li>Referred for further attestation</li><li>Not filed</li></ul>
+    <p class="sig">Signed: ______________ &nbsp; Signed: ______________ &nbsp; Stamped twice.</p>
+    <div class="stamps" aria-hidden="true">
+      <div class="stamp one"><span>Received<b>S.D.B.</b></span></div>
+      <div class="stamp two"><span>Received<b>S.D.B.</b></span></div>
+    </div>
+  </div>
+  <p class="sat-lede">See you at the charter hall.</p>
+</article>
+
+</main>
+
+<footer class="sat-shell">
+  <p class="sat-source">Player-facing app for A Finding of Good Standing, a one-shot in the world of Vaela. Built by Saturday Solutions. <span id="build-line"></span></p>
+</footer>
+
+<nav class="tabbar sat-glass-2 sat-mobile-only" aria-label="App sections">
+  <a href="#table" data-tab="table"><svg><use href="#i-feed"/></svg><span>Table</span><i class="dot" data-dot="table" hidden></i></a>
+  <a href="#inbox" data-tab="inbox"><svg><use href="#i-inbox"/></svg><span>Inbox</span><i class="dot" data-dot="inbox" hidden></i></a>
+  <a href="#start" data-tab="kit"><svg><use href="#i-book"/></svg><span>Kit</span></a>
+  <a href="#sheet" data-tab="sheet"><svg><use href="#i-sheet"/></svg><span>Sheet</span></a>
+</nav>
+
+<script type="module" src="./src/main.ts"></script>
+</body>
+</html>
