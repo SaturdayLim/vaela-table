@@ -6,15 +6,17 @@ import "./styles.css";
 import { marked } from "marked";
 import { openInbox, WrongCode } from "./lib/crypto.js";
 import { initSheet } from "./sheet";
+import { initDice } from "./dice";
 
 type Post = { id: string; title: string; file: string };
-type InboxMeta = { slug: string; name: string; letters: number; newest: string | null; file: string };
+type InboxMeta = { slug: string; name: string; letters: number; newest: string | null; salt?: string; file: string };
 type Index = { rev: string; built: string; story: Post[]; inboxes: InboxMeta[] };
-type Item = { id: string; kind: "sheet" | "letter"; title: string; body: string };
+type Item = { id: string; kind: "sheet" | "letter" | "rolls"; title: string; body: string };
 
-const VIEWS = ["table", "inbox", "start", "world", "rules", "session", "sheet"];
+const VIEWS = ["table", "inbox", "dice", "start", "world", "rules", "session", "sheet"];
 const KIT = ["start", "world", "rules", "session"];
-const POLL_MS = 60_000;
+const POLL_MS = 20_000;
+const BASE_TITLE = document.title;
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const md = (text: string) => marked.parse(text, { async: false }) as string;
@@ -77,6 +79,7 @@ $("kitnav").addEventListener("sat-change", (e) => { location.hash = (e as Custom
 // ======================= content index + polling =======================
 let index: Index | null = null;
 let checkedAt: Date | null = null;
+let arrivedAt: Date | null = null;
 
 async function fetchFresh(path: string) {
   const res = await fetch(`${path}?t=${Date.now()}`, { cache: "no-store" });
@@ -93,6 +96,7 @@ async function check(manual = false) {
     const prev = index;
     index = next;
     checkedAt = new Date();
+    const newTurn = !!prev && next.story[0]?.id !== prev.story[0]?.id;
     if (changed) {
       await renderFeed();
       renderPick();
@@ -100,7 +104,10 @@ async function check(manual = false) {
       if (!prev && current === "inbox") enterInbox(); // first load: a remembered code can open its inbox now
       $("build-line").textContent = `Content built ${fmtDate(new Date(index.built))}.`;
     }
-    status.textContent = `Checked at ${fmtTime(checkedAt)}`;
+    if (newTurn) arrivedAt = checkedAt;
+    status.textContent = arrivedAt && checkedAt.getTime() - arrivedAt.getTime() < 5 * 60_000
+      ? `New turn arrived at ${fmtTime(arrivedAt)}`
+      : `Checked at ${fmtTime(checkedAt)}`;
     updateDots();
   } catch {
     status.textContent = "Table unable to load. Check internet connection and press Check now.";
@@ -268,6 +275,9 @@ function renderOpen(newCount: number) {
     $("open-sheet-title").textContent = sheet.title;
     $("open-sheet-body").innerHTML = md(sheet.body);
   }
+  const rolls = opened.items.find((i) => i.kind === "rolls");
+  $("open-rolls").hidden = !rolls;
+  if (rolls) $("open-rolls-body").innerHTML = md(rolls.body);
   // Sheet links point at ../sheet.md in the source; inside the app the sheet sits below the letters.
   list.querySelectorAll<HTMLAnchorElement>('a[href$="sheet.md"]').forEach((a) => {
     a.href = "#inbox";
@@ -279,7 +289,7 @@ async function refreshOpenInbox(prev: Index | null) {
   if (!opened || !index) return;
   const meta = index.inboxes.find((m) => m.slug === opened!.meta.slug);
   const before = prev?.inboxes.find((m) => m.slug === opened!.meta.slug);
-  if (!meta || (before && before.newest === meta.newest && before.letters === meta.letters)) return;
+  if (!meta || (before && before.newest === meta.newest && before.letters === meta.letters && before.salt === meta.salt)) return;
   const sealed = await (await fetchFresh(`content/${meta.file}`)).json();
   try {
     const data = await openInbox(sealed, opened.code);
@@ -311,10 +321,14 @@ function updateDots() {
   }) && current !== "inbox";
   document.querySelectorAll<HTMLElement>('[data-dot="table"]').forEach((d) => { d.hidden = !postNew; });
   document.querySelectorAll<HTMLElement>('[data-dot="inbox"]').forEach((d) => { d.hidden = !inboxNew; });
+  // A tab left in the background shows new content in its title.
+  const unseenPost = !!index?.story[0] && store.get(SEEN_POST) !== index.story[0].id;
+  document.title = (postNew || inboxNew || (unseenPost && document.visibilityState === "hidden")) ? `(New) ${BASE_TITLE}` : BASE_TITLE;
 }
 
 // ======================= start =======================
 initSheet();
+initDice();
 const [v, a] = fromHash();
 show(v, a);
 void check();

@@ -61,6 +61,9 @@ for (const slug of slugs) {
   if (existsSync(join(dir, "sheet.md"))) {
     items.push({ id: "sheet", kind: "sheet", ...splitPost(await readFile(join(dir, "sheet.md"), "utf8"), name) });
   }
+  if (existsSync(join(dir, "rolls.md"))) {
+    items.push({ id: "rolls", kind: "rolls", ...splitPost(await readFile(join(dir, "rolls.md"), "utf8"), "Your rolls") });
+  }
   const letterDir = join(dir, "letters");
   const letters = existsSync(letterDir) ? (await readdir(letterDir)).filter((f) => f.endsWith(".md")).sort() : [];
   for (const file of letters) {

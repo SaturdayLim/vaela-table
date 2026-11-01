@@ -30,7 +30,8 @@ const inboxes = [];
 for (const file of await list(join(ROOT, "sealed"), ".json")) {
   const text = await readFile(join(ROOT, "sealed", file), "utf8");
   const sealed = JSON.parse(text);
-  inboxes.push({ slug: sealed.slug, name: sealed.name, letters: sealed.letters, newest: sealed.newest, file: `sealed/${file}` });
+  // salt changes on every reseal, so the app can tell an inbox changed even when no letter was added (a roll log line).
+  inboxes.push({ slug: sealed.slug, name: sealed.name, letters: sealed.letters, newest: sealed.newest, salt: sealed.salt, file: `sealed/${file}` });
   await copyFile(join(ROOT, "sealed", file), join(OUT, "sealed", file));
   hash.update(file).update(text);
 }

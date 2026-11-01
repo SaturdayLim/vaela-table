@@ -25,7 +25,7 @@ const needles = [];
 for (const file of (await walk(PRIVATE)).filter((f) => f.endsWith(".md"))) {
   for (const raw of (await readFile(file, "utf8")).split(/\r?\n/)) {
     const line = raw.replace(/[*_`#>|]/g, "").replace(/\s+/g, " ").trim();
-    if (line.length >= 24) needles.push({ file, line });
+    if (line.length >= 24) needles.push({ file, line, n: needles.filter((x) => x.file === file).length + 1 });
   }
 }
 const codes = existsSync(join(PRIVATE, "codes.json")) ? Object.values(JSON.parse(await readFile(join(PRIVATE, "codes.json"), "utf8"))) : [];
@@ -39,7 +39,8 @@ for (const file of [...new Set([...published, ...built])]) {
   if (!existsSync(file) || (await stat(file)).size > 5_000_000) continue;
   if (/\.(png|woff2|ico|jpg)$/i.test(file)) continue;
   const text = (await readFile(file, "utf8")).replace(/[*_`#>|]/g, "").replace(/\s+/g, " ");
-  for (const n of needles) if (text.includes(n.line)) hits.push(`${file}: "${n.line.slice(0, 40)}..."`);
+  // Report where a private line leaked, never the line itself: the host may read this output.
+  for (const n of needles) if (text.includes(n.line)) hits.push(`${file}: private line ${n.n} of ${n.file.slice(PRIVATE.length + 1)}`);
   for (const c of codes) if (text.includes(c)) hits.push(`${file}: contains an inbox code`);
 }
 
