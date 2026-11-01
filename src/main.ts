@@ -126,6 +126,11 @@ function stripH1(text: string) {
   return text.replace(/\r\n/g, "\n").replace(/^# .*\n?/m, "").trim();
 }
 
+/** Render a turn: markdown, with the `## Rolls` block that `table.py send` appends styled as a compact list. */
+function renderTurn(text: string) {
+  return md(stripH1(text)).replace(/<h2>Rolls<\/h2>\s*<ul>/, '<h2 class="rolls-head">Rolls</h2><ul class="rolls">');
+}
+
 async function renderFeed() {
   if (!index) return;
   const latest = $("feed-latest");
@@ -136,7 +141,7 @@ async function renderFeed() {
   }
   const [first, ...rest] = index.story;
   const text = await (await fetchFresh(`content/${first.file}`)).text();
-  latest.innerHTML = `<span class="sat-caption post-meta">Latest turn</span><h2>${escapeHtml(first.title)}</h2>${md(stripH1(text))}`;
+  latest.innerHTML = `<span class="sat-caption post-meta">Latest turn</span><h2>${escapeHtml(first.title)}</h2>${renderTurn(text)}`;
 
   const earlier = $("feed-earlier");
   earlier.innerHTML = "";
@@ -148,7 +153,7 @@ async function renderFeed() {
       if (!d.open || d.dataset.loaded) return;
       d.dataset.loaded = "1";
       const body = d.querySelector(".prose")!;
-      try { body.innerHTML = md(stripH1(await (await fetchFresh(`content/${post.file}`)).text())); }
+      try { body.innerHTML = renderTurn(await (await fetchFresh(`content/${post.file}`)).text()); }
       catch { body.innerHTML = `<p class="sat-muted">Turn unable to load. Close and open it again.</p>`; delete d.dataset.loaded; }
     });
     earlier.appendChild(d);
