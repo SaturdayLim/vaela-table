@@ -71,6 +71,23 @@
   <article class="sat-glass-2 sat-card prose" id="feed-latest" aria-live="polite">
     <p class="sat-muted">Loading the latest turn.</p>
   </article>
+  <section class="sat-glass-2 sat-card sat-stack" id="move" aria-labelledby="move-title" hidden>
+    <div class="sat-split">
+      <h2 class="sat-h3" id="move-title">Your move</h2>
+      <ul class="lights" id="move-lights" aria-label="Who has sent an action this turn"></ul>
+    </div>
+    <p class="sat-small sat-muted" id="move-need" hidden>Open your inbox on this device once, then you can send actions here. <a href="#inbox">Go to Inbox</a></p>
+    <form class="sat-stack" id="move-form" autocomplete="off" hidden>
+      <div class="sat-field full">
+        <label for="move-text">What does <span id="move-name"></span> do? Only the DM reads this.</label>
+        <textarea class="sat-input" id="move-text" rows="4" maxlength="1500"></textarea>
+      </div>
+      <div class="sat-cluster">
+        <button class="sat-btn sat-btn--primary" type="submit" id="move-send">Send to the DM</button>
+        <span class="sat-small sat-muted" id="move-status" role="status"></span>
+      </div>
+    </form>
+  </section>
   <section class="sat-stack" id="feed-earlier-wrap" hidden>
     <h2 class="sat-h3">Earlier turns</h2>
     <div class="sat-stack" id="feed-earlier" style="--sat-gap: var(--sat-space-3)"></div>

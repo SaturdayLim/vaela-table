@@ -36,6 +36,11 @@ for (const file of await list(join(ROOT, "sealed"), ".json")) {
   hash.update(file).update(text);
 }
 
-const index = { rev: hash.digest("hex").slice(0, 16), built: new Date().toISOString(), story, inboxes };
+// relay.json names the free ntfy.sh topic that carries players' actions to the DM (plans/table-live.md).
+const relayFile = join(ROOT, "relay.json");
+const relay = existsSync(relayFile) ? JSON.parse(await readFile(relayFile, "utf8")) : null;
+if (relay) hash.update(JSON.stringify(relay));
+
+const index = { rev: hash.digest("hex").slice(0, 16), built: new Date().toISOString(), story, inboxes, relay };
 await writeFile(join(OUT, "index.json"), JSON.stringify(index, null, 2) + "\n");
 console.log(`content: ${story.length} post(s), ${inboxes.length} inbox(es), rev ${index.rev}`);

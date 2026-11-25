@@ -10,7 +10,10 @@ import { initDice } from "./dice";
 
 type Post = { id: string; title: string; file: string };
 type InboxMeta = { slug: string; name: string; letters: number; newest: string | null; salt?: string; file: string };
-type Index = { rev: string; built: string; story: Post[]; inboxes: InboxMeta[] };
+type Relay = { server: string; topic: string };
+type Index = { rev: string; built: string; story: Post[]; inboxes: InboxMeta[]; relay?: Relay | null };
+/** One player's action for one turn, carried by the relay. The newest one per player wins. */
+type Action = { v: 1; kind: "action"; turn: number; who: string; text: string; at: number };
 type Item = { id: string; kind: "sheet" | "letter" | "rolls"; title: string; body: string };
 
 const VIEWS = ["table", "inbox", "dice", "start", "world", "rules", "session", "sheet"];
@@ -160,7 +163,118 @@ async function renderFeed() {
   }
   $("feed-earlier-wrap").hidden = rest.length === 0;
   if (current === "table") markPostSeen();
+  void pollActions();
 }
+
+// ======================= your move (actions to the DM) =======================
+// Actions go to a free ntfy.sh topic (relay.json). The page shows other players only as a light, never their text.
+const ACTION_POLL_MS = 5_000;
+let actions = new Map<string, Action>();
+let draftTurn = 0;
+
+function currentTurn() {
+  const id = index?.story[0]?.id;
+  return id ? parseInt(id.slice(0, 4), 10) || 0 : 0;
+}
+
+/** The player acting on this device: the open inbox, else the one inbox whose code this device remembers. */
+function me(): InboxMeta | null {
+  if (opened) return opened.meta;
+  const remembered = index?.inboxes.filter((m) => store.get(codeKey(m.slug))) ?? [];
+  return remembered.length === 1 ? remembered[0] : null;
+}
+
+function relayUrl() {
+  const r = index?.relay;
+  return r ? `${r.server}/${encodeURIComponent(r.topic)}` : null;
+}
+
+async function pollActions() {
+  const url = relayUrl();
+  const turn = currentTurn();
+  if (!url || !turn) return renderMove();
+  try {
+    const res = await fetch(`${url}/json?poll=1&since=all`, { cache: "no-store" });
+    if (!res.ok) throw new Error(String(res.status));
+    const next = new Map<string, Action>();
+    for (const line of (await res.text()).split("\n")) {
+      if (!line.trim()) continue;
+      try {
+        const msg = JSON.parse(line);
+        if (msg.event !== "message") continue;
+        const a = JSON.parse(msg.message) as Action;
+        // ntfy returns oldest first, so a later action from the same player replaces the earlier one.
+        if (a?.kind === "action" && a.turn === turn && typeof a.who === "string") next.set(a.who, a);
+      } catch { /* not an action */ }
+    }
+    actions = next;
+  } catch { /* relay unreachable: keep the last lights */ }
+  renderMove();
+}
+
+function renderMove() {
+  const turn = currentTurn();
+  const box = $("move");
+  box.hidden = !index?.relay || !turn;
+  if (box.hidden || !index) return;
+
+  const lights = $("move-lights");
+  lights.innerHTML = "";
+  for (const m of index.inboxes) {
+    const on = actions.has(m.slug);
+    const li = document.createElement("li");
+    li.className = "light";
+    li.dataset.on = String(on);
+    li.innerHTML = `<span class="light-dot" aria-hidden="true"></span>`;
+    li.append(`${m.name.split(" ")[0]} ${on ? "sent" : "waiting"}`);
+    lights.appendChild(li);
+  }
+
+  const who = me();
+  $("move-need").hidden = !!who;
+  $("move-form").hidden = !who;
+  if (!who) return;
+  $("move-name").textContent = who.name.split(" ")[0];
+  const text = $<HTMLTextAreaElement>("move-text");
+  if (draftTurn !== turn) { text.value = ""; draftTurn = turn; } // a new turn starts with an empty box
+  const mine = actions.get(who.slug);
+  if (mine && !$("move-status").dataset.busy) {
+    $("move-status").textContent = `Sent at ${fmtTime(new Date(mine.at))}. Send again to replace it.`;
+  } else if (!mine && !$("move-status").dataset.busy) {
+    $("move-status").textContent = "";
+  }
+}
+
+$("move-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const who = me();
+  const url = relayUrl();
+  const text = $<HTMLTextAreaElement>("move-text").value.trim();
+  const status = $("move-status");
+  if (!who || !url) return;
+  if (!text) { status.textContent = "Write what your character does first."; return; }
+  const send = $<HTMLButtonElement>("move-send");
+  send.setAttribute("aria-disabled", "true");
+  status.dataset.busy = "1";
+  status.textContent = "Sending";
+  const action: Action = { v: 1, kind: "action", turn: currentTurn(), who: who.slug, text, at: Date.now() };
+  try {
+    const res = await fetch(url, { method: "POST", body: JSON.stringify(action) });
+    if (!res.ok) throw new Error(String(res.status));
+    actions.set(who.slug, action);
+    delete status.dataset.busy;
+    renderMove();
+  } catch {
+    delete status.dataset.busy;
+    status.textContent = "Not sent. Check internet connection and press Send again.";
+  } finally {
+    send.removeAttribute("aria-disabled");
+  }
+});
+
+window.setInterval(() => {
+  if (document.visibilityState === "visible" && current === "table") void pollActions();
+}, ACTION_POLL_MS);
 
 function markPostSeen() {
   if (index?.story[0]) store.set(SEEN_POST, index.story[0].id);
@@ -243,6 +357,7 @@ async function unlock(meta: InboxMeta, code: string, remember: boolean, silent: 
     picking = null;
     showInboxPanel("open");
     updateDots();
+    renderMove();
   } catch (e) {
     if (silent) { store.del(codeKey(meta.slug)); showInboxPanel("pick"); return; }
     err.textContent = e instanceof WrongCode
@@ -314,6 +429,7 @@ function lockInbox() {
   renderPick();
   showInboxPanel("pick");
   updateDots();
+  renderMove();
 }
 $("lock").addEventListener("click", lockInbox);
 

@@ -90,3 +90,13 @@ details.letter[open] > summary { margin-bottom: var(--sat-space-4); padding-bott
   .tabbar a[aria-current="page"] { color: var(--sat-accent-text); background: var(--sat-accent-soft); }
   .tabbar .dot { position: absolute; top: 8px; right: calc(50% - 18px); margin: 0; }
 }
+
+/* ---- your move: who has sent an action this turn (plans/table-live.md) ---- */
+:root { --light-on: #2E9E5B; }
+@media (prefers-color-scheme: dark) { :root { --light-on: #5BD08A; } }
+.lights { display: flex; flex-wrap: wrap; gap: var(--sat-space-3); list-style: none; margin: 0; padding: 0; }
+.light { display: inline-flex; align-items: center; gap: 6px; font-size: var(--sat-fs-small); color: var(--sat-muted); }
+.light-dot { width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid currentColor; opacity: 0.6; }
+.light[data-on="true"] { color: inherit; }
+.light[data-on="true"] .light-dot { background: var(--light-on); border-color: var(--light-on); opacity: 1; }
+#move-text { min-height: 6rem; resize: vertical; }
