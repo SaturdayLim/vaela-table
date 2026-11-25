@@ -74,21 +74,39 @@
   <section class="sat-glass-2 sat-card sat-stack" id="move" aria-labelledby="move-title" hidden>
     <div class="sat-split">
       <h2 class="sat-h3" id="move-title">Your move</h2>
-      <ul class="lights" id="move-lights" aria-label="Who has sent an action this turn"></ul>
+      <ul class="lights" id="move-lights" aria-label="Who has answered this turn"></ul>
     </div>
+    <ul class="answers" id="move-answers" aria-label="Shared answers this turn" hidden></ul>
     <p class="sat-small sat-muted" id="move-need" hidden>Open your inbox on this device once, then you can send actions here. <a href="#inbox">Go to Inbox</a></p>
     <form class="sat-stack" id="move-form" autocomplete="off" hidden>
       <div class="sat-stack" id="move-checks" hidden></div>
       <div class="sat-field full">
-        <label for="move-text">What does <span id="move-name"></span> do? Only the DM reads this.</label>
+        <label for="move-text">What does <span id="move-name"></span> do? Both players see this. The first answer moves the story.</label>
         <textarea class="sat-input" id="move-text" rows="4" maxlength="1500"></textarea>
       </div>
       <div class="sat-cluster">
-        <button class="sat-btn sat-btn--primary" type="submit" id="move-send">Send to the DM</button>
+        <button class="sat-btn sat-btn--primary" type="submit" id="move-send">Send answer</button>
         <span class="sat-small sat-muted" id="move-status" role="status"></span>
       </div>
     </form>
   </section>
+  <details class="sat-glass-2 sat-card letter" id="aside" hidden>
+    <summary><span class="sat-caption">Private</span><span class="letter-title">Aside with the DM</span> <span class="sat-badge" id="aside-new" hidden></span></summary>
+    <div class="sat-stack">
+      <p class="sat-small sat-muted">Only you and the DM see this. Nothing here is told to <span id="aside-who"></span>; they learn of it only if it shows up in the world and their character notices.</p>
+      <ul class="thread" id="aside-thread" aria-live="polite"></ul>
+      <form class="sat-stack" id="aside-form" autocomplete="off">
+        <div class="sat-field full">
+          <label for="aside-text">Ask, or do something in secret</label>
+          <textarea class="sat-input" id="aside-text" rows="3" maxlength="1500"></textarea>
+        </div>
+        <div class="sat-cluster">
+          <button class="sat-btn" type="submit" id="aside-send">Send privately</button>
+          <span class="sat-small sat-muted" id="aside-status" role="status"></span>
+        </div>
+      </form>
+    </div>
+  </details>
   <section class="sat-stack" id="feed-earlier-wrap" hidden>
     <h2 class="sat-h3">Earlier turns</h2>
     <div class="sat-stack" id="feed-earlier" style="--sat-gap: var(--sat-space-3)"></div>
@@ -132,6 +150,10 @@
       <button type="button" class="sat-btn" id="lock">Lock inbox</button>
     </div>
     <div class="sat-stack" id="open-letters" style="--sat-gap: var(--sat-space-3)"></div>
+    <details class="sat-glass-2 sat-card letter" id="open-asides" hidden>
+      <summary><span class="sat-caption">Private</span><span class="letter-title">Your asides with the DM</span></summary>
+      <div class="prose" id="open-asides-body"></div>
+    </details>
     <details class="sat-glass-2 sat-card letter" id="open-pack" hidden>
       <summary><span class="sat-caption">Your pack</span><span class="letter-title">What you carry</span></summary>
       <div class="prose" id="open-pack-body"></div>

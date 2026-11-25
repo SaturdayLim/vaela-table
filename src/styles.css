@@ -105,3 +105,8 @@ details.letter[open] > summary { margin-bottom: var(--sat-space-4); padding-bott
 .face:hover { background: var(--sat-accent-soft); }
 .face[aria-checked="true"] { background: var(--sat-accent-fill); border-color: var(--sat-accent-fill); color: var(--sat-on-accent); font-weight: 600; }
 @media (max-width: 420px) { .faces { grid-template-columns: repeat(5, minmax(0, 1fr)); } .face { min-height: 44px; } }
+
+/* Shared answers (both players see them) and the private aside thread */
+.answers, .thread { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--sat-space-2); }
+.answers li, .thread li { overflow-wrap: anywhere; }
+.thread li[data-from="dm"] strong { color: var(--sat-accent, currentColor); }

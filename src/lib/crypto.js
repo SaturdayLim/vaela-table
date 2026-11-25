@@ -65,6 +65,28 @@ export async function sealInbox({ slug, name, code, items, iterations = ITERATIO
   };
 }
 
+// ---- asides: one short message sealed with the player's code (tools/table.py opens and seals the same way) ----
+export const NOTE_ITERATIONS = 100000; // lower than the inbox: a phone seals every aside message
+const noteKeys = new Map();
+let deviceSalt = null;
+
+function noteKey(code, salt, iterations) {
+  const k = `${normaliseCode(code)}|${salt}|${iterations}`;
+  if (!noteKeys.has(k)) noteKeys.set(k, deriveKey(code, unb64(salt), iterations));
+  return noteKeys.get(k);
+}
+
+/** Seal one aside message: { salt, iter, iv, ct }. One salt per page load, so the key is derived once. */
+export async function sealNote(code, text, iterations = NOTE_ITERATIONS) {
+  deviceSalt ??= b64(crypto.getRandomValues(new Uint8Array(16)));
+  return { salt: deviceSalt, iter: iterations, ...(await seal(await noteKey(code, deviceSalt, iterations), text)) };
+}
+
+/** Open one aside message. Throws when the code does not match. */
+export async function openNote(code, box) {
+  return open(await noteKey(code, box.salt, box.iter ?? NOTE_ITERATIONS), box);
+}
+
 export class WrongCode extends Error {
   constructor() { super("Code does not match this inbox."); this.name = "WrongCode"; }
 }

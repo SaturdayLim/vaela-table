@@ -4,7 +4,7 @@ import "./saturday/js/saturday.js";
 import "./kit.css";
 import "./styles.css";
 import { marked } from "marked";
-import { openInbox, WrongCode } from "./lib/crypto.js";
+import { openInbox, openNote, sealNote, WrongCode } from "./lib/crypto.js";
 import { initSheet } from "./sheet";
 import { initDice } from "./dice";
 
@@ -16,7 +16,9 @@ type Index = { rev: string; built: string; story: Post[]; inboxes: InboxMeta[]; 
 type Action = { v: 1; kind: "action"; turn: number; who: string; text: string; at: number; checks?: Record<string, number> };
 /** A check the DM called in the latest post (`table.py check`). No DC or modifier ever reaches the app. */
 type Check = { id: string; who: string; label: string; mode: string };
-type Item = { id: string; kind: "sheet" | "letter" | "rolls" | "pack"; title: string; body: string };
+type Item = { id: string; kind: "sheet" | "letter" | "rolls" | "pack" | "asides"; title: string; body: string };
+/** The DM's new turn on the relay (`table.py send`). `text` is missing when the post is over 4 KB. */
+type LivePost = { kind: "post"; turn: number; id: string; title: string; text?: string };
 
 const VIEWS = ["table", "inbox", "dice", "start", "world", "rules", "session", "sheet"];
 const KIT = ["start", "world", "rules", "session"];
@@ -98,6 +100,7 @@ async function check(manual = false) {
   try {
     const next: Index = await (await fetchFresh("content/index.json")).json();
     if (TEST_MODE) next.story = [{ id: TEST_ID, title: "Table test", file: "" }, ...next.story];
+    applyLive(next);
     const changed = !index || next.rev !== index.rev;
     const prev = index;
     index = next;
@@ -159,7 +162,9 @@ async function renderFeed() {
     return;
   }
   const [first, ...rest] = index.story;
-  const text = first.id === TEST_ID ? testTurn() : await (await fetchFresh(`content/${first.file}`)).text();
+  const text = first.id === TEST_ID ? testTurn()
+    : !first.file ? (livePost?.text ?? `# ${first.title}\n\nThe full turn arrives here within 2 minutes.`)
+    : await (await fetchFresh(`content/${first.file}`)).text();
   latestChecks = parseChecks(text);
   latest.innerHTML = `<span class="sat-caption post-meta">Latest turn</span><h2>${escapeHtml(first.title)}</h2>${renderTurn(text)}`;
 
@@ -183,14 +188,21 @@ async function renderFeed() {
   void pollActions();
 }
 
-// ======================= your move (actions to the DM) =======================
-// Actions go to a free ntfy.sh topic (relay.json). The page shows other players only as a light, never their text.
+// ======================= relay: shared answers, asides, live posts =======================
+// One free ntfy.sh topic (relay.json) carries three kinds of message (plans/table-live.md):
+//   action  a shared answer. Both players see it; the first one moves the story, a second one is read too.
+//   aside   a private thread with the DM, sealed with this player's inbox code. Other players' asides are never opened.
+//   post    the DM's new turn, so it shows here within 5 seconds instead of after the Pages deploy.
 const ACTION_POLL_MS = 5_000;
 let actions = new Map<string, Action>();
+let asides: { id: string; from: "player" | "dm"; at: number; text: string }[] = [];
+const asideText = new Map<string, string>(); // relay message id -> opened text (opened once per page load)
+let livePost: LivePost | null = null;
 let draftTurn = 0;
 let latestChecks: Check[] = [];
 let faces = new Map<string, number>(); // check id -> the d20 face this player tapped
 let checksKey = "";
+const asideSeenKey = (slug: string) => `vaela-table-aside-seen:${slug}`;
 
 /** `table.py send` writes the called checks as a hidden line: <!-- checks: [...] --> */
 function parseChecks(text: string): Check[] {
@@ -239,10 +251,8 @@ function renderChecks(slug: string, turn: number) {
   }
 }
 
-function currentTurn() {
-  const id = index?.story[0]?.id;
-  return id ? parseInt(id.slice(0, 4), 10) || 0 : 0;
-}
+const turnOf = (id?: string) => (id ? parseInt(id.slice(0, 4), 10) || 0 : 0);
+function currentTurn() { return turnOf(index?.story[0]?.id); }
 
 /** The player acting on this device: the open inbox, else the one inbox whose code this device remembers. */
 function me(): InboxMeta | null {
@@ -250,33 +260,62 @@ function me(): InboxMeta | null {
   const remembered = index?.inboxes.filter((m) => store.get(codeKey(m.slug))) ?? [];
   return remembered.length === 1 ? remembered[0] : null;
 }
+function myCode(slug: string) { return opened?.meta.slug === slug ? opened.code : store.get(codeKey(slug)); }
 
 function relayUrl() {
   const r = index?.relay;
   return r ? `${r.server}/${encodeURIComponent(r.topic)}` : null;
 }
 
+/** A turn the DM just sent, shown before the Pages deploy catches up. Called on every index load. */
+function applyLive(next: Index) {
+  if (livePost && livePost.turn > turnOf(next.story[0]?.id) && !TEST_MODE) {
+    next.story = [{ id: livePost.id, title: livePost.title, file: "" }, ...next.story];
+  }
+}
+
 async function pollActions() {
   const url = relayUrl();
-  const turn = currentTurn();
-  if (!url || !turn) return renderMove();
+  if (!url) return renderMove();
+  const who = me();
   try {
     const res = await fetch(`${url}/json?poll=1&since=all`, { cache: "no-store" });
     if (!res.ok) throw new Error(String(res.status));
+    const turn = currentTurn();
     const next = new Map<string, Action>();
+    const mine: typeof asides = [];
+    let live: LivePost | null = null;
     for (const line of (await res.text()).split("\n")) {
       if (!line.trim()) continue;
       try {
         const msg = JSON.parse(line);
         if (msg.event !== "message") continue;
-        const a = JSON.parse(msg.message) as Action;
-        // ntfy returns oldest first, so a later action from the same player replaces the earlier one.
-        if (a?.kind === "action" && a.turn === turn && typeof a.who === "string") next.set(a.who, a);
-      } catch { /* not an action */ }
+        const a = JSON.parse(msg.message);
+        // ntfy returns oldest first, so a later answer from the same player replaces the earlier one.
+        if (a?.kind === "action" && a.turn === turn && typeof a.who === "string") next.set(a.who, a as Action);
+        else if (a?.kind === "post" && typeof a.turn === "number" && typeof a.id === "string" && (!live || a.turn >= live.turn)) live = a as LivePost;
+        else if (a?.kind === "aside" && who && a.who === who.slug) {
+          const code = myCode(who.slug);
+          if (!asideText.has(msg.id) && code) {
+            try { asideText.set(msg.id, await openNote(code, a)); } catch { asideText.set(msg.id, ""); }
+          }
+          const text = asideText.get(msg.id);
+          if (text) mine.push({ id: msg.id, from: a.from === "dm" ? "dm" : "player", at: a.at, text });
+        }
+      } catch { /* not ours */ }
     }
     actions = next;
-  } catch { /* relay unreachable: keep the last lights */ }
+    asides = mine;
+    if (live && index && live.turn > currentTurn() && !TEST_MODE) {
+      livePost = live;
+      applyLive(index);
+      arrivedAt = new Date();
+      await renderFeed();
+      return; // renderFeed polls again for the new turn
+    }
+  } catch { /* relay unreachable: keep the last state */ }
   renderMove();
+  renderAside();
 }
 
 function renderMove() {
@@ -293,8 +332,22 @@ function renderMove() {
     li.className = "light";
     li.dataset.on = String(on);
     li.innerHTML = `<span class="light-dot" aria-hidden="true"></span>`;
-    li.append(`${m.name.split(" ")[0]} ${on ? "sent" : "waiting"}`);
+    li.append(`${m.name.split(" ")[0]} ${on ? "answered" : "waiting"}`);
     lights.appendChild(li);
+  }
+
+  // Shared answers, first first. Both players see them; the first one moves the story.
+  const sent = [...actions.values()].sort((a, b) => a.at - b.at);
+  const list = $("move-answers");
+  list.hidden = sent.length === 0;
+  list.innerHTML = "";
+  for (const a of sent) {
+    const li = document.createElement("li");
+    const name = index.inboxes.find((m) => m.slug === a.who)?.name.split(" ")[0] ?? a.who;
+    li.innerHTML = `<strong></strong> <span></span>`;
+    li.querySelector("strong")!.textContent = `${name}:`;
+    li.querySelector("span")!.textContent = a.text || "(rolled the check)";
+    list.appendChild(li);
   }
 
   const who = me();
@@ -313,8 +366,13 @@ function renderMove() {
   }
   renderChecks(who.slug, turn);
   // A hint like "tap your number first" stays until the player acts; only a confirmed send overwrites it.
-  if (mine && !$("move-status").dataset.busy) {
+  if ($("move-status").dataset.busy) return;
+  const first = sent[0];
+  if (mine) {
     $("move-status").textContent = `Sent at ${fmtTime(new Date(mine.at))}. Send again to replace it.`;
+  } else if (first) {
+    const name = index.inboxes.find((m) => m.slug === first.who)?.name.split(" ")[0] ?? first.who;
+    $("move-status").textContent = `${name} answered first. Add yours before the DM replies and the DM reads both.`;
   }
 }
 
@@ -344,6 +402,60 @@ $("move-form").addEventListener("submit", async (e) => {
     renderMove();
   } catch {
     delete status.dataset.busy;
+    status.textContent = "Not sent. Check internet connection and press Send again.";
+  } finally {
+    send.removeAttribute("aria-disabled");
+  }
+});
+
+// ---- aside: a private thread with the DM ----
+function renderAside() {
+  const who = me();
+  const box = $<HTMLDetailsElement>("aside");
+  box.hidden = !index?.relay || !who || !myCode(who.slug);
+  if (box.hidden || !who) return;
+  const others = index!.inboxes.filter((m) => m.slug !== who.slug).map((m) => m.name.split(" ")[0]);
+  $("aside-who").textContent = others.length ? others.join(" and ") : "the other players";
+  const thread = $("aside-thread");
+  thread.innerHTML = asides.length ? "" : `<li class="sat-muted">No asides yet this session. Earlier ones are in your inbox.</li>`;
+  for (const m of asides) {
+    const li = document.createElement("li");
+    li.dataset.from = m.from;
+    li.innerHTML = `<strong></strong> <span></span>`;
+    li.querySelector("strong")!.textContent = m.from === "dm" ? "DM:" : "You:";
+    li.querySelector("span")!.textContent = m.text;
+    thread.appendChild(li);
+  }
+  const seen = Number(store.get(asideSeenKey(who.slug)) ?? 0);
+  const fresh = asides.filter((m) => m.from === "dm" && m.at > seen).length;
+  if (box.open && fresh) store.set(asideSeenKey(who.slug), String(Date.now()));
+  const badge = $("aside-new");
+  badge.hidden = box.open || fresh === 0;
+  badge.textContent = `${fresh} new`;
+}
+$("aside").addEventListener("toggle", renderAside);
+
+$("aside-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const who = me();
+  const url = relayUrl();
+  const code = who && myCode(who.slug);
+  const box = $<HTMLTextAreaElement>("aside-text");
+  const status = $("aside-status");
+  const text = box.value.trim();
+  if (!who || !url || !code) return;
+  if (!text) { status.textContent = "Write your aside first."; return; }
+  const send = $<HTMLButtonElement>("aside-send");
+  send.setAttribute("aria-disabled", "true");
+  status.textContent = "Sealing";
+  try {
+    const sealed = await sealNote(code, text);
+    const res = await fetch(url, { method: "POST", body: JSON.stringify({ v: 1, kind: "aside", who: who.slug, from: "player", at: Date.now(), ...sealed }) });
+    if (!res.ok) throw new Error(String(res.status));
+    box.value = "";
+    status.textContent = "Sent privately. The DM answers here.";
+    void pollActions();
+  } catch {
     status.textContent = "Not sent. Check internet connection and press Send again.";
   } finally {
     send.removeAttribute("aria-disabled");
@@ -436,6 +548,7 @@ async function unlock(meta: InboxMeta, code: string, remember: boolean, silent: 
     showInboxPanel("open");
     updateDots();
     renderMove();
+    void pollActions();
   } catch (e) {
     if (silent) { store.del(codeKey(meta.slug)); showInboxPanel("pick"); return; }
     err.textContent = e instanceof WrongCode
@@ -476,6 +589,9 @@ function renderOpen(newCount: number) {
   const pack = opened.items.find((i) => i.kind === "pack");
   $("open-pack").hidden = !pack;
   if (pack) $("open-pack-body").innerHTML = md(pack.body);
+  const asideLog = opened.items.find((i) => i.kind === "asides");
+  $("open-asides").hidden = !asideLog;
+  if (asideLog) $("open-asides-body").innerHTML = md(asideLog.body);
   const rolls = opened.items.find((i) => i.kind === "rolls");
   $("open-rolls").hidden = !rolls;
   if (rolls) $("open-rolls-body").innerHTML = md(rolls.body);
@@ -511,6 +627,7 @@ function lockInbox() {
   showInboxPanel("pick");
   updateDots();
   renderMove();
+  renderAside();
 }
 $("lock").addEventListener("click", lockInbox);
 
