@@ -16,7 +16,7 @@ type Index = { rev: string; built: string; story: Post[]; inboxes: InboxMeta[]; 
 type Action = { v: 1; kind: "action"; turn: number; who: string; text: string; at: number; checks?: Record<string, number> };
 /** A check the DM called in the latest post (`table.py check`). No DC or modifier ever reaches the app. */
 type Check = { id: string; who: string; label: string; mode: string };
-type Item = { id: string; kind: "sheet" | "letter" | "rolls"; title: string; body: string };
+type Item = { id: string; kind: "sheet" | "letter" | "rolls" | "pack"; title: string; body: string };
 
 const VIEWS = ["table", "inbox", "dice", "start", "world", "rules", "session", "sheet"];
 const KIT = ["start", "world", "rules", "session"];
@@ -473,6 +473,9 @@ function renderOpen(newCount: number) {
     $("open-sheet-title").textContent = sheet.title;
     $("open-sheet-body").innerHTML = md(sheet.body);
   }
+  const pack = opened.items.find((i) => i.kind === "pack");
+  $("open-pack").hidden = !pack;
+  if (pack) $("open-pack-body").innerHTML = md(pack.body);
   const rolls = opened.items.find((i) => i.kind === "rolls");
   $("open-rolls").hidden = !rolls;
   if (rolls) $("open-rolls-body").innerHTML = md(rolls.body);

@@ -37,6 +37,19 @@ function splitPost(text, fallback) {
   return { title: lines[i].slice(2).trim(), body: lines.slice(i + 1).join("\n").trim() };
 }
 
+// private/<slug>/pack.json (written by `table.py pack` and `table.py item`) as the player sees it.
+const cell = (s) => String(s ?? "").replace(/\|/g, "/").replace(/\s+/g, " ").trim();
+const VERB = { use: "Used", lose: "Lost", gain: "Gained" };
+function packMarkdown(pack) {
+  const items = pack.items ?? [];
+  const rows = items.map((i) => `| ${cell(i.name)} | ${i.qty} | ${cell(i.note)} |`);
+  const recent = (pack.log ?? []).filter((l) => VERB[l.change]).slice(-8).reverse()
+    .map((l) => `- Turn ${l.turn}: ${VERB[l.change]} ${l.qty} x ${cell(l.item)}${l.reason ? ` (${cell(l.reason)})` : ""}`);
+  return "Locked: only what is listed here exists. The DM records every change.\n\n" +
+    (items.length ? `| Item | Qty | Note |\n|---|---|---|\n${rows.join("\n")}` : "Empty.") +
+    (recent.length ? `\n\n**Recent changes**\n\n${recent.join("\n")}` : "");
+}
+
 async function readJson(path, fallback) {
   return existsSync(path) ? JSON.parse(await readFile(path, "utf8")) : fallback;
 }
@@ -60,6 +73,9 @@ for (const slug of slugs) {
   const items = [];
   if (existsSync(join(dir, "sheet.md"))) {
     items.push({ id: "sheet", kind: "sheet", ...splitPost(await readFile(join(dir, "sheet.md"), "utf8"), name) });
+  }
+  if (existsSync(join(dir, "pack.json"))) {
+    items.push({ id: "pack", kind: "pack", title: "Your pack", body: packMarkdown(await readJson(join(dir, "pack.json"), {})) });
   }
   if (existsSync(join(dir, "rolls.md"))) {
     items.push({ id: "rolls", kind: "rolls", ...splitPost(await readFile(join(dir, "rolls.md"), "utf8"), "Your rolls") });
