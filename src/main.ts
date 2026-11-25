@@ -13,7 +13,9 @@ type InboxMeta = { slug: string; name: string; letters: number; newest: string |
 type Relay = { server: string; topic: string };
 type Index = { rev: string; built: string; story: Post[]; inboxes: InboxMeta[]; relay?: Relay | null };
 /** One player's action for one turn, carried by the relay. The newest one per player wins. */
-type Action = { v: 1; kind: "action"; turn: number; who: string; text: string; at: number };
+type Action = { v: 1; kind: "action"; turn: number; who: string; text: string; at: number; checks?: Record<string, number> };
+/** A check the DM called in the latest post (`table.py check`). No DC or modifier ever reaches the app. */
+type Check = { id: string; who: string; label: string; mode: string };
 type Item = { id: string; kind: "sheet" | "letter" | "rolls"; title: string; body: string };
 
 const VIEWS = ["table", "inbox", "dice", "start", "world", "rules", "session", "sheet"];
@@ -95,6 +97,7 @@ async function check(manual = false) {
   if (manual) status.textContent = "Checking";
   try {
     const next: Index = await (await fetchFresh("content/index.json")).json();
+    if (TEST_MODE) next.story = [{ id: TEST_ID, title: "Table test", file: "" }, ...next.story];
     const changed = !index || next.rev !== index.rev;
     const prev = index;
     index = next;
@@ -124,6 +127,19 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
 const fmtTime = (d: Date) => d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 const fmtDate = (d: Date) => `${d.getDate()} ${d.toLocaleString("en-GB", { month: "short" })} ${d.getFullYear()}, ${fmtTime(d)}`;
 
+// ======================= test mode (?test) =======================
+// Opening the app with ?test shows a practice turn 9999 on this device only, with a check for every player,
+// so the action box, lights and 1-20 picker can be tried on real phones without posting a turn. The DM pulls it
+// with `table.py inbox --turn 9999`.
+const TEST_MODE = new URLSearchParams(location.search).has("test");
+const TEST_ID = "9999-table-test";
+
+function testTurn() {
+  const checks = (index?.inboxes ?? []).map((m, i) => ({ id: `t${i + 1}`, who: m.slug, label: "Perception check", mode: i % 2 ? "advantage" : "" }));
+  return `# Turn 9999: Table test\n\n**Practice turn, on this device only.** Nothing here is part of the story. ` +
+    `Pick a number, write anything, press Send, and watch the lights.\n\n<!-- checks: ${JSON.stringify(checks)} -->\n`;
+}
+
 // ======================= table feed =======================
 function stripH1(text: string) {
   return text.replace(/\r\n/g, "\n").replace(/^# .*\n?/m, "").trim();
@@ -143,7 +159,8 @@ async function renderFeed() {
     return;
   }
   const [first, ...rest] = index.story;
-  const text = await (await fetchFresh(`content/${first.file}`)).text();
+  const text = first.id === TEST_ID ? testTurn() : await (await fetchFresh(`content/${first.file}`)).text();
+  latestChecks = parseChecks(text);
   latest.innerHTML = `<span class="sat-caption post-meta">Latest turn</span><h2>${escapeHtml(first.title)}</h2>${renderTurn(text)}`;
 
   const earlier = $("feed-earlier");
@@ -171,6 +188,56 @@ async function renderFeed() {
 const ACTION_POLL_MS = 5_000;
 let actions = new Map<string, Action>();
 let draftTurn = 0;
+let latestChecks: Check[] = [];
+let faces = new Map<string, number>(); // check id -> the d20 face this player tapped
+let checksKey = "";
+
+/** `table.py send` writes the called checks as a hidden line: <!-- checks: [...] --> */
+function parseChecks(text: string): Check[] {
+  const m = text.match(/<!-- checks: (\[.*?\]) -->/s);
+  if (!m) return [];
+  try {
+    const list = JSON.parse(m[1]);
+    return Array.isArray(list) ? list.filter((c) => c && typeof c.id === "string" && typeof c.who === "string") : [];
+  } catch { return []; }
+}
+
+function myChecks(slug: string) { return latestChecks.filter((c) => c.who === slug); }
+
+/** One 1-20 grid per check called for this player. Rebuilt only when the turn or the checks change. */
+function renderChecks(slug: string, turn: number) {
+  const mine = myChecks(slug);
+  const wrap = $("move-checks");
+  wrap.hidden = mine.length === 0;
+  const key = `${turn}|${slug}|${mine.map((c) => c.id).join(",")}`;
+  if (key === checksKey) return;
+  checksKey = key;
+  wrap.innerHTML = "";
+  for (const c of mine) {
+    const how = c.mode === "advantage" ? "Roll two d20 and tap the higher." : c.mode === "disadvantage" ? "Roll two d20 and tap the lower." : "Roll your d20 and tap the number.";
+    const group = document.createElement("div");
+    group.className = "sat-stack check";
+    group.innerHTML = `<p class="sat-small"><strong></strong> <span class="sat-muted"></span></p><div class="faces" role="radiogroup"></div>`;
+    group.querySelector("strong")!.textContent = `${c.label}${c.mode ? ` (${c.mode})` : ""}.`;
+    group.querySelector(".sat-muted")!.textContent = how;
+    const grid = group.querySelector<HTMLElement>(".faces")!;
+    grid.setAttribute("aria-label", `${c.label}: your d20`);
+    for (let n = 1; n <= 20; n++) {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "face";
+      b.textContent = String(n);
+      b.setAttribute("role", "radio");
+      b.setAttribute("aria-checked", String(faces.get(c.id) === n));
+      b.addEventListener("click", () => {
+        faces.set(c.id, n);
+        grid.querySelectorAll(".face").forEach((x) => x.setAttribute("aria-checked", String(x === b)));
+      });
+      grid.appendChild(b);
+    }
+    wrap.appendChild(group);
+  }
+}
 
 function currentTurn() {
   const id = index?.story[0]?.id;
@@ -236,12 +303,18 @@ function renderMove() {
   if (!who) return;
   $("move-name").textContent = who.name.split(" ")[0];
   const text = $<HTMLTextAreaElement>("move-text");
-  if (draftTurn !== turn) { text.value = ""; draftTurn = turn; } // a new turn starts with an empty box
   const mine = actions.get(who.slug);
+  if (draftTurn !== turn) { // a new turn starts with an empty box, or with what this player already sent
+    text.value = mine?.text ?? "";
+    faces = new Map(Object.entries(mine?.checks ?? {}));
+    checksKey = "";
+    $("move-status").textContent = "";
+    draftTurn = turn;
+  }
+  renderChecks(who.slug, turn);
+  // A hint like "tap your number first" stays until the player acts; only a confirmed send overwrites it.
   if (mine && !$("move-status").dataset.busy) {
     $("move-status").textContent = `Sent at ${fmtTime(new Date(mine.at))}. Send again to replace it.`;
-  } else if (!mine && !$("move-status").dataset.busy) {
-    $("move-status").textContent = "";
   }
 }
 
@@ -252,12 +325,17 @@ $("move-form").addEventListener("submit", async (e) => {
   const text = $<HTMLTextAreaElement>("move-text").value.trim();
   const status = $("move-status");
   if (!who || !url) return;
-  if (!text) { status.textContent = "Write what your character does first."; return; }
+  const pending = myChecks(who.slug);
+  const missing = pending.find((c) => !faces.has(c.id));
+  if (missing) { status.textContent = `Tap your d20 number for ${missing.label} first.`; return; }
+  if (!text && !pending.length) { status.textContent = "Write what your character does first."; return; }
+  const picked = Object.fromEntries(pending.map((c) => [c.id, faces.get(c.id)!]));
   const send = $<HTMLButtonElement>("move-send");
   send.setAttribute("aria-disabled", "true");
   status.dataset.busy = "1";
   status.textContent = "Sending";
-  const action: Action = { v: 1, kind: "action", turn: currentTurn(), who: who.slug, text, at: Date.now() };
+  const action: Action = { v: 1, kind: "action", turn: currentTurn(), who: who.slug, text, at: Date.now(),
+    ...(pending.length ? { checks: picked } : {}) };
   try {
     const res = await fetch(url, { method: "POST", body: JSON.stringify(action) });
     if (!res.ok) throw new Error(String(res.status));
