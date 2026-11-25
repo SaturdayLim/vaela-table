@@ -135,7 +135,7 @@ async function renderFeed() {
   if (!index) return;
   const latest = $("feed-latest");
   if (!index.story.length) {
-    latest.innerHTML = `<h2>No turns yet</h2><p class="sat-muted">The DM posts the first turn here when Session 0 begins.</p>`;
+    latest.innerHTML = `<h2>No turns yet</h2><p class="sat-muted">The DM posts the first turn here when Session 1 begins.</p>`;
     $("feed-earlier-wrap").hidden = true;
     return;
   }
@@ -178,7 +178,7 @@ function renderPick() {
   const pick = $("inbox-pick");
   pick.innerHTML = "";
   if (!index?.inboxes.length) {
-    pick.innerHTML = `<p class="sat-muted">No inboxes yet. The DM opens one for each player at Session 0.</p>`;
+    pick.innerHTML = `<p class="sat-muted">No inboxes yet. The DM opens one for each player before play.</p>`;
     return;
   }
   for (const meta of index.inboxes) {

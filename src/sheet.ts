@@ -41,7 +41,7 @@ export function initSheet(): void {
 
   function asText() {
     const name = (document.getElementById("f-name") as HTMLInputElement).value.trim() || "(unnamed)";
-    const lines = [`AU1 CHARACTER SHEET: ${name}`, ""];
+    const lines = [`VAELA CHARACTER SHEET: ${name}`, ""];
     let group: string | null = null;
     fields.forEach((f) => {
       const fs = f.closest("fieldset")!.querySelector("legend")!.textContent!.trim();

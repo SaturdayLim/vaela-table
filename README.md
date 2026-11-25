@@ -1,12 +1,12 @@
-# The Serret Vale table
+# The Gantry table
 
-Player app for **A Finding of Good Standing**: **[open the app](https://saturdaylim.github.io/vaela-table/)**. The DM posts every turn there; private letters arrive in each player's sealed inbox.
+Player app for the **Gantry table** (Vaela): **[open the app](https://saturdaylim.github.io/vaela-table/)**. The DM posts every turn there; private letters arrive in each player's sealed inbox.
 
 Install it on a phone: open the link, then **Share** and **Add to Home Screen** (iPhone), or **Install app** from the browser menu (Android).
 
 ## Every turn, newest first
 
-- [Turn 2: Session 0, the paperwork](story/0002-session-0-the-paperwork.md)
+- No turns yet.
 
 ## For the DM
 

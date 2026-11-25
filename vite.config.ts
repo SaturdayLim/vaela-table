@@ -10,7 +10,7 @@ export default defineConfig({
       manifest: {
         name: "Vaela Table",
         short_name: "Vaela Table",
-        description: "Table feed, private inboxes and player kit for A Finding of Good Standing",
+        description: "Table feed, private inboxes and player kit for the Gantry table",
         start_url: "./",
         scope: "./",
         display: "standalone",

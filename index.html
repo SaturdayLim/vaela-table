@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Vaela Table</title>
-  <meta name="description" content="Table feed, private inboxes and player kit for A Finding of Good Standing.">
+  <meta name="description" content="Table feed, private inboxes and player kit for the Gantry table, a Vaela campaign.">
   <script>try{var t=localStorage.getItem('sat-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
   <link rel="icon" href="./favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="./apple-touch-icon.png">
@@ -60,8 +60,8 @@
 <section class="view sat-stack" data-view="table" aria-labelledby="table-title">
   <div class="page-head sat-split">
     <div class="sat-stack" style="--sat-gap: var(--sat-space-2)">
-      <span class="sat-caption">A Finding of Good Standing</span>
-      <h1 class="sat-h1" id="table-title">The Serret Vale Table</h1>
+      <span class="sat-caption">Tallow Street, Gantry</span>
+      <h1 class="sat-h1" id="table-title">The Gantry Table</h1>
     </div>
     <div class="sat-cluster">
       <span class="sat-small sat-muted" id="feed-status" role="status">Loading the table</span>
@@ -191,161 +191,60 @@
 <div class="kit-nav" id="kit-nav" hidden>
   <div class="sat-seg sat-seg--block" role="radiogroup" aria-label="Player kit sections" id="kitnav">
     <button role="radio" aria-checked="true" data-value="start">Start here</button>
-    <button role="radio" aria-checked="false" data-value="world">World guide</button>
+    <button role="radio" aria-checked="false" data-value="world">Gantry guide</button>
     <button role="radio" aria-checked="false" data-value="rules">Rules</button>
-    <button role="radio" aria-checked="false" data-value="session">Session 0</button>
+    <button role="radio" aria-checked="false" data-value="session">How we play</button>
   </div>
 </div>
 <!-- ================= START HERE ================= -->
 <div data-view="start">
   <section class="hero sat-stack" aria-labelledby="kit-title">
-    <span class="sat-caption">Player kit <span class="sat-qual">(Survey Dispatch Board)</span></span>
-    <h1 class="sat-display" id="kit-title">A Finding of <em>Good Standing</em></h1>
-    <p class="sat-lede">You and a partner are licensed freelancers. The Board wants three places in the Serret Vale visited and a charity's standing attested. Watch what you attest: the Board will believe the paper.</p>
+    <span class="sat-caption">Player kit</span>
+    <h1 class="sat-display" id="kit-title">The Gantry <em>Table</em></h1>
+    <p class="sat-lede">Two strangers under one roof on Tallow Street, in the cart city of Gantry. This kit holds what anyone in town knows. Your inbox holds what only you know.</p>
     <div class="sat-grid stats">
-      <div class="sat-glass sat-stat"><span class="sat-caption">Players</span><span class="sat-kpi">2-3</span><span class="sat-note">Each with a character of their own</span></div>
-      <div class="sat-glass sat-stat"><span class="sat-caption">Session <span class="sat-qual">(hours)</span></span><span class="sat-kpi">3</span><span class="sat-note">One sitting, plus Session 0</span></div>
-      <div class="sat-glass sat-stat"><span class="sat-caption">Level</span><span class="sat-kpi">3</span><span class="sat-note">D&amp;D 5e with the Vaela rules</span></div>
-      <div class="sat-glass sat-stat"><span class="sat-caption">Pay <span class="sat-qual">(SM each)</span></span><span class="sat-kpi">60</span><span class="sat-note">Plus 20 SM expenses</span></div>
+      <div class="sat-glass sat-stat"><span class="sat-caption">Players</span><span class="sat-kpi">2</span><span class="sat-note">Each with a character of their own</span></div>
+      <div class="sat-glass sat-stat"><span class="sat-caption">Level</span><span class="sat-kpi">3</span><span class="sat-note">Level 4 after Session 3</span></div>
+      <div class="sat-glass sat-stat"><span class="sat-caption">Base</span><span class="sat-kpi">1 inn</span><span class="sat-note">The Lamp and Pick, Tallow Street</span></div>
+      <div class="sat-glass sat-stat"><span class="sat-caption">Money <span class="sat-qual">(SM per Crown)</span></span><span class="sat-kpi">100</span><span class="sat-note">1 Gold Crown = 100 Silver Marks</span></div>
     </div>
   </section>
 
   <article class="view sat-glass-2 sat-card prose">
     <h2>Start here</h2>
-    <p class="sat-lede">A complete, standalone pack. You need nothing outside it. Read in the order below, make a character, and arrive at Session 0 ready to play.</p>
+    <p class="sat-lede">Your character is already made. Read the pages below once, open your inbox, and you are ready.</p>
 
-    <h3>Read in this order (40 minutes)</h3>
+    <h3>Read in this order (25 minutes)</h3>
     <div class="sat-table-wrap"><table class="sat-table">
       <thead><tr><th>Step</th><th>What</th><th class="n">Time <span class="sat-qual">(min)</span></th></tr></thead>
       <tbody>
-        <tr><td><a href="#world">World guide</a></td><td>The world from nothing: magic, factions, law, money, the vale. Sections 1 to 3 are essential.</td><td class="n">15</td></tr>
-        <tr><td>This page</td><td>Make your character (seven steps below).</td><td class="n">15</td></tr>
-        <tr><td><a href="#rules">Rules</a></td><td>The few rules that differ from 5e: scores and casting.</td><td class="n">5</td></tr>
-        <tr><td><a href="#sheet">Your sheet</a></td><td>Fill it in here, then send it to the DM as a file.</td><td class="n">10</td></tr>
-        <tr><td><a href="#session">Session 0</a></td><td>How the table runs, what happens first, safety.</td><td class="n">5</td></tr>
+        <tr><td><a href="#inbox">Inbox</a></td><td>Open it with your code. Your finished sheet is inside.</td><td class="n">5</td></tr>
+        <tr><td><a href="#world">Gantry guide</a></td><td>The world in brief, then the city you are in. Sections 5 to 8 matter most.</td><td class="n">12</td></tr>
+        <tr><td><a href="#rules">Rules</a></td><td>The few rules that differ from 5e.</td><td class="n">5</td></tr>
+        <tr><td><a href="#session">How we play</a></td><td>How turns, letters and dice reach you, and safety.</td><td class="n">3</td></tr>
       </tbody>
     </table></div>
-    <p class="note">The DM hands out other in-world papers during play.</p>
-
-    <div class="callout"><p><strong>The rule of this kit: write what you know, and leave the rest open.</strong> You may mark up to <strong>three things</strong> on your sheet as <span class="qq">??</span>. The DM fills those in once play begins.</p></div>
-
-    <h3>Make your character in seven steps</h3>
-
-    <h4>1. Who are you? <span class="sat-badge">Required</span></h4>
-    <p>Name, pronouns, species, and <strong>one sentence a stranger would say about you.</strong> <em>"A tall, tired woman with ink on her cuffs."</em></p>
-    <div class="sat-table-wrap"><table class="sat-table">
-      <thead><tr><th>Species</th><th>In a line</th></tr></thead>
-      <tbody>
-        <tr><td>Human <span class="note">(Vaelan-adapted)</span></td><td>Everywhere; the most varied</td></tr>
-        <tr><td>Elf</td><td>Valo forests or Tacenda; long-lived; a strong True Name tradition</td></tr>
-        <tr><td>Dwarf</td><td>Golgotha and the mountains; stocky; excellent craft resonance</td></tr>
-        <tr><td>Centaur</td><td>Tacenda plains; nomadic couriers and cavalry</td></tr>
-        <tr><td>Merfolk</td><td>Ocean-going; water resonance; or human with merfolk heritage</td></tr>
-      </tbody>
-    </table></div>
-    <p class="note">Echo-Souled and demigod-touched characters are the DM's to assign. Ask before play.</p>
-
-    <h4>2. What do you do? <span class="sat-badge">Required</span></h4>
-    <p>Pick a <strong>class</strong>. You start at <strong>Level 3</strong>. Specialisation paths open at Level 5, so you do not pick one now.</p>
-    <div class="sat-table-wrap"><table class="sat-table">
-      <thead><tr><th>Class</th><th>Play this if you want to</th></tr></thead>
-      <tbody>
-        <tr><td>Artificer</td><td>Build, modify and interrogate devices</td></tr>
-        <tr><td>Alchemist</td><td>Brew, analyse, poison, cure</td></tr>
-        <tr><td>Mage</td><td>Cast with institutional training</td></tr>
-        <tr><td>Warlock</td><td>Cast with a patron's borrowed power <em>(name the patron)</em></td></tr>
-        <tr><td>Healer</td><td>Mend bodies, secular and practical</td></tr>
-        <tr><td>Cleric</td><td>Channel the divine (the Order or the Celestial College)</td></tr>
-        <tr><td>Paladin</td><td>Swear an oath that costs you something</td></tr>
-        <tr><td>Ranger</td><td>Track, survive, work the wild edges</td></tr>
-        <tr><td>Fighter</td><td>Hit things reliably; no resonance needed</td></tr>
-        <tr><td>Rogue</td><td>Acquire, infiltrate, talk your way through</td></tr>
-        <tr><td>Bard</td><td>Sense truth; testify; perform (a <em>licensed witness</em>)</td></tr>
-        <tr><td>Blood Hunter</td><td>Hunt what should not exist</td></tr>
-        <tr><td>Monk</td><td>Master the self instead of the ley</td></tr>
-        <tr><td>Druid</td><td>Speak the Old Ways with the land</td></tr>
-        <tr><td>Barbarian</td><td>Be the avalanche</td></tr>
-        <tr><td>Necromancer</td><td>Study soul-echo and what lingers <em>(expect attention)</em></td></tr>
-      </tbody>
-    </table></div>
-    <p class="note">All 16 are open. Some attract more institutional attention than others.</p>
-
-    <h4>3. Where are you from? <span class="sat-badge">Required</span></h4>
-    <p>Pick <strong>one region</strong> and <strong>one reason you left.</strong></p>
-    <div class="sat-table-wrap"><table class="sat-table">
-      <thead><tr><th>Region</th><th>Known for</th></tr></thead>
-      <tbody>
-        <tr><td>Flaneur</td><td>Trade, academia, the Charter</td></tr>
-        <tr><td>Victory Isles</td><td>Navy, strict law</td></tr>
-        <tr><td>Golgotha</td><td>Mining guilds</td></tr>
-        <tr><td>Kreimhilde</td><td>Crystal clans</td></tr>
-        <tr><td>Levanter</td><td>Oasis sultanates</td></tr>
-        <tr><td>Aquias</td><td>Sea trade, merfolk contact</td></tr>
-        <tr><td>Tacenda</td><td>Plains, the Old Ways</td></tr>
-        <tr><td>Nemalos and Valo</td><td>Old forests, older memories</td></tr>
-        <tr><td>Frozen Crescents</td><td>Ice, kinship</td></tr>
-        <tr><td>The Border Zone</td><td>Near the Rift; you have seen things</td></tr>
-      </tbody>
-    </table></div>
-    <p class="note">Golgotha is where you are working now. It is a fine home but not required.</p>
-
-    <h4>4. How does your magic work? <span class="sat-badge">Required if you cast</span></h4>
-    <div class="sat-table-wrap"><table class="sat-table">
-      <thead><tr><th>Choose</th><th>Options</th></tr></thead>
-      <tbody>
-        <tr><td>Vaelan proficiency</td><td><strong>None</strong> (no casting; certified artefacts only), <strong>Apprentice</strong> (Simple incantations, 1 RP) or <strong>Journeyman</strong> (Complex too, 3 RP)</td></tr>
-        <tr><td>Force</td><td><strong>Arcaen</strong> (trained), <strong>Vitalen</strong> (inherited, old blood), <strong>Somalen</strong> (belief, ritual) or <strong>Magic-Mute</strong> (no resonance; you perceive what casters cannot)</td></tr>
-        <tr><td>Dialect</td><td>Eldorian (the standard), or Verdant, Frostholm, Emberisle or Crystalian from your home</td></tr>
-      </tbody>
-    </table></div>
-    <p class="note">Adept and Aelum are not available here. The <a href="#world">World guide</a> explains each.</p>
-
-    <h4>5. Three hooks: Anchor, Scar, Question <span class="sat-badge">Required</span></h4>
-    <ul>
-      <li><strong>Anchor:</strong> who or what you will not lose.</li>
-      <li><strong>Scar:</strong> something that happened and is not finished.</li>
-      <li><strong>Question:</strong> something you need answered. Concrete beats grand. "Can institutions be trusted?" works. "Where did my father's last letter come from?" works better.</li>
-    </ul>
-    <p><strong>Make at least one about trust in paper:</strong> contracts, licences, records, who wrote what. That is what this job is.</p>
-
-    <h4>6. Your licence <span class="sat-badge">Required</span></h4>
-    <p>You hold a <strong>Board freelance licence</strong>, a stamped card. Choose:</p>
-    <ul>
-      <li><strong>Who sponsored you:</strong> a guild, a college, a captain, a temple, nobody.</li>
-      <li><strong>One reason the Board hired you cheaply:</strong> new, unlucky, unaffiliated, in debt, overlooked.</li>
-    </ul>
-
-    <h4>7. Numbers <span class="sat-badge sat-badge--muted">The DM finishes these</span></h4>
-    <p>Roll or assign your six scores using the <a href="#rules">rules</a>. <strong>Leave HP, AC, RP and SP blank.</strong> The DM fills them from your class. Add <strong>one signature item</strong>, a short description of your kit, and <strong>50 Silver Marks.</strong></p>
-
-    <h4>An optional prior tie <span class="sat-badge sat-badge--muted">Optional</span></h4>
-    <p>If you want a starting relationship with one faction, pick one: a <em>member</em>, an <em>associate</em>, a <em>former affiliate</em>, a <em>suspicious bystander</em>, or someone who <em>specifically avoids them.</em></p>
-    <ul class="inline-list">
-      <li class="sat-badge sat-badge--muted">Celestial College</li><li class="sat-badge sat-badge--muted">Arcane University</li><li class="sat-badge sat-badge--muted">Bardic College</li><li class="sat-badge sat-badge--muted">Order of the Eternal Flame</li><li class="sat-badge sat-badge--muted">Hollow Hand</li><li class="sat-badge sat-badge--muted">Rift Watchers</li><li class="sat-badge sat-badge--muted">None</li>
-    </ul>
 
     <h3>Decided for you</h3>
     <ul>
-      <li><strong>Your job and your pay:</strong> one commission, one finding.</li>
-      <li><strong>Where you start:</strong> the Cressen charter hall, at dusk, on the evening of a celebration that has nothing to do with you.</li>
-      <li><strong>Your partner:</strong> you arrive together; you do not need to have met. If you want to know each other, say so, and agree <strong>one</strong> shared fact.</li>
+      <li><strong>Where you start:</strong> the Lamp and Pick, Tallow Street, Gantry, early in the morning. Breakfast is on in the common room.</li>
+      <li><strong>The other character:</strong> you have not met. Nothing obliges you to team up. If you do, it is because you chose to.</li>
     </ul>
     <h3>Left open on purpose</h3>
     <ul>
-      <li><strong>Your past beyond one line.</strong> The DM asks follow-up questions in play.</li>
-      <li><strong>Your enemies, your debts, your family.</strong> Mark them <span class="qq">??</span>.</li>
-      <li><strong>Anyone else in the vale.</strong> Say "I think I know someone in Tarvish" and the DM decides.</li>
+      <li><strong>What you tell the other character.</strong> Your secrets are yours. Share them, trade them or keep them.</li>
+      <li><strong>Anything your sheet does not say.</strong> Ask the DM "what would my character know about this?" at any time.</li>
     </ul>
-    <p><a class="sat-btn" href="#sheet">Go to the sheet</a></p>
+    <p class="note">The <a href="#sheet">New sheet</a> tab is only for a replacement character.</p>
   </article>
 </div>
 
 <!-- ================= WORLD ================= -->
 <article class="view sat-glass-2 sat-card prose" data-view="world" hidden>
-  <span class="sat-caption">Office of Records <span class="sat-qual">(Third Edition)</span></span>
-  <h2>A Public Guide to Vaelora, the Serret Vale and the Survey Dispatch Board</h2>
-  <p class="lede-book">Compiled for newly retained freelancers. It tells you what any literate adult in southwestern Golgotha knows, and it is fairly accurate. The Office reminds readers that "fairly" is a word.</p>
-  <div class="callout"><p>Read <strong>sections 1 to 3</strong> before you make a character. Skim 4 to 9 before Session 0.</p></div>
+  <span class="sat-caption">Carters' Hall, Gantry <span class="sat-qual">(visitors' copy)</span></span>
+  <h2>A Public Guide to Vaelora and the Cart City of Gantry</h2>
+  <p class="lede-book">Kept on the counter at the Carters' Hall for anyone waiting on a rank. It tells you what any carter in Gantry knows, and it is fairly accurate. The Hall reminds readers that a carter's "fairly" covers a lot of road.</p>
+  <div class="callout"><p>Skim <strong>sections 1 to 4</strong>. Read <strong>5 to 8</strong>: that is the town you are in.</p></div>
 
   <h3>1. The world in one page</h3>
   <p><strong>Vaelora</strong> is a world where magic is <strong>infrastructure</strong>, not spectacle. A magical energy called <strong>resonance</strong> flows through underground channels called <strong>ley lines</strong>, pools where several cross (<strong>nexus points</strong>), and thins where they do not. Most people live near nexus points because crops grow, trade runs, and magic is easy there. Magic is real, regulated and a little tiring. It is a trade, with licences, and sometimes it fails.</p>
@@ -387,7 +286,7 @@
     <li><strong>Where magic runs thin or thick:</strong> thick near nexus points and big cities; disrupted near the Rift (more misfires); nothing at all in the dead Hollow Veins.</li>
     <li><strong>What magic can do:</strong> enhance bodies, make barriers, send messages, read resonance, heal slowly, enchant objects. <strong>What it cannot easily do:</strong> raise the dead, convincingly lie to a truth-sensitive listener, or open a Rift (illegal, catastrophic, absolutely prohibited).</li>
   </ul>
-  <p><strong>Your licence matters.</strong> A caster certified Journeyman or above is a licensed professional. Casting uncertified in public is illegal in some places. Nobody asks for it in this one-shot, but people notice.</p>
+  <p><strong>Your licence matters.</strong> A caster certified Journeyman or above is a licensed professional. Casting uncertified in public is illegal in some places. Gantry rarely asks for it, but people notice.</p>
 
   <h3>3. Who runs things</h3>
   <div class="sat-table-wrap"><table class="sat-table">
@@ -415,65 +314,63 @@
 
   <hr>
   <h3>4. Golgotha: the country that is a business</h3>
-  <p>A mountain continent of <strong>mining guilds</strong> with <strong>no central government.</strong> Whichever guild holds the mineral rights holds the ground. Forge-cities stand at shaft-heads. Law is guild law, plus the Flaneur Charter where a guild has signed it. Its north is ice, its middle lava, its south arable. You are working in the <strong>southwest.</strong></p>
+  <p>A mountain continent of <strong>mining guilds</strong> with <strong>no central government.</strong> Whichever guild holds the mineral rights holds the ground. Forge-cities stand at shaft-heads. Law is guild law, plus the Flaneur Charter where a guild has signed it. Its north is ice, its middle lava, its south arable. Eleven forge-cities share it, each run by the guild that built it.</p>
 
-  <h3>5. The Serret Vale</h3>
-  <p>A valley running from a southern coast up into the mountain terraces. It has been quiet for a hundred years, which is why the last few months have been talked about.</p>
+  <h3>5. Gantry, the cart city</h3>
+  <p>The <strong>Transport Guild's</strong> city, about <strong>30,000</strong> people. Gantry makes nothing. It sells <strong>movement</strong>: a cart's place in the queue, loading, signal traffic, and the certificates that prove all three. Ore from the eastern seams, pig iron, grain, timber, lamp oil and rope all come through it.</p>
   <div class="sat-table-wrap"><table class="sat-table">
-    <thead><tr><th>Place</th><th>What it is</th></tr></thead>
+    <thead><tr><th>Quarter</th><th>What it is</th></tr></thead>
     <tbody>
-      <tr><td>Cressen</td><td>A charter port at the vale mouth, about 2,400 people. Fish, tools, a netting quarter. The <strong>charter hall</strong> (two-stamp door) verifies bounty licences.</td></tr>
-      <tr><td>Tarvish</td><td>A way-town around a <strong>toll fort</strong>, where the vale road climbs into the passes. About 900 people. Carters, farriers, a still-house.</td></tr>
-      <tr><td>Meridole</td><td>An upper-terrace shrine town and spring.</td></tr>
-      <tr><td>Krel</td><td>A vein-side hamlet built into a spur mouth.</td></tr>
+      <tr><td>The Yards</td><td>The marshalling ground: forty-six gantries in six rows, weigh-sheds, chain stores, lamp-masts. Loud, dusty, never empty</td></tr>
+      <tr><td>Carters' Row</td><td>The cart-masters' stone houses, a painted wheel on every lintel. Old money</td></tr>
+      <tr><td>The Rank Bench</td><td>A small square of clerks, notaries and one court. Everything here is paper</td></tr>
+      <tr><td>Tallow Street</td><td>The warehouse street on the southern edge, where the eastern line comes in. Cheap, loud, and watched less closely than the Row</td></tr>
+      <tr><td>Spoke Town</td><td>Housing along the five cart-lines out of town: draymen, farriers, wheelwrights, rope-makers</td></tr>
     </tbody>
   </table></div>
-  <p><strong>The tremors.</strong> For some months the ground has been <em>counting</em>: harness-bells ring in still air, harbour glass ripples. Cressen thinks the mountain's troubles are far away. Tarvish's carters call it "the mountain counting."</p>
+  <p><strong>Landmarks.</strong> The <strong>Queue Roll</strong>, a wall of numbered chalk-and-brass boards, one per licensed cart. The <strong>Signal Loft</strong> on the Carters' Hall roof, first drum-and-lamp post of the eastern line. The <strong>Stand Stone</strong>, where the carters sat for eleven weeks in Year 206 and moved nothing. The <strong>Scale-Shed Bell</strong>, which rings tomorrow's ranks at noon.</p>
+  <p><strong>Weather.</strong> Dry and gritty. Wind off the slag plain lifts dust, and you taste it in the bread. Washing hung out in Gantry dries grey.</p>
 
-  <h3>6. The Vale Reclamation Trust</h3>
-  <p>A charity chartered at Cressen in <strong>Year 389</strong>, "restoring what the mountain shook loose." It funds a <strong>remedy trade</strong> (tonics and compounds through licensed apothecaries), <strong>reclamation works</strong> in the upper vale, and <strong>lawful bounties</strong> on persons it says have robbed or obstructed its work. Notices are posted at charter offices and drafted by a notary.</p>
-  <p>It is well regarded, and people have real reasons: the coast road was safe last week for the first time in a year.</p>
-
-  <h3>7. The Survey Dispatch Board</h3>
-  <p>A joint clearing office in Golgotha's charter south, run by agreement of two institutions and answering to neither, which is how it likes it. It <strong>contracts licensed freelancers to look at things and attest.</strong> It stamps everything twice.</p>
-  <p><strong>An attestation</strong> states what you <em>observed</em>, signed. It does not state what you were <em>told.</em> A report with the wrong half in it is rejected.</p>
+  <h3>6. Getting by</h3>
+  <ul>
+    <li><strong>The Marshal's Gate.</strong> A yard-marshal in a brown coat takes your cart, asks the load and the destination, and hangs a tin <strong>rank chit</strong> on your shaft. People look at your chit, then at you, and decide what you are.</li>
+    <li><strong>Yard-marshals</strong> fine on the spot: for jumping a rank, a missing chit, a cart left in a lane.</li>
+    <li><strong>Strangers.</strong> A visitor with a carrier's licence or a cart-master's letter gets a hearing at the Bench. A visitor with neither is fined, not heard, and may spend a night in the shed behind the Scale-Shed Bell. A <strong>day-pass</strong> from the Marshal's Gate (4 SM) turns you into a visitor with paper.</li>
+  </ul>
   <div class="sat-table-wrap"><table class="sat-table">
-    <thead><tr><th>Form</th><th>What it is</th></tr></thead>
+    <thead><tr><th>Price</th><th class="n">Cost</th></tr></thead>
     <tbody>
-      <tr><td><span class="sat-mono">11-C</span></td><td>Notice of breach</td></tr>
-      <tr><td><span class="sat-mono">11-D</span></td><td>Incapacity</td></tr>
-      <tr><td><span class="sat-mono">11-E</span></td><td>Attestation of standing (your commission)</td></tr>
-      <tr><td><span class="sat-mono">11-F</span></td><td>Undertaking concluded</td></tr>
+      <tr><td>Day-pass at the Marshal's Gate</td><td class="n">4 SM</td></tr>
+      <tr><td>Rank chit for one haul: short line, eastern line</td><td class="n">2 SM, 8 SM</td></tr>
+      <tr><td>A seat on a cart as a passenger, per day</td><td class="n">2 SM</td></tr>
+      <tr><td>Meals, per day</td><td class="n">2 SM</td></tr>
+      <tr><td>A clean room on Carters' Row, per night</td><td class="n">4 SM</td></tr>
+      <tr><td>A Yards hostel bunk, a Spoke Town bed</td><td class="n">5 Bt, 1 Bt</td></tr>
     </tbody>
   </table></div>
-  <p><strong>Your pay:</strong> half on commission, half on filing. <strong>A lapse</strong> is a missed four-day report.</p>
+  <p><strong>A day in town.</strong> The Yards start at dawn as the lamp-masts turn green. Chit lines are longest at mid-morning. The noon bell reads out tomorrow's ranks, and petitions go to the Bench in the afternoon. At dusk the yards clear and the <strong>Night Lane</strong> opens: a strip along Tallow Street kept for waste, dung and anything the Hall has decided needs no rank.</p>
 
-  <h3>8. Who you are likely to meet</h3>
-  <div class="sat-table-wrap"><table class="sat-table">
-    <thead><tr><th>Person</th><th>First impression</th></tr></thead>
-    <tbody>
-      <tr><td>Berrin, charter clerk of Cressen</td><td>Cheerful; keeps the town's heroic history in a ledger</td></tr>
-      <tr><td>Pell Sarratt, notary</td><td>Precise; small handwriting; drafts the Trust's paper</td></tr>
-      <tr><td>Warden Kolm Feddick, Tarvish</td><td>Garrison-loud; his writ ends at the last switchback</td></tr>
-      <tr><td>Saff Odum, apothecary</td><td>Defensive; smells everything</td></tr>
-      <tr><td>Essa Bray, hedge-wife of Meridole</td><td>Short sentences; proverbs; pays in kind</td></tr>
-      <tr><td>A merchant of the remedy line</td><td>Road-worn; pleasant; has a cold-weather palsy</td></tr>
-    </tbody>
-  </table></div>
-  <p class="note">Nothing in this list is a secret. It is only incomplete.</p>
+  <h3>7. Tallow Street and the Lamp and Pick</h3>
+  <p>Tallow Street runs east to west along the southern edge of the Yards. Its warehouses are tallow-brick, long, low and windowless, with loading doors on the street and a hoist-beam over each. By day it is loud with carters. After the last bell it goes quiet, except for the doors.</p>
+  <p><strong>The Lamp and Pick</strong> stands at the corner of Tallow Street and the first spoke: the last inn before the yards and the first after the plain. Its landlord, <strong>Hob Pettigrew</strong>, is a one-armed man of fifty who lost the arm to a chain-hoist and talks about it only if you ask twice. He serves carters, hostlers, surveyors' runners and anyone who pays. He is discreet to a fault. Breakfast is in the common room. The noticeboard by the door carries rank-chit offers, lost dogs and stranger things.</p>
+  <p class="note">"The best thing about an inn is that nothing said in it ever happened." Hob Pettigrew</p>
 
-  <h3>9. Words the Board prefers you to know</h3>
+  <h3>8. Carter talk</h3>
   <div class="sat-table-wrap"><table class="sat-table">
     <thead><tr><th>Word</th><th>Meaning</th></tr></thead>
     <tbody>
-      <tr><td>Attest</td><td>State what you observed. Not what you were told</td></tr>
-      <tr><td>Retainer</td><td>Half your fee, paid on commission</td></tr>
-      <tr><td>Lapsed</td><td>A commission on which you missed a report</td></tr>
-      <tr><td>Stamped twice</td><td>Received, and then received again</td></tr>
-      <tr><td>Good standing</td><td>A status the Board's paper can confer and its inspectors cannot verify</td></tr>
+      <tr><td>Rank</td><td>A cart's place in the queue</td></tr>
+      <tr><td>Chit</td><td>The tag that proves it. Tin is a cart's, brass a house's. A punched star marks a Guild-service cart that never queues: step aside for it</td></tr>
+      <tr><td>Jumping</td><td>Taking a rank that is not yours</td></tr>
+      <tr><td>Dead rank</td><td>A place held for a cart that no longer exists</td></tr>
+      <tr><td>Wheeled</td><td>Struck off the Roll. "He's been wheeled" is the worst thing you can say of a carter</td></tr>
     </tbody>
   </table></div>
-  <p class="note">This guide has been checked against the Board's files and found consistent with them. The Office has not checked the files against the vale.</p>
+  <p>Gantry speech is short and flat: carters shout across a yard and then wait.</p>
+
+  <h3>9. The Survey Dispatch Board</h3>
+  <p>A clearing office in Golgotha's charter south that contracts licensed freelancers to look at things and <strong>attest</strong>: to state, signed, what they observed and not what they were told. A Board licence is a stamped card. Holders turn up in odd places, and clerks tend to treat them as a person with paper.</p>
+  <p class="note">This guide is checked against the Hall's own notices. The Hall has not checked its notices against the street.</p>
 </article>
 
 <!-- ================= RULES ================= -->
@@ -482,7 +379,7 @@
   <p class="sat-lede">The game is D&amp;D 5e. This page lists only what is different.</p>
 
   <h3>Scores</h3>
-  <p>Roll a <strong>d20</strong> for each of the six abilities, or assign <span class="sat-mono">16, 15, 13, 12, 11, 10</span> in any order. Then read the modifier:</p>
+  <p>Your scores are on your sheet. A check is <strong>d20 + the ability modifier</strong>, plus <strong>+2</strong> if the skill is on your sheet. The modifier table:</p>
   <div class="sat-table-wrap"><table class="sat-table plain">
     <thead><tr><th class="n">Roll</th><th class="n">Mod</th><th class="n">Roll</th><th class="n">Mod</th></tr></thead>
     <tbody>
@@ -517,7 +414,7 @@
   <ul>
     <li>The <strong>first</strong> recitation shapes the intent; the <strong>second</strong> releases it. <strong>Hold</strong> between them to amplify. <strong>Interrupted?</strong> It misfires (the DM rolls a d10: +2 near the Rift, -1 at a nexus).</li>
     <li>You do not need to speak real Vaelan. Describe what you say. <strong>A badly worded incantation does exactly what was said.</strong></li>
-    <li><strong>You invent your own incantations.</strong> Write each as one line: what you say, and what it does.</li>
+    <li><strong>You know the incantations on your sheet.</strong> New ones come through play and teachers.</li>
   </ul>
 
   <h3>Checks and DCs</h3>
@@ -528,8 +425,8 @@
   <p><strong>Failing forward:</strong> a miss means progress and a cost, never "nothing happens."</p>
 
   <h3>Money, level and rest</h3>
-  <p><span class="sat-mono">1 Gold Crown = 100 Silver Marks = 1,000 Copper Bits.</span> You start with 50 Silver Marks. Rune-inscribed goods cost 2 to 5 times the mundane version.</p>
-  <p>You are <strong>Level 3.</strong> Specialisation paths open at Level 5; this one-shot does not reach that. Rest rules are 5e.</p>
+  <p><span class="sat-mono">1 Gold Crown = 100 Silver Marks = 1,000 Copper Bits.</span> Your coin is on your sheet. Rune-inscribed goods cost 2 to 5 times the mundane version.</p>
+  <p>You are <strong>Level 3.</strong> Level 4 comes after Session 3, and Level 5 at Session 5, when specialisation paths open. Rest rules are 5e.</p>
 
   <h3>At the table</h3>
   <ul>
@@ -644,110 +541,50 @@
   </form>
 </article>
 
-<!-- ================= SESSION 0 ================= -->
+<!-- ================= HOW WE PLAY ================= -->
 <article class="view sat-glass-2 sat-card prose" data-view="session" hidden>
-  <h2>Session 0: what to expect</h2>
-  <p class="sat-lede">Session 0 is where your character walks into the world. It takes about 20 minutes before play, and nothing in it is a test.</p>
+  <h2>How we play</h2>
+  <p class="sat-lede">The DM writes every turn here. You read it, decide, and tell the host what your character does.</p>
 
-  <h3>How this table runs (5 minutes to set up)</h3>
-  <p>We play on a voice call. You talk and roll on the call. Everything the DM writes arrives in this app: the shared turns in <a href="#table">Table</a>, and private letters in your <a href="#inbox">Inbox</a>.</p>
+  <h3>The loop</h3>
   <ol>
     <li><strong>Install the app.</strong> On iPhone, open this page in Safari, tap <strong>Share</strong>, then <strong>Add to Home Screen</strong>. On Android, use the browser menu, then <strong>Install app</strong>.</li>
-    <li><strong>Open your inbox.</strong> Go to <a href="#inbox">Inbox</a>, choose your character and type your inbox code (the host sends it to you). Your finished sheet and the DM's letters are there.</li>
-    <li><strong>Keep the app open during play.</strong> New turns and letters appear within about two minutes of the DM posting them.</li>
-    <li><strong>No dice?</strong> Use the <a href="#dice">Dice</a> tab and read the result out, or ask the DM to roll for you. The DM's rolls appear under the turn, and the full working for your own rolls is in your inbox's <strong>Roll log</strong>.</li>
-    <li><strong>Reply privately with a file.</strong> Save your reply as a <span class="sat-mono">.md</span> or <span class="sat-mono">.txt</span> file and send it to the host. The host passes it to the DM without opening it.</li>
-    <li><strong>Treat the call as public.</strong> Secret actions, secret answers, and your Lines and Veils can go by file instead.</li>
+    <li><strong>Open your inbox.</strong> Go to <a href="#inbox">Inbox</a>, choose your character and type your inbox code. Your sheet and the DM's letters are there.</li>
+    <li><strong>Read the turn.</strong> Each shared turn appears in <a href="#table">Table</a> about two minutes after the DM posts it. The app checks every 20 seconds and marks anything new.</li>
+    <li><strong>Answer the question at the end of the turn.</strong> Tell the host what your character says and does, on the call or by message.</li>
+    <li><strong>Roll your own dice</strong>, or use the <a href="#dice">Dice</a> tab and read the result out. The full working of any roll the DM makes for you is in your inbox's <strong>Roll log</strong>.</li>
+    <li><strong>Secrets go by file.</strong> A secret action, a private question or anything you want only the DM to read: save it as a <span class="sat-mono">.md</span> or <span class="sat-mono">.txt</span> file and send it to the host. The host passes it on unopened.</li>
   </ol>
-  <p class="note">Inboxes are sealed: each one opens only with its own code. The host plays too, so the host never reads your sheet or your letters.</p>
+  <p class="note">Inboxes are sealed: each opens only with its own code. The host plays too, so the host never reads your sheet or your letters.</p>
 
-  <h3>How Session 0 runs</h3>
-  <ol>
-    <li><strong>The DM reads your sheet</strong> and asks at most <strong>three questions</strong> about anything marked <span class="qq">??</span> or unclear. Answer in a line; "I do not know yet" is a valid answer.</li>
-    <li><strong>Each player gets a short introduction</strong>, one or two paragraphs written from your sheet: where your character is and what they are doing in the hours before the job begins. You react to it; you do not need to prepare.</li>
-    <li><strong>The introductions converge.</strong> Your characters arrive at the same place on the same evening.</li>
-    <li><strong>Play begins.</strong> The DM sets the scene and asks what you do.</li>
-  </ol>
-  <p>You do <strong>not</strong> have to share your character's secrets with the other player. If the DM sends you a private letter, you can use it, keep it, or reveal it.</p>
-
-  <h3>Where you start</h3>
-  <p><strong>Cressen</strong>, a coastal charter port in the southwest of Golgotha, <strong>at dusk.</strong> The town is in the middle of a celebration that has nothing to do with you. You hold a commission, a stamped card and 50 Silver Marks. You are expected at the charter hall.</p>
+  <h3>Where it starts</h3>
+  <p><strong>Gantry, Tallow Street, the Lamp and Pick, early morning.</strong> Your character has a room here. Breakfast is on in the common room.</p>
 
   <h3>The tone</h3>
-  <p>This is a <strong>story-first</strong> game. You play <strong>people</strong>: they have fears, loyalties and bad days.</p>
-  <p><strong>Expect:</strong> mysteries with real answers; factions that are neither purely good nor purely evil; decisions with consequences, including ones you did not intend; a little wonder, a little weight.</p>
-  <p><strong>Do not expect:</strong> a chosen-hero power fantasy; a clean villain at the end of every scene; rules mastery as the path to winning.</p>
-  <p><strong>Failure is part of the story.</strong> A failed roll means something happened that was not what you intended, not that nothing happened. You cannot fail the game; you can only change the shape of the story. <strong>Most sessions have no more than one fight.</strong></p>
-  <h4>How to play it well</h4>
+  <p>A <strong>story-first</strong> game about people with fears, loyalties and bad days. Expect mysteries with real answers, institutions that do bad things for reasons you can follow, and paperwork that matters. Do not expect a chosen-hero power fantasy.</p>
+  <p><strong>Failure is part of the story.</strong> A failed roll means something happened that you did not intend, never that nothing happened.</p>
   <ul>
-    <li>Be <strong>specific about intent.</strong> Not "I attack" but "I try to disarm him so he drops the evidence."</li>
-    <li>Describe what your character <strong>says</strong> when they cast; you do not need real Vaelan.</li>
-    <li>Ask "What would my character know about this?" any time.</li>
-    <li>Dramatic irony is a feature. Your character acts on what <em>they</em> know.</li>
+    <li>Be <strong>specific about intent.</strong> Not "I search" but "I check the cart's chit against the Roll."</li>
+    <li>Ask "what would my character know about this?" at any time.</li>
+    <li>Your character acts on what <em>they</em> know, not on what you guess.</li>
   </ul>
 
   <h3>Safety</h3>
-  <p><strong>Lines</strong> are things that do not appear in this game at all. <strong>Veils</strong> are things that may happen off-screen but are not shown. Put yours on your sheet, or send them to the DM by file before play; you do not need to explain.</p>
-  <p>Think about: violence (how detailed), horror (the Rift is unsettling), religious and divine themes, political betrayal and moral grey, and character death.</p>
-  <p><strong>X-card or thumbs-down:</strong> at any time, anyone can pause or cut a scene, no questions asked. On a voice call, say "X" or "pause."</p>
+  <p><strong>Lines</strong> never appear in the game. <strong>Veils</strong> happen off-screen. Send yours to the DM by file at any time; you do not need to explain.</p>
+  <p><strong>Pause word: X.</strong> Anyone can say it, at any time, and the scene stops. No questions asked.</p>
 
-  <h3>How the DM runs the game</h3>
+  <h3>How the DM runs it</h3>
   <ul>
-    <li><strong>You roll your own dice.</strong> The DM shows every enemy roll.</li>
-    <li>The DM rules quickly: DC 10 easy, 15 medium, 20 hard; when unsure, DC 12, with advantage for a clever idea.</li>
+    <li>DCs: <strong>10 easy, 15 medium, 20 hard</strong>. Unsure: 12, with advantage for a clever approach.</li>
+    <li>The DM shows every roll it makes for an enemy.</li>
     <li><strong>Decisions are yours.</strong> The DM presents situations; you choose.</li>
-    <li>If a rule would slow a good scene, the DM may bend it, and tells you after.</li>
-    <li><strong>This is a trial game.</strong> If something is confusing or does not work, say so.</li>
   </ul>
-
-  <h3>Checklist</h3>
-  <ul class="checklist">
-    <li>Read the World guide, sections 1 to 3</li>
-    <li>Sheet filled in and sent to the DM as a file</li>
-    <li>App installed, and your own inbox opened</li>
-    <li>Lines, Veils and X-card agreed</li>
-    <li>One thing you hope your character gets to do, and one thing you would hate to see happen</li>
-  </ul>
-
-  <hr>
-  <h3 id="commission">Handout 1: your commission</h3>
-  <p class="note">The paper in your pocket when play begins.</p>
-  <div class="handout sat-solid">
-    <span class="sat-caption">Survey Dispatch Board <span class="sat-qual">(Office of Records, charter south)</span></span>
-    <p class="doc-title">Form 11-E: Commission to Attest Standing</p>
-    <p class="note">In duplicate. Both copies stamped, and the stamps are the same stamp.</p>
-    <p><strong>Retained:</strong> the bearers of this form, being licensed freelancers on the Board's roster.</p>
-    <p><strong>Subject:</strong> the <strong>Vale Reclamation Trust</strong>, chartered at Cressen, Year 389, which has applied to the Board for a <strong>Certificate of Good Standing</strong> for its notices.</p>
-    <p><strong>Undertaking:</strong> visit <strong>three sites</strong> in the Serret Vale: (1) the notary and charter hall at <strong>Cressen</strong>; (2) the toll fort at <strong>Tarvish</strong>; (3) any <strong>remedy train</strong> of the Trust on the pass road. At each, <strong>observe</strong> and <strong>attest</strong> the Trust's standing.</p>
-    <p><strong>Terms:</strong> <span class="sat-mono">60 SM</span> per retained party, <span class="sat-mono">20 SM</span> expenses, half on filing. Report at intervals of <strong>four days</strong>. A missed interval is a <em>lapse</em>.</p>
-    <p><strong>Standard instruction:</strong> <em>Attest what you observe. Do not attest what you are told.</em> A report containing the second shall be returned.</p>
-    <p><strong>Filing:</strong> return Form 11-E (attached) to the Board's post-box at the Cressen charter hall. The Board will reply in due course.</p>
-    <p class="sig">By the hand of the under-clerk, Office of Records, who has read the Trust's application twice and finds nothing in it to object to, and would therefore like someone else to confirm that.</p>
-    <hr class="sat-rule">
-    <span class="sat-caption">Attached <span class="sat-qual">(the attestation form)</span></span>
-    <div class="sat-table-wrap"><table class="sat-table">
-      <thead><tr><th>Site</th><th>I observed</th><th>I was told</th></tr></thead>
-      <tbody>
-        <tr><td>Cressen</td><td></td><td></td></tr>
-        <tr><td>Tarvish</td><td></td><td></td></tr>
-        <tr><td>The remedy train</td><td></td><td></td></tr>
-      </tbody>
-    </table></div>
-    <p><strong>Finding (circle one):</strong></p>
-    <ul class="options"><li>In good standing</li><li>In good standing with a note</li><li>Referred for further attestation</li><li>Not filed</li></ul>
-    <p class="sig">Signed: ______________ &nbsp; Signed: ______________ &nbsp; Stamped twice.</p>
-    <div class="stamps" aria-hidden="true">
-      <div class="stamp one"><span>Received<b>S.D.B.</b></span></div>
-      <div class="stamp two"><span>Received<b>S.D.B.</b></span></div>
-    </div>
-  </div>
-  <p class="sat-lede">See you at the charter hall.</p>
 </article>
 
 </main>
 
 <footer class="sat-shell">
-  <p class="sat-source">Player-facing app for A Finding of Good Standing, a one-shot in the world of Vaela. Built by Saturday Solutions. <span id="build-line"></span></p>
+  <p class="sat-source">Player-facing app for the Gantry table, a campaign in the world of Vaela. Built by Saturday Solutions. <span id="build-line"></span></p>
 </footer>
 
 <nav class="tabbar sat-glass-2 sat-mobile-only" aria-label="App sections">
