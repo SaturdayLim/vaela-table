@@ -10,7 +10,12 @@ import { initDice } from "./dice";
 
 type Post = { id: string; title: string; file: string };
 type InboxMeta = { slug: string; name: string; letters: number; newest: string | null; salt?: string; file: string };
-type Relay = { server: string; topic: string };
+/** relay.json: the ntfy topic, the host's slug and the session-close settings (plans/table-live.md, step 5). */
+type CloseConf = { who?: "any" | "host"; needs?: "all" | "one"; finish?: boolean; recap?: boolean };
+type Relay = { server: string; topic: string; host?: string; close?: CloseConf };
+/** A player asks to end the session, agrees, or cancels (Keep playing). Only messages for the current turn count. */
+type CloseMsg = { v: 1; kind: "close"; op: "ask" | "agree" | "cancel"; turn: number; who: string; at: number };
+type CloseReq = { by: string; turn: number; agreed: string[]; waiting: string[]; ready: boolean };
 type Index = { rev: string; built: string; story: Post[]; inboxes: InboxMeta[]; relay?: Relay | null };
 /** One player's action for one turn, carried by the relay. The newest one per player wins. */
 type Action = { v: 1; kind: "action"; turn: number; who: string; text: string; at: number; checks?: Record<string, number> };
@@ -166,6 +171,7 @@ async function renderFeed() {
     : !first.file ? (livePost?.text ?? `# ${first.title}\n\nThe full turn arrives here within 2 minutes.`)
     : await (await fetchFresh(`content/${first.file}`)).text();
   latestChecks = parseChecks(text);
+  sessionClosed = text.includes(CLOSED_MARK);
   latest.innerHTML = `<span class="sat-caption post-meta">Latest turn</span><h2>${escapeHtml(first.title)}</h2>${renderTurn(text)}`;
 
   const earlier = $("feed-earlier");
@@ -203,6 +209,38 @@ let latestChecks: Check[] = [];
 let faces = new Map<string, number>(); // check id -> the d20 face this player tapped
 let checksKey = "";
 const asideSeenKey = (slug: string) => `vaela-table-aside-seen:${slug}`;
+// Session close (step 5): `table.py close` ends its recap post with this mark. While it is the latest post, the
+// answer and aside boxes stay closed; the next session's first post reopens them.
+const CLOSED_MARK = "<!-- session: closed -->";
+let sessionClosed = false;
+let closeMsgs: CloseMsg[] = [];
+
+const firstName = (slug: string) => index?.inboxes.find((m) => m.slug === slug)?.name.split(" ")[0] ?? slug;
+/** "Danny", "Danny and Ilse", "Danny, Ilse and Petr". */
+function nameList(slugs: string[]) {
+  const n = slugs.map(firstName);
+  return n.length < 2 ? n.join("") : `${n.slice(0, -1).join(", ")} and ${n[n.length - 1]}`;
+}
+function closeConf() {
+  const c = index?.relay?.close ?? {};
+  return { who: c.who ?? "any", needs: c.needs ?? "all", finish: c.finish ?? true };
+}
+/** The close request after every ask / agree / cancel this turn, oldest first. Mirrors close_request in table.py. */
+function closeRequest(): CloseReq | null {
+  if (!index) return null;
+  const conf = closeConf();
+  const names = index.inboxes.map((m) => m.slug);
+  let req: { by: string; turn: number; agreed: string[] } | null = null;
+  for (const m of [...closeMsgs].sort((a, b) => a.at - b.at)) {
+    if (!names.includes(m.who)) continue;
+    if (m.op === "ask" && !req && (conf.who === "any" || m.who === index.relay?.host)) req = { by: m.who, turn: m.turn, agreed: [] };
+    else if (m.op === "agree" && req && m.who !== req.by && !req.agreed.includes(m.who)) req.agreed.push(m.who);
+    else if (m.op === "cancel" && req) req = null;
+  }
+  if (!req) return null;
+  const waiting = names.filter((s) => s !== req!.by && !req!.agreed.includes(s));
+  return { ...req, waiting, ready: conf.needs === "one" || waiting.length === 0 };
+}
 
 /** `table.py send` writes the called checks as a hidden line: <!-- checks: [...] --> */
 function parseChecks(text: string): Check[] {
@@ -284,6 +322,7 @@ async function pollActions() {
     const turn = currentTurn();
     const next = new Map<string, Action>();
     const mine: typeof asides = [];
+    const closes: CloseMsg[] = [];
     let live: LivePost | null = null;
     for (const line of (await res.text()).split("\n")) {
       if (!line.trim()) continue;
@@ -293,6 +332,8 @@ async function pollActions() {
         const a = JSON.parse(msg.message);
         // ntfy returns oldest first, so a later answer from the same player replaces the earlier one.
         if (a?.kind === "action" && a.turn === turn && typeof a.who === "string") next.set(a.who, a as Action);
+        // A close request also holds over the DM's resolving post (the next turn), so it lasts until the recap.
+        else if (a?.kind === "close" && (a.turn === turn || a.turn === turn - 1) && typeof a.who === "string" && typeof a.at === "number") closes.push(a as CloseMsg);
         else if (a?.kind === "post" && typeof a.turn === "number" && typeof a.id === "string" && (!live || a.turn >= live.turn)) live = a as LivePost;
         else if (a?.kind === "aside" && who && a.who === who.slug) {
           const code = myCode(who.slug);
@@ -306,6 +347,7 @@ async function pollActions() {
     }
     actions = next;
     asides = mine;
+    closeMsgs = closes;
     if (live && index && live.turn > currentTurn() && !TEST_MODE) {
       livePost = live;
       applyLive(index);
@@ -324,19 +366,37 @@ function renderMove() {
   box.hidden = !index?.relay || !turn;
   if (box.hidden || !index) return;
 
+  const req = closeRequest();
+  const who = me();
   const lights = $("move-lights");
+  lights.hidden = sessionClosed;
   lights.innerHTML = "";
   for (const m of index.inboxes) {
-    const on = actions.has(m.slug);
+    // While a close request is open, the lights show where each player stands on it.
+    const [on, label] = !req ? [actions.has(m.slug), actions.has(m.slug) ? "answered" : "waiting"]
+      : m.slug === req.by ? [true, "wants to stop"]
+      : req.agreed.includes(m.slug) ? [true, "agreed"]
+      : closeConf().needs === "one" ? [true, "notified"] : [false, "deciding"];
     const li = document.createElement("li");
     li.className = "light";
     li.dataset.on = String(on);
     li.innerHTML = `<span class="light-dot" aria-hidden="true"></span>`;
-    li.append(`${m.name.split(" ")[0]} ${on ? "answered" : "waiting"}`);
+    li.append(`${m.name.split(" ")[0]} ${label}`);
     lights.appendChild(li);
   }
+  renderClose(who, req);
 
-  // Shared answers, first first. Both players see them; the first one moves the story.
+  // Closed session, or answers stopped while the DM writes the recap: no answer box.
+  const shut = sessionClosed ? "Session closed. No answers until the next session starts."
+    : req && (!closeConf().finish || req.turn < currentTurn()) ? "Answers are closed. The DM is writing the recap." : "";
+  $("move-shut").textContent = shut;
+  $("move-shut").hidden = !shut;
+  if (sessionClosed) {
+    $("move-answers").hidden = $("move-need").hidden = $("move-form").hidden = true;
+    return;
+  }
+
+  // Shared answers, first first. Everyone sees them; the first one moves the story.
   const sent = [...actions.values()].sort((a, b) => a.at - b.at);
   const list = $("move-answers");
   list.hidden = sent.length === 0;
@@ -350,9 +410,8 @@ function renderMove() {
     list.appendChild(li);
   }
 
-  const who = me();
   $("move-need").hidden = !!who;
-  $("move-form").hidden = !who;
+  $("move-form").hidden = !who || !!shut;
   if (!who) return;
   $("move-name").textContent = who.name.split(" ")[0];
   const text = $<HTMLTextAreaElement>("move-text");
@@ -408,14 +467,68 @@ $("move-form").addEventListener("submit", async (e) => {
   }
 });
 
+// ---- session close: End the session, Agree, Keep playing, Cancel request ----
+function renderClose(who: InboxMeta | null, req: CloseReq | null) {
+  const box = $("close");
+  box.hidden = !who || sessionClosed;
+  if (box.hidden || !who || !index) return;
+  const conf = closeConf();
+  const host = index.relay?.host;
+  const mine = req?.by === who.slug;
+  const agreed = !!req?.agreed.includes(who.slug);
+  let banner = "";
+  if (req) {
+    banner = conf.needs === "one" ? (mine ? "You asked to end the session. The DM wraps up next." : `${firstName(req.by)} ended the session. The DM wraps up next.`)
+      : req.ready ? "Everyone agreed to end the session. The DM wraps up next."
+      : mine ? `You asked to end the session. Waiting for ${nameList(req.waiting)} to agree.`
+      : agreed ? `You agreed. Waiting for ${nameList(req.waiting)}.`
+      : `${firstName(req.by)} asked to end the session here.`;
+    if (conf.finish && req.turn === currentTurn()) banner += " Answers for this turn still count: the DM resolves them before closing.";
+  }
+  $("close-banner").textContent = banner;
+  $("close-banner").hidden = !req;
+  const canAsk = conf.who === "any" || who.slug === host;
+  $("close-ask").hidden = !!req || !canAsk;
+  $("close-cancel").hidden = !mine;
+  $("close-agree").hidden = $("close-keep").hidden = !req || mine || agreed || req.ready || conf.needs === "one";
+  const status = $("close-status");
+  if (!status.dataset.busy) status.textContent = !req && !canAsk && host ? `Only ${firstName(host)} can end the session.` : "";
+}
+
+async function sendClose(op: CloseMsg["op"]) {
+  const who = me();
+  const url = relayUrl();
+  const status = $("close-status");
+  if (!who || !url || status.dataset.busy) return;
+  status.dataset.busy = "1";
+  status.textContent = "Sending";
+  const msg: CloseMsg = { v: 1, kind: "close", op, turn: currentTurn(), who: who.slug, at: Date.now() };
+  try {
+    const res = await fetch(url, { method: "POST", body: JSON.stringify(msg) });
+    if (!res.ok) throw new Error(String(res.status));
+    closeMsgs = [...closeMsgs, msg];
+    delete status.dataset.busy;
+    renderMove();
+  } catch {
+    delete status.dataset.busy;
+    status.textContent = "Not sent. Check internet connection and try again.";
+  }
+}
+$("close-ask").addEventListener("click", () => sendClose("ask"));
+$("close-agree").addEventListener("click", () => sendClose("agree"));
+$("close-keep").addEventListener("click", () => sendClose("cancel"));
+$("close-cancel").addEventListener("click", () => sendClose("cancel"));
+
 // ---- aside: a private thread with the DM ----
 function renderAside() {
   const who = me();
   const box = $<HTMLDetailsElement>("aside");
-  box.hidden = !index?.relay || !who || !myCode(who.slug);
+  const usable = !!index?.relay && !!who && !!myCode(who.slug);
+  box.hidden = !usable || sessionClosed;
+  $("aside-closed").hidden = !usable || !sessionClosed;
   if (box.hidden || !who) return;
-  const others = index!.inboxes.filter((m) => m.slug !== who.slug).map((m) => m.name.split(" ")[0]);
-  $("aside-who").textContent = others.length ? others.join(" and ") : "the other players";
+  const others = index!.inboxes.filter((m) => m.slug !== who.slug).map((m) => m.slug);
+  $("aside-who").textContent = others.length ? nameList(others) : "the other players";
   const thread = $("aside-thread");
   thread.innerHTML = asides.length ? "" : `<li class="sat-muted">No asides yet this session. Earlier ones are in your inbox.</li>`;
   for (const m of asides) {

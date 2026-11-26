@@ -1,4 +1,11 @@
 {
   "server": "https://ntfy.sh",
-  "topic": "vaela-table-14ce5dcbd60e23647d5c"
+  "topic": "vaela-table-14ce5dcbd60e23647d5c",
+  "host": "seur",
+  "close": {
+    "who": "any",
+    "needs": "all",
+    "finish": true,
+    "recap": true
+  }
 }

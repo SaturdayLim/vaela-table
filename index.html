@@ -81,7 +81,7 @@
     <form class="sat-stack" id="move-form" autocomplete="off" hidden>
       <div class="sat-stack" id="move-checks" hidden></div>
       <div class="sat-field full">
-        <label for="move-text">What does <span id="move-name"></span> do? Both players see this. The first answer moves the story.</label>
+        <label for="move-text">What does <span id="move-name"></span> do? Everyone at the table sees this. The first answer moves the story.</label>
         <textarea class="sat-input" id="move-text" rows="4" maxlength="1500"></textarea>
       </div>
       <div class="sat-cluster">
@@ -89,7 +89,19 @@
         <span class="sat-small sat-muted" id="move-status" role="status"></span>
       </div>
     </form>
+    <p class="sat-small sat-muted" id="move-shut" hidden></p>
+    <div class="sat-stack" id="close" hidden>
+      <p class="close-banner sat-small" id="close-banner" role="status" hidden></p>
+      <div class="sat-cluster">
+        <button class="sat-btn sat-btn--primary sat-btn--sm" type="button" id="close-agree" hidden>Agree</button>
+        <button class="sat-btn sat-btn--sm" type="button" id="close-keep" hidden>Keep playing</button>
+        <button class="sat-btn sat-btn--sm" type="button" id="close-cancel" hidden>Cancel request</button>
+        <button class="sat-btn sat-btn--ghost sat-btn--sm" type="button" id="close-ask" hidden>End the session</button>
+        <span class="sat-small sat-muted" id="close-status" role="status"></span>
+      </div>
+    </div>
   </section>
+  <p class="sat-glass-2 sat-card sat-small sat-muted" id="aside-closed" hidden>Asides reopen next session. Your aside history is in your Inbox.</p>
   <details class="sat-glass-2 sat-card letter" id="aside" hidden>
     <summary><span class="sat-caption">Private</span><span class="letter-title">Aside with the DM</span> <span class="sat-badge" id="aside-new" hidden></span></summary>
     <div class="sat-stack">
