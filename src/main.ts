@@ -198,8 +198,18 @@ async function renderFeed() {
 // One free ntfy.sh topic (relay.json) carries three kinds of message (plans/table-live.md):
 //   action  a shared answer. Both players see it; the first one moves the story, a second one is read too.
 //   aside   a private thread with the DM, sealed with this player's inbox code. Other players' asides are never opened.
-//   post    the DM's new turn, so it shows here within 5 seconds instead of after the Pages deploy.
-const ACTION_POLL_MS = 5_000;
+//   post    the DM's new turn, so it shows here at once instead of after the Pages deploy.
+// The app holds ONE connection to the topic (ntfy server-sent events): it replays every cached message, then pushes
+// new ones as they arrive. Polling every 5 s got phones blocked: ntfy refills about one request per 10 s after a
+// burst of 60 (HTTP 429, seen in the step 5 test; plans/table-live.md step 5b).
+const RETRY_MS = 30_000;
+const relayMsgs = new Map<string, any>(); // ntfy message id -> payload, oldest first
+let stream: EventSource | null = null;
+let streamUrl = "";
+let retryTimer = 0;
+let relayTimer = 0;
+let relayBusy = false;
+let relayAgain = false;
 let actions = new Map<string, Action>();
 let asides: { id: string; from: "player" | "dm"; at: number; text: string }[] = [];
 const asideText = new Map<string, string>(); // relay message id -> opened text (opened once per page load)
@@ -312,25 +322,52 @@ function applyLive(next: Index) {
   }
 }
 
+/** Open the relay stream, unless it is already open. A refused connection (HTTP 429) is retried after RETRY_MS. */
+function connectRelay() {
+  const url = relayUrl();
+  if (!url) return;
+  if (stream && streamUrl === url && stream.readyState !== EventSource.CLOSED) return;
+  stream?.close();
+  streamUrl = url;
+  const es = new EventSource(`${url}/sse?since=all`);
+  stream = es;
+  es.onmessage = (e) => {
+    try {
+      const msg = JSON.parse(e.data);
+      if (msg.event !== "message" || relayMsgs.has(msg.id)) return; // a reconnect replays everything: skip repeats
+      relayMsgs.set(msg.id, JSON.parse(msg.message));
+      window.clearTimeout(relayTimer);
+      relayTimer = window.setTimeout(() => void pollActions(), 100); // one redraw per burst (the replay on connect)
+    } catch { /* not ours */ }
+  };
+  es.onerror = () => {
+    // A dropped line reconnects by itself; a refused one stays closed, so try again later.
+    if (es.readyState === EventSource.CLOSED && stream === es) {
+      stream = null;
+      window.clearTimeout(retryTimer);
+      retryTimer = window.setTimeout(connectRelay, RETRY_MS);
+    }
+  };
+}
+
+/** Rebuild answers, asides, close requests and the live post from every relay message, then redraw. */
 async function pollActions() {
   const url = relayUrl();
   if (!url) return renderMove();
+  connectRelay();
+  if (relayBusy) { relayAgain = true; return; }
+  relayBusy = true;
   const who = me();
   try {
-    const res = await fetch(`${url}/json?poll=1&since=all`, { cache: "no-store" });
-    if (!res.ok) throw new Error(String(res.status));
     const turn = currentTurn();
     const next = new Map<string, Action>();
     const mine: typeof asides = [];
     const closes: CloseMsg[] = [];
     let live: LivePost | null = null;
-    for (const line of (await res.text()).split("\n")) {
-      if (!line.trim()) continue;
+    for (const [id, a] of relayMsgs) {
+      const msg = { id };
       try {
-        const msg = JSON.parse(line);
-        if (msg.event !== "message") continue;
-        const a = JSON.parse(msg.message);
-        // ntfy returns oldest first, so a later answer from the same player replaces the earlier one.
+        // Oldest first, so a later answer from the same player replaces the earlier one.
         if (a?.kind === "action" && a.turn === turn && typeof a.who === "string") next.set(a.who, a as Action);
         // A close request also holds over the DM's resolving post (the next turn), so it lasts until the recap.
         else if (a?.kind === "close" && (a.turn === turn || a.turn === turn - 1) && typeof a.who === "string" && typeof a.at === "number") closes.push(a as CloseMsg);
@@ -352,12 +389,16 @@ async function pollActions() {
       livePost = live;
       applyLive(index);
       arrivedAt = new Date();
+      relayAgain = true; // renderFeed asks for a rebuild for the new turn; it runs once this one ends
       await renderFeed();
-      return; // renderFeed polls again for the new turn
+    } else {
+      renderMove();
+      renderAside();
     }
-  } catch { /* relay unreachable: keep the last state */ }
-  renderMove();
-  renderAside();
+  } finally {
+    relayBusy = false;
+  }
+  if (relayAgain) { relayAgain = false; await pollActions(); }
 }
 
 function renderMove() {
@@ -575,9 +616,10 @@ $("aside-form").addEventListener("submit", async (e) => {
   }
 });
 
-window.setInterval(() => {
-  if (document.visibilityState === "visible" && current === "table") void pollActions();
-}, ACTION_POLL_MS);
+// No polling: the stream pushes. A phone may drop the line while asleep; reconnect when the app is shown again.
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible" && stream?.readyState === EventSource.CLOSED) connectRelay();
+});
 
 function markPostSeen() {
   if (index?.story[0]) store.set(SEEN_POST, index.story[0].id);
