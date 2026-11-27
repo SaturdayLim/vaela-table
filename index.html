@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Vaela Table</title>
   <meta name="description" content="Table feed, private inboxes and player kit for the Gantry table, a Vaela campaign.">
-  <script>try{var t=localStorage.getItem('sat-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
+  <script>try{var t=localStorage.getItem('sat-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}
+  try{var z=localStorage.getItem('vaela-text-size'),p=[87.5,100,112.5,125,137.5][z];if(z!==null&&p)document.documentElement.style.fontSize=p+'%'}catch(e){}</script>
   <link rel="icon" href="./favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="./apple-touch-icon.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -18,6 +19,7 @@
   <symbol id="i-auto" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.75"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/></symbol>
   <symbol id="i-sun" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/></g></symbol>
   <symbol id="i-moon" viewBox="0 0 24 24"><path d="M19 14.5A7.5 7.5 0 0 1 9.5 5a7.5 7.5 0 1 0 9.5 9.5z" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"/></symbol>
+  <symbol id="i-text" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18L8 6l5 12M4.8 14h6.4"/><path d="M14.5 18l3.5-8 3.5 8M15.6 15.5h4.8"/></g></symbol>
   <symbol id="i-list" viewBox="0 0 24 24"><path d="M5 7h14M5 12h14M5 17h14" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></symbol>
   <symbol id="i-download" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 19h14"/></g></symbol>
   <symbol id="i-copy" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></g></symbol>
@@ -50,6 +52,7 @@
       <button role="radio" aria-checked="false" data-value="kit">Player kit</button>
       <button role="radio" aria-checked="false" data-value="sheet">Character sheet</button>
     </div>
+    <button class="sat-btn sat-btn--ghost sat-iconbtn" type="button" data-text-size-btn aria-label="Text size" aria-expanded="false" aria-controls="text-size"><svg><use href="#i-text"/></svg></button>
     <div class="sat-seg sat-desktop-only" role="radiogroup" aria-label="Theme">
       <button role="radio" data-sat-theme="auto" aria-checked="true" aria-label="Theme: auto"><svg><use href="#i-auto"/></svg></button>
       <button role="radio" data-sat-theme="light" aria-checked="false" aria-label="Theme: light"><svg><use href="#i-sun"/></svg></button>
@@ -62,6 +65,15 @@
     </button>
   </div>
 </header>
+<div class="text-size sat-glass-2" id="text-size" role="dialog" aria-label="Text size" hidden>
+  <div class="text-size-head"><span class="sat-small">Text size</span><output id="text-size-name" for="text-size-range">Standard</output></div>
+  <div class="text-size-row">
+    <button class="sat-btn sat-btn--ghost sat-iconbtn ts-a ts-a--sm" type="button" data-step="-1" aria-label="Smaller text">A</button>
+    <input type="range" id="text-size-range" min="0" max="4" step="1" value="1" list="text-size-ticks" aria-label="Text size">
+    <button class="sat-btn sat-btn--ghost sat-iconbtn ts-a ts-a--lg" type="button" data-step="1" aria-label="Larger text">A</button>
+  </div>
+  <datalist id="text-size-ticks"><option value="0"></option><option value="1"></option><option value="2"></option><option value="3"></option><option value="4"></option></datalist>
+</div>
 
 <main class="sat-shell">
 
@@ -142,6 +154,7 @@
     <h1 class="sat-h1"><span class="sat-tip tip-head"><button type="button" class="sat-tip-btn" id="inbox-title" aria-expanded="false">Inbox</button><span class="sat-tip-body" role="tooltip">Each inbox opens only with its own code. Open yours, and only yours.</span></span></h1>
     <div class="sat-cluster page-tools">
       <span class="sat-badge" id="open-new" hidden></span>
+      <button type="button" class="sat-btn sat-btn--sm" id="switch" hidden>Switch player</button>
       <button type="button" class="sat-btn sat-btn--sm" id="lock" hidden>Lock inbox</button>
     </div>
   </div>
@@ -608,5 +621,13 @@
 </nav>
 
 <script type="module" src="./src/main.ts"></script>
+<dialog class="welcome" id="welcome" aria-labelledby="welcome-title">
+  <article class="handout sat-solid">
+    <h2 class="doc-title" id="welcome-title">Welcome to the table</h2>
+    <div class="prose" id="welcome-body"></div>
+    <p class="sig">The DM</p>
+    <form method="dialog" class="sat-cluster"><button class="sat-btn sat-btn--primary" id="welcome-close">Take a seat</button></form>
+  </article>
+</dialog>
 </body>
 </html>

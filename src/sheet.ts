@@ -4,11 +4,12 @@
 // Nothing leaves the device except by Copy or Download (Markdown), which the player sends to the DM.
 import { modifier } from "./lib/rules";
 import type { Profile } from "./enhance";
+import { randomGolgotha } from "./premade";
 
 const STORE = "vaela-sheet-v2";
 const OLD_STORE = "au1-sheet-v1";
 type Values = Record<string, string>;
-type Draft = { id: string; owner: string; values: Values; saved: string };
+type Draft = { id: string; owner: string; values: Values; saved: string; premade?: boolean };
 type Saved = { drafts: Draft[]; live: Record<string, Values> };
 type Live = { slug: string; name: string; profile: Profile | null };
 
@@ -61,10 +62,12 @@ export function prefillFrom(p: Profile | null, name: string): Values {
 
 /** The sheet as Markdown, one bullet per field, grouped by page. */
 export function sheetMarkdown(groups: { part: string; rows: { label: string; value: string; req: boolean; score: boolean }[] }[],
-  meta: { name: string; kind: "live" | "new"; owner: string; date: Date }) {
+  meta: { name: string; kind: "live" | "new" | "premade"; owner: string; date: Date }) {
   const lines = [`# Character sheet: ${meta.name || "(unnamed)"}`, ""];
   lines.push(meta.kind === "live"
     ? `Live character${meta.owner ? ` (${meta.owner})` : ""}. Changes for the DM to review.`
+    : meta.kind === "premade"
+    ? `Pre-made character from Golgotha${meta.owner ? `, for ${meta.owner}` : ""}. Ready to play: no Session 0. The DM opens its inbox and it joins at the next turn.`
     : `New character${meta.owner ? `, drafted by ${meta.owner}` : ""}. Not live until every required field is filled and its Session 0 is played.`);
   lines.push(`Saved ${meta.date.toISOString().slice(0, 10)}. Required fields are marked *.`, "");
   for (const g of groups) {
@@ -101,6 +104,8 @@ export function initSheet(): void {
   const owner = () => live?.slug ?? "";
   const myDrafts = () => saved.drafts.filter((d) => d.owner === "" || d.owner === owner());
 
+  const draft = () => saved.drafts.find((x) => `new:${x.id}` === current);
+
   function values(): Values {
     const v: Values = {};
     fields.forEach((f) => { if (f.value !== "") v[f.id] = f.value; });
@@ -125,13 +130,25 @@ export function initSheet(): void {
     picker.innerHTML = "";
     const add = (value: string, text: string) => { const o = document.createElement("option"); o.value = value; o.textContent = text; picker.appendChild(o); };
     if (live) add(`live:${live.slug}`, `${live.name} (your character)`);
-    for (const d of myDrafts()) add(`new:${d.id}`, `${d.values["f-name"]?.trim() || "Unnamed"} (new character)`);
+    for (const d of myDrafts()) add(`new:${d.id}`, `${d.values["f-name"]?.trim() || "Unnamed"} (${d.premade ? "pre-made" : "new character"})`);
     add("create", "+ New character");
+    add("random", "+ Random Golgotha character");
     if (![...picker.options].some((o) => o.value === current)) current = picker.options[0].value;
     picker.value = current;
   }
 
   function open(choice: string, quiet = false) {
+    if (choice === "random") {
+      const d: Draft = { id: newId(), owner: owner(), values: randomGolgotha(), saved: "", premade: true };
+      saved.drafts.push(d);
+      current = `new:${d.id}`;
+      buildPicker();
+      fill(d.values);
+      dirty = true;
+      refresh();
+      say("A ready-made character from Golgotha. Change anything you like, set your Lines and Veils, then press Save.");
+      return;
+    }
     if (choice === "create") {
       const d: Draft = { id: newId(), owner: owner(), values: {}, saved: "" };
       saved.drafts.push(d);
@@ -156,12 +173,13 @@ export function initSheet(): void {
       el.textContent = modifier((document.getElementById(el.dataset.mod!) as HTMLInputElement).value);
     });
     const isLive = current.startsWith("live:");
+    const premade = !!draft()?.premade;
     const done = filled();
     const qq = fields.filter((f) => isQQ(f.value)).length;
     const mState = document.getElementById("m-state")!;
     const mReq = document.getElementById("m-req")!;
     const mQQ = document.getElementById("m-qq")!;
-    mState.textContent = isLive ? "Live" : done === reqFields.length ? "Ready for Session 0" : "Draft: not live";
+    mState.textContent = isLive ? "Live" : done === reqFields.length ? (premade ? "Pre-made: ready to play" : "Ready for Session 0") : "Draft: not live";
     mState.className = "sat-badge " + (isLive ? "badge-ok" : "sat-badge--muted");
     mReq.hidden = isLive;
     mReq.textContent = `${done} of ${reqFields.length} required`;
@@ -190,6 +208,7 @@ export function initSheet(): void {
     const missing = reqFields.length - filled();
     say(current.startsWith("live:")
       ? "Saved on this device. Send the changes to the DM with Copy or Download."
+      : draft()?.premade && !missing ? "Saved. Ready to play, no Session 0: send it to the DM with Copy or Download."
       : missing ? `Saved on this device. ${missing} required field${missing > 1 ? "s" : ""} still blank before Session 0.` : "Saved. Ready for Session 0: send it to the DM with Copy or Download.");
   }
 
@@ -201,7 +220,7 @@ export function initSheet(): void {
       groups[groups.length - 1].rows.push({ label: f.dataset.label!, value: f.value, req: f.hasAttribute("data-req"), score: (f as HTMLInputElement).type === "number" });
     }
     const name = (document.getElementById("f-name") as HTMLInputElement).value.trim();
-    return { name, text: sheetMarkdown(groups, { name, kind: current.startsWith("live:") ? "live" : "new", owner: live?.name.split(" ")[0] ?? "", date: new Date() }) };
+    return { name, text: sheetMarkdown(groups, { name, kind: current.startsWith("live:") ? "live" : draft()?.premade ? "premade" : "new", owner: live?.name.split(" ")[0] ?? "", date: new Date() }) };
   }
 
   function say(msg: string, err = false) { status.textContent = msg; status.className = "status" + (err ? " err" : ""); }

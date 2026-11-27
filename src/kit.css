@@ -9,12 +9,29 @@
 }
 @media (min-width: 640px) { .sat-shell { padding-left: max(var(--sat-gutter-tablet), env(safe-area-inset-left, 0px)); padding-right: max(var(--sat-gutter-tablet), env(safe-area-inset-right, 0px)); } }
 @media (min-width: 1024px) { .sat-shell { padding-left: max(var(--sat-gutter-desktop), env(safe-area-inset-left, 0px)); padding-right: max(var(--sat-gutter-desktop), env(safe-area-inset-right, 0px)); } }
-.safe-band { position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 41; background: var(--sat-bg); }
-.sat-header { top: env(safe-area-inset-top, 0px); }
+/* Installed on a phone, the page runs under the status bar. The body starts below it, so the sticky
+   header never has to slide down over the page title (it used to, leaving about 1px above the title). */
+:root { --safe-top: env(safe-area-inset-top, 0px); --header-h: 86px; }
+@media (min-width: 640px) { :root { --header-h: 130px; } }
+@media (min-width: 1024px) { :root { --header-h: 80px; } }
+body.sat { padding-top: var(--safe-top); }
+html { scroll-padding-top: calc(var(--safe-top) + var(--header-h) + var(--sat-space-3)); }
+.safe-band { position: fixed; inset: 0 0 auto; height: var(--safe-top); z-index: 41; background: var(--sat-bg); }
+.sat-header { top: var(--safe-top); }
+/* Scrolled text must not read through the bar or the gap above it: the header strip blurs and tints what
+   passes under it (a dark tint in dark mode, from --sat-bg), and its bottom padding fades out so the edge is soft. */
+.sat-header {
+  background: color-mix(in srgb, var(--sat-bg) 82%, transparent);
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  -webkit-mask-image: linear-gradient(#000 calc(100% - var(--sat-space-3)), transparent);
+  mask-image: linear-gradient(#000 calc(100% - var(--sat-space-3)), transparent);
+}
 @media (max-width: 639px) { .sat-bottombar { bottom: calc(var(--sat-space-3) + env(safe-area-inset-bottom, 0px)); left: max(var(--sat-space-3), env(safe-area-inset-left, 0px)); right: max(var(--sat-space-3), env(safe-area-inset-right, 0px)); } }
 
 /* ---- header ---- */
 .sat-header-bar { flex-wrap: wrap; }
+/* Phones have no section row in the bar: keep one row at any text size; the house line truncates first. */
+@media (max-width: 639px) { .sat-header-bar { flex-wrap: nowrap; } .sat-header-bar .sat-brand { flex: 1 1 auto; } }
 .sat-header .sat-brand { text-decoration: none; color: var(--sat-text); }
 .vaela-mark { color: var(--sat-accent-text); }
 .sections { order: 3; flex-basis: 100%; }
@@ -96,3 +113,27 @@ legend { padding: 0; margin-bottom: var(--sat-space-4); }
 .section-links a[aria-current="page"] { background: var(--sat-accent-soft); color: var(--sat-accent-text); }
 
 footer { padding-block: 0 var(--sat-space-12); }
+
+/* ---- text size panel (prefs.ts): sits outside the masked header so the mask cannot clip it ---- */
+.text-size { position: fixed; z-index: 45; top: calc(var(--safe-top) + var(--header-h) - var(--sat-space-2)); right: max(var(--sat-gutter-mobile), env(safe-area-inset-right, 0px)); width: min(300px, calc(100vw - 2 * var(--sat-gutter-mobile))); padding: var(--sat-space-3) var(--sat-space-4) var(--sat-space-2); border-radius: var(--sat-radius-lg); box-shadow: var(--sat-shadow-lg); }
+@media (min-width: 640px) { .text-size { right: var(--sat-gutter-tablet); } }
+@media (min-width: 1024px) { .text-size { right: max(var(--sat-gutter-desktop), calc((100vw - var(--sat-max)) / 2 + var(--sat-gutter-desktop))); } }
+.text-size-head { display: flex; justify-content: space-between; align-items: baseline; }
+.text-size-head output { font-weight: 600; font-size: var(--sat-fs-small); color: var(--sat-accent-text); }
+.text-size-row { display: flex; align-items: center; gap: var(--sat-space-1); }
+.text-size-row input { flex: 1; min-width: 0; height: 44px; margin: 0; }
+.ts-a { font-family: var(--sat-font-display); line-height: 1; }
+.ts-a--sm { font-size: 14px; }
+.ts-a--lg { font-size: 22px; }
+
+/* ---- no double-tap zoom: taps act at once; pinch zoom still works (accessibility). Zero specificity, so a
+   component that sets its own touch-action (none, pan-y) keeps it. ---- */
+:where(html, body, *) { touch-action: manipulation; }
+
+/* ---- welcome letter (main.ts welcome()): the handout, as a modal ---- */
+.welcome { padding: 0; border: 0; background: none; width: min(520px, calc(100vw - 2 * var(--sat-gutter-mobile))); max-height: calc(100dvh - var(--safe-top) - 48px); color: var(--sat-text); }
+.welcome::backdrop { background: color-mix(in srgb, var(--sat-bg) 70%, transparent); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+.welcome .handout { border-radius: var(--sat-radius-lg); box-shadow: var(--sat-shadow-lg); }
+.welcome[open] { animation: welcome-in 260ms var(--sat-ease); }
+@keyframes welcome-in { from { transform: translateY(12px) scale(0.98); } to { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .welcome[open] { animation: none; } }

@@ -6,6 +6,7 @@ import "./styles.css";
 import { marked } from "marked";
 import { openInbox, openNote, sealNote, WrongCode } from "./lib/crypto.js";
 import { initSheet, setSheetIdentity } from "./sheet";
+import { initTextSize } from "./prefs";
 import { initDice } from "./dice";
 import { initNav, onRoute, currentRoute, setAbsent, openingBook } from "./nav";
 import { enhance, profileHtml, type Profile } from "./enhance";
@@ -42,6 +43,14 @@ const store = {
   set(key: string, value: string) { try { localStorage.setItem(key, value); } catch { /* blocked */ } },
   del(key: string) { try { localStorage.removeItem(key); } catch { /* blocked */ } },
 };
+// Session storage lasts until the app (or tab) is closed: the welcome letter and the active player live here.
+const session = {
+  get(key: string): string | null { try { return sessionStorage.getItem(key); } catch { return null; } },
+  set(key: string, value: string) { try { sessionStorage.setItem(key, value); } catch { /* blocked */ } },
+  del(key: string) { try { sessionStorage.removeItem(key); } catch { /* blocked */ } },
+};
+const ACTIVE = "vaela-table-active";
+const welcomeKey = (slug: string) => `vaela-table-welcome:${slug}`;
 const codeKey = (slug: string) => `vaela-table-code:${slug}`;
 const seenKey = (slug: string) => `vaela-table-seen:${slug}`;
 const SEEN_POST = "vaela-table-seen-post";
@@ -632,9 +641,11 @@ function renderPick() {
     const b = document.createElement("button");
     b.type = "button";
     b.className = "sat-glass inbox-card";
+    const code = store.get(codeKey(meta.slug));
     b.innerHTML = `<span class="sat-h2">${escapeHtml(meta.name)}</span>
-      <span class="sat-cluster" style="--sat-gap: var(--sat-space-2)"><span class="sat-small sat-muted">${meta.letters} letter${meta.letters === 1 ? "" : "s"}</span>${fresh ? `<span class="sat-badge">${fresh} new</span>` : ""}</span>`;
-    b.addEventListener("click", () => startUnlock(meta));
+      <span class="sat-cluster" style="--sat-gap: var(--sat-space-2)"><span class="sat-small sat-muted">${meta.letters} letter${meta.letters === 1 ? "" : "s"}</span>${code ? `<span class="sat-badge badge-ok">Signed in</span>` : ""}${fresh ? `<span class="sat-badge">${fresh} new</span>` : ""}</span>`;
+    // A player already signed in on this device opens without the code.
+    b.addEventListener("click", () => (code ? void unlock(meta, code, true, true) : startUnlock(meta)));
     pick.appendChild(b);
   }
 }
@@ -643,8 +654,11 @@ function enterInbox() {
   if (opened) return showInboxPanel("open");
   if (!index) return showInboxPanel("pick");
   // A code remembered on this device opens its inbox straight away.
+  // With several players signed in here, the one active last in this app session opens; otherwise pick.
   const remembered = index.inboxes.filter((m) => store.get(codeKey(m.slug)));
-  if (remembered.length === 1) { void unlock(remembered[0], store.get(codeKey(remembered[0].slug))!, true, true); return; }
+  const last = remembered.find((m) => m.slug === session.get(ACTIVE));
+  const auto = remembered.length === 1 ? remembered[0] : last;
+  if (auto) { void unlock(auto, store.get(codeKey(auto.slug))!, true, true); return; }
   showInboxPanel(picking ? "unlock" : "pick");
 }
 
@@ -653,6 +667,7 @@ function showInboxPanel(which: "pick" | "unlock" | "open") {
   $("inbox-unlock").hidden = which !== "unlock";
   $("inbox-open").hidden = which !== "open";
   $("lock").hidden = which !== "open";
+  $("switch").hidden = which !== "open";
   $("inbox-title").textContent = which === "open" && opened ? `${opened.meta.name.split(" ")[0]}'s Inbox` : "Inbox";
 }
 
@@ -689,7 +704,9 @@ async function unlock(meta: InboxMeta, code: string, remember: boolean, silent: 
     shareIdentity();
     store.set(seenKey(meta.slug), String(meta.letters));
     picking = null;
+    session.set(ACTIVE, meta.slug);
     showInboxPanel("open");
+    welcome(meta);
     updateDots();
     renderMove();
     void pollActions();
@@ -705,6 +722,25 @@ async function unlock(meta: InboxMeta, code: string, remember: boolean, silent: 
     go.textContent = "Open inbox";
   }
 }
+
+/** Test welcome letter: once per player per app open. Closing the app clears session storage, so it shows again next time. */
+function welcome(meta: InboxMeta) {
+  if (session.get(welcomeKey(meta.slug))) return;
+  session.set(welcomeKey(meta.slug), "1");
+  const dlg = $<HTMLDialogElement>("welcome");
+  const first = meta.name.split(" ")[0];
+  $("welcome-title").textContent = `Welcome back, ${first}`;
+  $("welcome-body").innerHTML = md(WELCOME_TEST.replace(/\{first\}/g, escapeHtml(first)));
+  if (typeof dlg.showModal === "function" && !dlg.open) dlg.showModal();
+}
+// A test letter until the DM writes real ones. Player-safe text only.
+const WELCOME_TEST = `{first}, the lamp is lit and your chair is where you left it.
+
+- **Your move** on the Table page is where you answer the turn.
+- **Private chat** is sealed: only you and the DM read it.
+- Your letters are in this inbox. New ones carry a badge.
+
+This is a test letter. It appears the first time you open the app, and again after you close it and come back.`;
 
 /** Hand the open inbox's character to the Character Sheet (or none when locked). */
 function shareIdentity() {
@@ -776,9 +812,11 @@ async function refreshOpenInbox(prev: Index | null) {
   }
 }
 
-function lockInbox() {
-  if (opened) store.del(codeKey(opened.meta.slug));
+/** Lock forgets this player's code on the device; Switch player keeps it, so they stay signed in. */
+function lockInbox(forget = true) {
+  if (opened && forget) store.del(codeKey(opened.meta.slug));
   opened = null;
+  session.del(ACTIVE);
   shareIdentity();
   renderPick();
   showInboxPanel("pick");
@@ -786,7 +824,8 @@ function lockInbox() {
   renderMove();
   renderChat();
 }
-$("lock").addEventListener("click", lockInbox);
+$("lock").addEventListener("click", () => lockInbox(true));
+$("switch").addEventListener("click", () => lockInbox(false));
 
 // ======================= new-content dots =======================
 function updateDots() {
@@ -810,6 +849,7 @@ onRoute((r) => {
   updateDots();
 });
 initSheet();
+initTextSize();
 initDice();
 initNav();
 enhance(document.querySelector<HTMLElement>('[data-sub="rules"]')!);

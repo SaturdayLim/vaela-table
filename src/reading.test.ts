@@ -3,6 +3,8 @@ import { parseLookup } from "./enhance";
 import { rollError, dieRange } from "./rollbox";
 import { keepD20 } from "./dice";
 import { prefillFrom, sheetMarkdown } from "./sheet";
+import { randomGolgotha } from "./premade";
+import html from "../index.html?raw";
 
 describe("lookup lists", () => {
   it("reads a labelled modifier lookup", () => {
@@ -69,5 +71,34 @@ describe("character sheet", () => {
     expect(md).toContain("drafted by Pip");
     expect(md).toContain("- **STR:** 14 (+2)");
     expect(md).toContain("- **Anchor *:** (blank)");
+  });
+});
+
+describe("pre-made Golgotha characters", () => {
+  const req = [...html.matchAll(/id="(f-[a-z0-9-]+)"[^>]*data-req/g)].map((m) => m[1]);
+  const options = (id: string) => {
+    const m = html.match(new RegExp(`<select[^>]*id="${id}"[^>]*>([\s\S]*?)</select>`));
+    return m ? [...m[1].matchAll(/<option[^>]*>([^<]*)<\/option>/g)].map((o) => o[1].replace(/&amp;/g, "&")) : null;
+  };
+  it("fills every required field, from Golgotha, with valid choices", () => {
+    expect(req.length).toBeGreaterThan(10);
+    for (let n = 0; n < 200; n++) {
+      const v = randomGolgotha();
+      for (const id of req) expect(v[id], id).toBeTruthy();
+      expect(v["f-region"]).toBe("Golgotha");
+      for (const [id, val] of Object.entries(v)) {
+        const opts = options(id);
+        if (opts) expect(opts, `${id}=${val}`).toContain(val);
+      }
+      for (const a of ["str", "dex", "con", "int", "wis", "cha"]) {
+        const s = Number(v[`f-${a}`]); expect(s >= 1 && s <= 20).toBe(true);
+      }
+      expect(new Set([1, 2, 3, 4].map((i) => v[`f-skill${i}`])).size).toBe(4);
+      expect(v["f-lines"]).toBeUndefined();
+    }
+  });
+  it("labels the Markdown as ready to play", () => {
+    const md = sheetMarkdown([], { name: "Wren Coldshaft", kind: "premade", owner: "Pip", date: new Date("2026-11-27T00:00:00Z") });
+    expect(md).toContain("Ready to play: no Session 0");
   });
 });

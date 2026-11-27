@@ -23,6 +23,9 @@ Test for any line of small text: would a player miss it if it were gone? If not,
 | Hash routes | `#section/sub`. Old links (`#world`, `#rules`, `#session`, `#start`, `#commission`) still resolve. The last subpage per section is remembered for the browser session. |
 | Chapter turn | Moving forward turns the page like a book chapter; moving back turns it the other way (View Transitions, CSS fallback). Pages are paper: **fully opaque, never faded**. The turning page bends slightly and settles; the page underneath sits in its shadow (brightness, not transparency). About 440 ms. Off under reduced motion. |
 | Opening book | Once per browser session a closed book with the V opens into the Table. Tap to skip. Off under reduced motion. |
+| Header | Sticky glass bar. Installed on a phone, the body starts below the status bar (`--safe-top`), so the bar never slides over the page title. The strip behind the bar blurs and tints what scrolls under it; its bottom edge fades. On phones the bar stays one row at any text size. |
+| Text size | Five steps (Small, Standard, Large, Larger, Largest: 87.5 to 137.5% of the root). Font tokens are rem and spacing px, so words scale and the layout holds. "Aa" in the header opens a slider; a mouse wheel over it steps through. Kept on the device (`vaela-text-size`), applied in `<head>` before first paint. |
+| Taps | No double-tap zoom (`touch-action: manipulation`). Pinch zoom still works. |
 | One screen on a phone | Each subpage aims to fit 375 x 812 above the tab bar. Never any sideways scroll at 375 px. |
 
 ## Formulae, references, lookups
@@ -63,6 +66,14 @@ Test for any line of small text: would a player miss it if it were gone? If not,
 | Share | Copy and Download give the same Markdown file for the DM, one bullet per field, required fields marked *. |
 | Stats | Each score's label is a tip saying what it covers. Randomize rolls a d20 per score (the Vaela rule). The DM assigns HP, AC, RP, SP, Speed and Proficiency: said in the Stats tip, not as badges. |
 | Slots | Four slots for tools, skills and proficiencies; Primary and Secondary language. |
+| Pre-made | "+ Random Golgotha character" fills every required field (`src/premade.ts`) from the player-facing Player Kit only. It is marked "Pre-made: ready to play": no Session 0. Lines and Veils stay for the player. |
+
+## Players and letters
+
+| Rule | Detail |
+|---|---|
+| Several players per device | Each player signs in with their code once; "Switch player" changes who is active and keeps everyone signed in. "Lock inbox" signs the active player out (forgets the code). After the app is closed, the pick shows who is signed in. |
+| Welcome letter | A letter opens over the page the first time each player signs in after the app opens. Closing the app resets it (session storage), so it shows again on the next open, not on every sign-in. Test text for now. |
 
 ## Table page
 
