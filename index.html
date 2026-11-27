@@ -9,6 +9,7 @@
   <link rel="icon" href="./favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="./apple-touch-icon.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Vaela Table">
 </head>
@@ -23,8 +24,15 @@
   <symbol id="i-inbox" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"><rect x="3.5" y="6" width="17" height="12" rx="2"/><path d="M4 7l8 6 8-6"/></g></symbol>
   <symbol id="i-book" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"><path d="M12 6.5C10 5 7 4.7 4 5.2v13c3-.5 6-.2 8 1.3 2-1.5 5-1.8 8-1.3v-13c-3-.5-6-.2-8 1.3z"/><path d="M12 6.5v13"/></g></symbol>
   <symbol id="i-dice" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"><path d="M12 3l7.8 4.5v9L12 21l-7.8-4.5v-9z"/><path d="M12 3l-4.2 9h8.4zM7.8 12L4.2 7.5M16.2 12l3.6-4.5M7.8 12L12 21l4.2-9M7.8 12l-3.6 4.5M16.2 12l3.6 4.5"/></g></symbol>
+  <symbol id="i-d20" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M32 3 L57 17.5 V46.5 L32 61 L7 46.5 V17.5 Z"/><path d="M32 13 L12 45 H52 Z M32 13 L7 17.5 M32 13 L57 17.5 M12 45 L7 17.5 M12 45 L7 46.5 M12 45 L32 61 L52 45 M52 45 L57 17.5 M52 45 L57 46.5"/></g></symbol>
   <symbol id="i-sheet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3.5H7a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8.5z"/><path d="M14 3.5v5h5M9 13h6M9 17h4"/></g></symbol>
 </svg>
+<div class="splash" id="splash" hidden aria-hidden="true">
+  <div class="book">
+    <div class="book-pages"><svg class="sat-mark vaela-mark" viewBox="0 0 64 48"><path d="M32 12 C24 6 13 5 4 7 V41 C13 39 24 40 32 46"/><path d="M32 12 C40 6 51 5 60 7 V41 C51 39 40 40 32 46"/><path d="M19 17 L32 39 L45 17"/></svg></div>
+    <div class="book-cover"><svg class="book-v" viewBox="0 0 64 48"><path d="M19 17 L32 39 L45 17"/></svg></div>
+  </div>
+</div>
 <div class="safe-band" aria-hidden="true"></div>
 
 <header class="sat-header sat-shell">
@@ -57,80 +65,84 @@
 <main class="sat-shell">
 
 <!-- ================= TABLE (shared feed) ================= -->
-<section class="view sat-stack" data-view="table" aria-labelledby="table-title">
-  <div class="page-head sat-split">
-    <div class="sat-stack" style="--sat-gap: var(--sat-space-2)">
-      <span class="sat-caption">Tallow Street, Gantry</span>
-      <h1 class="sat-h1" id="table-title">The Gantry Table</h1>
-    </div>
-    <div class="sat-cluster">
+<section class="view" data-view="table" aria-labelledby="table-title">
+  <div class="page-head">
+    <h1 class="sat-h1" id="table-title">The Gantry Table</h1>
+    <div class="sat-cluster page-tools">
       <span class="sat-small sat-muted" id="feed-status" role="status">Loading the table</span>
       <button class="sat-btn sat-btn--sm" type="button" id="refresh">Check now</button>
     </div>
   </div>
-  <article class="sat-glass-2 sat-card prose" id="feed-latest" aria-live="polite">
-    <p class="sat-muted">Loading the latest turn.</p>
-  </article>
-  <section class="sat-glass-2 sat-card sat-stack" id="move" aria-labelledby="move-title" hidden>
-    <div class="sat-split">
-      <h2 class="sat-h3" id="move-title">Your move</h2>
-      <ul class="lights" id="move-lights" aria-label="Who has answered this turn"></ul>
-    </div>
-    <ul class="answers" id="move-answers" aria-label="Shared answers this turn" hidden></ul>
-    <p class="sat-small sat-muted" id="move-need" hidden>Open your inbox on this device once, then you can send actions here. <a href="#inbox">Go to Inbox</a></p>
-    <form class="sat-stack" id="move-form" autocomplete="off" hidden>
-      <div class="sat-stack" id="move-checks" hidden></div>
-      <div class="sat-field full">
-        <label for="move-text">What does <span id="move-name"></span> do? Everyone at the table sees this. The first answer moves the story.</label>
-        <textarea class="sat-input" id="move-text" rows="4" maxlength="1500"></textarea>
-      </div>
-      <div class="sat-cluster">
-        <button class="sat-btn sat-btn--primary" type="submit" id="move-send">Send answer</button>
-        <span class="sat-small sat-muted" id="move-status" role="status"></span>
-      </div>
-    </form>
-    <p class="sat-small sat-muted" id="move-shut" hidden></p>
-    <div class="sat-stack" id="close" hidden>
-      <p class="close-banner sat-small" id="close-banner" role="status" hidden></p>
-      <div class="sat-cluster">
-        <button class="sat-btn sat-btn--primary sat-btn--sm" type="button" id="close-agree" hidden>Agree</button>
-        <button class="sat-btn sat-btn--sm" type="button" id="close-keep" hidden>Keep playing</button>
-        <button class="sat-btn sat-btn--sm" type="button" id="close-cancel" hidden>Cancel request</button>
-        <button class="sat-btn sat-btn--ghost sat-btn--sm" type="button" id="close-ask" hidden>End the session</button>
-        <span class="sat-small sat-muted" id="close-status" role="status"></span>
-      </div>
-    </div>
-  </section>
-  <p class="sat-glass-2 sat-card sat-small sat-muted" id="aside-closed" hidden>Asides reopen next session. Your aside history is in your Inbox.</p>
-  <details class="sat-glass-2 sat-card letter" id="aside" hidden>
-    <summary><span class="sat-caption">Private</span><span class="letter-title">Aside with the DM</span> <span class="sat-badge" id="aside-new" hidden></span></summary>
-    <div class="sat-stack">
-      <p class="sat-small sat-muted">Only you and the DM see this. Nothing here is told to <span id="aside-who"></span>; they learn of it only if it shows up in the world and their character notices.</p>
-      <ul class="thread" id="aside-thread" aria-live="polite"></ul>
-      <form class="sat-stack" id="aside-form" autocomplete="off">
-        <div class="sat-field full">
-          <label for="aside-text">Ask, or do something in secret</label>
-          <textarea class="sat-input" id="aside-text" rows="3" maxlength="1500"></textarea>
+  <nav class="subtabs" role="tablist" aria-label="Table pages"></nav>
+
+  <div class="sub sat-stack" data-sub="turn" data-label="This turn">
+    <article class="sat-glass-2 sat-card prose" id="feed-latest" aria-live="polite">
+      <p class="sat-muted">Loading the latest turn.</p>
+    </article>
+    <div class="boxes">
+      <section class="sat-glass-2 sat-card sat-stack box" id="move" aria-labelledby="move-title" hidden>
+        <div class="box-head">
+          <h2 class="sat-h3"><span class="sat-tip tip-head"><button type="button" class="sat-tip-btn" id="move-title" aria-expanded="false">Your move</button><span class="sat-tip-body" role="tooltip">Everyone at the table sees your answer. The first answer moves the story; one sent soon after is read too. When the DM calls a roll, type your die result in its box, or press Roll for me.</span></span></h2>
+          <ul class="lights" id="move-lights" aria-label="Who has answered this turn"></ul>
         </div>
-        <div class="sat-cluster">
-          <button class="sat-btn" type="submit" id="aside-send">Send privately</button>
-          <span class="sat-small sat-muted" id="aside-status" role="status"></span>
+        <ul class="answers" id="move-answers" aria-label="Shared answers this turn" hidden></ul>
+        <p class="sat-small sat-muted" id="move-need" hidden>Open your inbox on this device once to answer here. <a href="#inbox">Go to Inbox</a></p>
+        <form class="sat-stack" id="move-form" autocomplete="off" novalidate hidden>
+          <div class="sat-stack rolls-in" id="move-checks" hidden></div>
+          <div class="sat-field full">
+            <label for="move-text">What does <span id="move-name"></span> do?</label>
+            <textarea class="sat-input" id="move-text" rows="3" maxlength="1500"></textarea>
+          </div>
+          <div class="sat-cluster">
+            <button class="sat-btn sat-btn--primary" type="submit" id="move-send">Send answer</button>
+            <span class="sat-small sat-muted" id="move-status" role="status"></span>
+          </div>
+        </form>
+        <p class="sat-small sat-muted" id="move-shut" hidden></p>
+        <div class="sat-stack" id="close" hidden>
+          <p class="close-banner sat-small" id="close-banner" role="status" hidden></p>
+          <div class="sat-cluster">
+            <button class="sat-btn sat-btn--primary sat-btn--sm" type="button" id="close-agree" hidden>Agree</button>
+            <button class="sat-btn sat-btn--sm" type="button" id="close-keep" hidden>Keep playing</button>
+            <button class="sat-btn sat-btn--sm" type="button" id="close-cancel" hidden>Cancel request</button>
+            <button class="sat-btn sat-btn--ghost sat-btn--sm" type="button" id="close-ask" hidden>End the session</button>
+            <span class="sat-small sat-muted" id="close-status" role="status"></span>
+          </div>
         </div>
-      </form>
+      </section>
+
+      <section class="sat-glass-2 sat-card sat-stack box" id="chat" aria-labelledby="chat-title" hidden>
+        <div class="box-head">
+          <h2 class="sat-h3"><span class="sat-tip tip-head"><button type="button" class="sat-tip-btn" id="chat-title" aria-expanded="false">Private chat</button><span class="sat-tip-body" role="tooltip">Only you and the DM see this. Ask a question, or do something in secret. <span id="chat-who">The other players</span> learn of it only if it shows in the world and their character notices.</span></span></h2>
+          <span class="sat-badge" id="chat-new" hidden></span>
+        </div>
+        <ul class="thread" id="chat-thread" aria-live="polite"></ul>
+        <p class="sat-small sat-muted" id="chat-closed" hidden>Private chat reopens next session. Earlier messages are in your Inbox.</p>
+        <form class="sat-stack" id="chat-form" autocomplete="off" novalidate>
+          <div class="sat-stack rolls-in" id="chat-checks" hidden></div>
+          <textarea class="sat-input" id="chat-text" rows="2" maxlength="1500" aria-label="Private message to the DM"></textarea>
+          <div class="sat-cluster">
+            <button class="sat-btn" type="submit" id="chat-send">Send privately</button>
+            <span class="sat-small sat-muted" id="chat-status" role="status"></span>
+          </div>
+        </form>
+      </section>
     </div>
-  </details>
-  <section class="sat-stack" id="feed-earlier-wrap" hidden>
-    <h2 class="sat-h3">Earlier turns</h2>
+  </div>
+
+  <div class="sub sat-stack" data-sub="earlier" data-label="Earlier turns" data-absent hidden>
     <div class="sat-stack" id="feed-earlier" style="--sat-gap: var(--sat-space-3)"></div>
-  </section>
+  </div>
 </section>
 
 <!-- ================= INBOX (sealed, per player) ================= -->
-<section class="view sat-stack" data-view="inbox" aria-labelledby="inbox-title" hidden>
-  <div class="page-head sat-stack" style="--sat-gap: var(--sat-space-2)">
-    <span class="sat-caption">Private</span>
-    <h1 class="sat-h1" id="inbox-title">Inbox</h1>
-    <p class="sat-muted sat-read">Each inbox opens only with its own code. Open yours, and only yours.</p>
+<section class="view" data-view="inbox" aria-labelledby="inbox-title" hidden>
+  <div class="page-head">
+    <h1 class="sat-h1"><span class="sat-tip tip-head"><button type="button" class="sat-tip-btn" id="inbox-title" aria-expanded="false">Inbox</button><span class="sat-tip-body" role="tooltip">Each inbox opens only with its own code. Open yours, and only yours.</span></span></h1>
+    <div class="sat-cluster page-tools">
+      <span class="sat-badge" id="open-new" hidden></span>
+      <button type="button" class="sat-btn sat-btn--sm" id="lock" hidden>Lock inbox</button>
+    </div>
   </div>
 
   <div class="sat-grid inbox-grid" id="inbox-pick"></div>
@@ -138,9 +150,8 @@
   <form class="sat-glass-2 sat-card sat-stack" id="inbox-unlock" hidden autocomplete="off">
     <h2 class="sat-h2" id="unlock-title"></h2>
     <div class="sat-field">
-      <label for="code">Inbox code</label>
-      <input class="sat-input sat-mono" id="code" name="code" type="text" inputmode="text" autocapitalize="characters" spellcheck="false" placeholder="(e.g. K7QF-M2XD-9PRA)">
-      <span class="sat-hint">The host sends you this code. Case, spaces and dashes do not matter.</span>
+      <div class="lab"><label for="code">Inbox code</label><span class="sat-tip"><button type="button" class="sat-tip-btn" aria-expanded="false" aria-label="About the inbox code">i</button><span class="sat-tip-body" role="tooltip">The host sends you this code: 6 letters and numbers. Case and spaces do not matter.</span></span></div>
+      <input class="sat-input sat-mono" id="code" name="code" type="text" inputmode="text" autocapitalize="characters" spellcheck="false" maxlength="16" placeholder="(e.g. K7QF4M)">
       <span class="sat-error" id="code-error" role="alert" hidden></span>
     </div>
     <div class="sat-switch-row">
@@ -153,110 +164,60 @@
     </div>
   </form>
 
-  <section class="sat-stack" id="inbox-open" hidden>
-    <div class="sat-split">
-      <div class="sat-cluster">
-        <h2 class="sat-h2" id="open-title"></h2>
-        <span class="sat-badge" id="open-new" hidden></span>
-      </div>
-      <button type="button" class="sat-btn" id="lock">Lock inbox</button>
+  <div class="sat-stack" id="inbox-open" hidden>
+    <nav class="subtabs" role="tablist" aria-label="Inbox pages"></nav>
+    <div class="sub sat-stack" data-sub="letters" data-label="Letters">
+      <div class="sat-stack" id="open-letters" style="--sat-gap: var(--sat-space-3)"></div>
     </div>
-    <div class="sat-stack" id="open-letters" style="--sat-gap: var(--sat-space-3)"></div>
-    <details class="sat-glass-2 sat-card letter" id="open-asides" hidden>
-      <summary><span class="sat-caption">Private</span><span class="letter-title">Your asides with the DM</span></summary>
-      <div class="prose" id="open-asides-body"></div>
-    </details>
-    <details class="sat-glass-2 sat-card letter" id="open-pack" hidden>
-      <summary><span class="sat-caption">Your pack</span><span class="letter-title">What you carry</span></summary>
-      <div class="prose" id="open-pack-body"></div>
-    </details>
-    <details class="sat-glass-2 sat-card letter" id="open-sheet" hidden>
-      <summary><span class="sat-caption">Character sheet</span><span class="letter-title" id="open-sheet-title"></span></summary>
-      <div class="prose" id="open-sheet-body"></div>
-    </details>
-    <details class="sat-glass-2 sat-card letter" id="open-rolls" hidden>
-      <summary><span class="sat-caption">Roll log</span><span class="letter-title">Every roll the DM made for you</span></summary>
-      <div class="prose" id="open-rolls-body"></div>
-    </details>
-  </section>
+    <div class="sub sat-glass-2 sat-card profile" data-sub="profile" data-label="Profile" data-absent hidden id="open-profile"></div>
+    <div class="sub sat-glass-2 sat-card prose" data-sub="pack" data-label="Pack" data-absent hidden id="open-pack-body"></div>
+    <div class="sub sat-glass-2 sat-card prose sheet-doc" data-sub="sheet" data-label="Sheet" data-absent hidden id="open-sheet-body"></div>
+    <div class="sub sat-glass-2 sat-card prose" data-sub="rolls" data-label="Roll log" data-absent hidden id="open-rolls-body"></div>
+    <div class="sub sat-glass-2 sat-card prose" data-sub="asides" data-label="Private chat" data-absent hidden id="open-asides-body"></div>
+  </div>
 </section>
 
 <!-- ================= DICE (stays on this device) ================= -->
-<section class="view sat-stack" data-view="dice" aria-labelledby="dice-title" hidden>
-  <div class="page-head sat-stack" style="--sat-gap: var(--sat-space-2)">
-    <span class="sat-caption">No dice at hand</span>
-    <h1 class="sat-h1" id="dice-title">Dice Tray</h1>
-    <p class="sat-muted sat-read">Rolls here stay on this device. Read the result out to the table, or ask the DM to roll for you: the DM's rolls show on the turn post.</p>
+<section class="view" data-view="dice" aria-labelledby="dice-title" hidden>
+  <div class="page-head">
+    <h1 class="sat-h1"><span class="sat-tip tip-head"><button type="button" class="sat-tip-btn" id="dice-title" aria-expanded="false">Dice Tray</button><span class="sat-tip-body" role="tooltip">A fair roller for when you have no dice at hand. Read the dice out as they land: the DM adds your bonuses. Rolls stay on this device.</span></span></h1>
   </div>
+  <nav class="subtabs" role="tablist" aria-label="Dice pages"></nav>
 
-  <article class="sat-glass sat-card dice-result" id="dice-result" aria-live="polite" hidden>
-    <span class="sat-caption" id="dice-what"></span>
-    <span class="dice-total" id="dice-total"></span>
-    <span class="sat-small sat-muted" id="dice-detail"></span>
-  </article>
-
-  <div class="sat-grid dice-grid">
-    <form class="sat-glass-2 sat-card sat-stack" id="d20-form" autocomplete="off">
-      <h2 class="sat-h3">Check, save or attack</h2>
-      <div class="sat-field">
-        <label for="d20-mod">Modifier</label>
-        <input class="sat-input" id="d20-mod" type="number" inputmode="numeric" value="0" min="-10" max="20" step="1">
-        <span class="sat-hint">The number from your sheet, e.g. 5 for a +5 skill.</span>
-      </div>
-      <div class="sat-seg" role="radiogroup" aria-label="Roll mode" id="d20-mode">
-        <button type="button" role="radio" aria-checked="true" data-value="normal">Normal</button>
-        <button type="button" role="radio" aria-checked="false" data-value="adv">Advantage</button>
-        <button type="button" role="radio" aria-checked="false" data-value="dis">Disadvantage</button>
-      </div>
-      <button type="submit" class="sat-btn sat-btn--primary">Roll d20</button>
-    </form>
-
-    <form class="sat-glass-2 sat-card sat-stack" id="dice-form" autocomplete="off">
-      <h2 class="sat-h3">Damage and other dice</h2>
-      <div class="sat-cluster dice-fields">
-        <div class="sat-field">
-          <label for="dice-count">How many</label>
-          <input class="sat-input" id="dice-count" type="number" inputmode="numeric" value="1" min="1" max="20" step="1">
-        </div>
-        <div class="sat-field">
-          <label for="dice-mod">Modifier</label>
-          <input class="sat-input" id="dice-mod" type="number" inputmode="numeric" value="0" min="-10" max="30" step="1">
-        </div>
-      </div>
-      <div class="sat-cluster dice-buttons">
-        <button type="submit" class="sat-btn" value="4">d4</button>
-        <button type="submit" class="sat-btn" value="6">d6</button>
-        <button type="submit" class="sat-btn" value="8">d8</button>
-        <button type="submit" class="sat-btn" value="10">d10</button>
-        <button type="submit" class="sat-btn" value="12">d12</button>
-        <button type="submit" class="sat-btn" value="100">d100</button>
-      </div>
-    </form>
-  </div>
-
-  <section class="sat-stack" id="dice-history-wrap" hidden>
-    <div class="sat-split">
-      <h2 class="sat-h3">Recent rolls</h2>
-      <button type="button" class="sat-btn sat-btn--sm sat-btn--ghost" id="dice-clear">Clear</button>
+  <div class="sub dice-page" data-sub="tray" data-label="Tray">
+    <div class="tray" id="tray">
+      <div class="tray-total" id="tray-total" role="status" hidden><span class="tray-total-n sat-num" id="tray-total-n"></span><span class="tray-total-what" id="tray-total-what"></span></div>
+      <p class="tray-empty" id="tray-empty">Tap a die below to put it in the tray</p>
     </div>
+    <div class="adv" id="adv" data-mode="0" aria-hidden="true">
+      <div class="adv-stops">
+        <button type="button" data-adv="-1">Disadvantage</button>
+        <button type="button" data-adv="0">Normal</button>
+        <button type="button" data-adv="1">Advantage</button>
+      </div>
+      <input type="range" class="adv-range" id="adv-range" min="-1" max="1" step="1" value="0" aria-label="d20 roll mode" disabled>
+    </div>
+    <div class="shelf" id="shelf" role="group" aria-label="Dice to add to the tray"></div>
+    <div class="tray-actions">
+      <button type="button" class="sat-btn sat-btn--ghost" id="dice-empty" disabled>Empty tray</button>
+      <button type="button" class="sat-btn sat-btn--primary" id="dice-roll" disabled>Roll</button>
+    </div>
+  </div>
+
+  <div class="sub sat-stack" data-sub="history" data-label="Recent rolls" hidden>
     <ol class="sat-glass-2 sat-card dice-history" id="dice-history"></ol>
-  </section>
+    <p class="sat-muted" id="dice-history-empty">No rolls yet.</p>
+    <div><button type="button" class="sat-btn sat-btn--sm sat-btn--ghost" id="dice-clear" hidden>Clear</button></div>
+  </div>
 </section>
 
+
 <!-- ================= PLAYER KIT ================= -->
-<div class="kit-nav" id="kit-nav" hidden>
-  <div class="sat-seg sat-seg--block" role="radiogroup" aria-label="Player kit sections" id="kitnav">
-    <button role="radio" aria-checked="true" data-value="start">Start here</button>
-    <button role="radio" aria-checked="false" data-value="world">Gantry guide</button>
-    <button role="radio" aria-checked="false" data-value="rules">Rules</button>
-    <button role="radio" aria-checked="false" data-value="session">How we play</button>
-  </div>
-</div>
-<!-- ================= START HERE ================= -->
-<div data-view="start">
-  <section class="hero sat-stack" aria-labelledby="kit-title">
-    <span class="sat-caption">Player kit</span>
-    <h1 class="sat-display" id="kit-title">The Gantry <em>Table</em></h1>
+<section class="view" data-view="kit" aria-labelledby="kit-title" hidden>
+  <div class="page-head"><h1 class="sat-h1" id="kit-title">Player Kit</h1></div>
+  <nav class="subtabs" role="tablist" aria-label="Player kit pages"></nav>
+  <div class="sub sat-stack" data-sub="start" data-label="Start here">
+  <section class="hero sat-stack">
     <p class="sat-lede">Two strangers under one roof on Tallow Street, in the cart city of Gantry. This kit holds what anyone in town knows. Your inbox holds what only you know.</p>
     <div class="sat-grid stats">
       <div class="sat-glass sat-stat"><span class="sat-caption">Players</span><span class="sat-kpi">2</span><span class="sat-note">Each with a character of their own</span></div>
@@ -266,7 +227,7 @@
     </div>
   </section>
 
-  <article class="view sat-glass-2 sat-card prose">
+  <article class="sat-glass-2 sat-card prose">
     <h2>Start here</h2>
     <p class="sat-lede">Your character is already made. Read the pages below once, open your inbox, and you are ready.</p>
 
@@ -291,13 +252,11 @@
       <li><strong>What you tell the other character.</strong> Your secrets are yours. Share them, trade them or keep them.</li>
       <li><strong>Anything your sheet does not say.</strong> Ask the DM "what would my character know about this?" at any time.</li>
     </ul>
-    <p class="note">The <a href="#sheet">New sheet</a> tab is only for a replacement character.</p>
+    
   </article>
-</div>
+  </div>
 
-<!-- ================= WORLD ================= -->
-<article class="view sat-glass-2 sat-card prose" data-view="world" hidden>
-  <span class="sat-caption">Carters' Hall, Gantry <span class="sat-qual">(visitors' copy)</span></span>
+  <article class="sub sat-glass-2 sat-card prose" data-sub="world" data-label="Gantry guide" hidden>
   <h2>A Public Guide to Vaelora and the Cart City of Gantry</h2>
   <p class="lede-book">Kept on the counter at the Carters' Hall for anyone waiting on a rank. It tells you what any carter in Gantry knows, and it is fairly accurate. The Hall reminds readers that a carter's "fairly" covers a lot of road.</p>
   <div class="callout"><p>Skim <strong>sections 1 to 4</strong>. Read <strong>5 to 8</strong>: that is the town you are in.</p></div>
@@ -429,25 +388,15 @@
   <p class="note">This guide is checked against the Hall's own notices. The Hall has not checked its notices against the street.</p>
 </article>
 
-<!-- ================= RULES ================= -->
-<article class="view sat-glass-2 sat-card prose" data-view="rules" hidden>
+  <article class="sub sat-glass-2 sat-card prose rules" data-sub="rules" data-label="Rules" hidden>
   <h2>Rules on one page</h2>
   <p class="sat-lede">The game is D&amp;D 5e. This page lists only what is different.</p>
 
   <h3>Scores</h3>
-  <p>Your scores are on your sheet. A check is <strong>d20 + the ability modifier</strong>, plus <strong>+2</strong> if the skill is on your sheet. The modifier table:</p>
-  <div class="sat-table-wrap"><table class="sat-table plain">
-    <thead><tr><th class="n">Roll</th><th class="n">Mod</th><th class="n">Roll</th><th class="n">Mod</th></tr></thead>
-    <tbody>
-      <tr><td class="n">20</td><td class="n">+5</td><td class="n">8-9</td><td class="n">-1</td></tr>
-      <tr><td class="n">18-19</td><td class="n">+4</td><td class="n">6-7</td><td class="n">-2</td></tr>
-      <tr><td class="n">16-17</td><td class="n">+3</td><td class="n">4-5</td><td class="n">-3</td></tr>
-      <tr><td class="n">14-15</td><td class="n">+2</td><td class="n">2-3</td><td class="n">-4</td></tr>
-      <tr><td class="n">12-13</td><td class="n">+1</td><td class="n">1</td><td class="n">-5</td></tr>
-      <tr><td class="n">10-11</td><td class="n">+0</td><td class="n"></td><td class="n"></td></tr>
-    </tbody>
-  </table></div>
-  <p>Modifier = (score - 10) / 2, rounded down. Your class sets a minimum for its key scores: if your roll is lower, the DM raises it to the class number. HP, AC and your resource pools are finished by the DM.</p>
+  <p>Your scores are on your sheet. A check is <span class="formula">d20 + ability modifier</span>, plus <span class="formula">+2</span> if the skill is on your sheet.</p>
+  <div class="lookup-wrap"><p class="lookup-label">Modifier lookup <span class="sat-qual">(score to modifier)</span></p>
+  <dl class="lookup"><div><dt>1</dt><dd>&minus;5</dd></div><div><dt>2-3</dt><dd>&minus;4</dd></div><div><dt>4-5</dt><dd>&minus;3</dd></div><div><dt>6-7</dt><dd>&minus;2</dd></div><div><dt>8-9</dt><dd>&minus;1</dd></div><div><dt>10-11</dt><dd>+0</dd></div><div><dt>12-13</dt><dd>+1</dd></div><div><dt>14-15</dt><dd>+2</dd></div><div><dt>16-17</dt><dd>+3</dd></div><div><dt>18-19</dt><dd>+4</dd></div><div><dt>20</dt><dd>+5</dd></div></dl></div>
+  <p>Modifier = <span class="formula">floor((score - 10) / 2)</span>, rounded down. Your class sets a minimum for its key scores: if your roll is lower, the DM raises it to the class number. HP, AC and your resource pools are finished by the DM.</p>
 
   <h3>The three pools</h3>
   <ul>
@@ -474,14 +423,11 @@
   </ul>
 
   <h3>Checks and DCs</h3>
-  <div class="sat-table-wrap"><table class="sat-table plain">
-    <thead><tr><th class="n">Easy</th><th class="n">Medium</th><th class="n">Hard</th></tr></thead>
-    <tbody><tr><td class="n">10</td><td class="n">15</td><td class="n">20</td></tr></tbody>
-  </table></div>
+  <dl class="lookup lookup--wide"><div><dt>Easy</dt><dd>10</dd></div><div><dt>Medium</dt><dd>15</dd></div><div><dt>Hard</dt><dd>20</dd></div></dl>
   <p><strong>Failing forward:</strong> a miss means progress and a cost, never "nothing happens."</p>
 
   <h3>Money, level and rest</h3>
-  <p><span class="sat-mono">1 Gold Crown = 100 Silver Marks = 1,000 Copper Bits.</span> Your coin is on your sheet. Rune-inscribed goods cost 2 to 5 times the mundane version.</p>
+  <p><span class="formula formula--long">1 Gold Crown = 100 Silver Marks = 1,000 Copper Bits</span>. Your coin is on your sheet. Rune-inscribed goods cost 2 to 5 times the mundane version.</p>
   <p>You are <strong>Level 3.</strong> Level 4 comes after Session 3, and Level 5 at Session 5, when specialisation paths open. Rest rules are 5e.</p>
 
   <h3>At the table</h3>
@@ -492,124 +438,18 @@
   </ul>
 </article>
 
-<!-- ================= SHEET ================= -->
-<article class="view sat-glass-2 sat-card" data-view="sheet" hidden>
-  <div class="sheet-head">
-    <div class="sat-stack" style="--sat-gap: var(--sat-space-2)">
-      <h2 class="sat-h2">Your character</h2>
-      <p class="sat-muted">Fill this in, then press <strong>Copy sheet for the DM</strong>. Paste it into a <span class="sat-mono">.txt</span> file and send the file to the host, who passes it to the DM unopened. Your draft stays in this browser. Type <span class="qq">??</span> in up to three fields to let the DM decide them.</p>
-    </div>
-    <div class="sat-cluster" aria-live="polite" style="--sat-gap: var(--sat-space-2)">
-      <span class="sat-badge sat-badge--muted" id="m-req">0 of 15 required</span>
-      <span class="sat-badge sat-badge--muted" id="m-qq">?? used: 0 of 3</span>
-    </div>
-  </div>
-
-  <form id="sheet" class="sheet-form sat-stack" autocomplete="off">
-    <fieldset>
-      <legend class="sat-h3">Identity</legend>
-      <div class="sat-grid fields">
-        <div class="sat-field"><label for="f-name">Name <span class="req" aria-label="required">*</span></label><input class="sat-input" type="text" id="f-name" data-label="Name" data-req></div>
-        <div class="sat-field"><label for="f-pronouns">Pronouns <span class="req" aria-label="required">*</span></label><input class="sat-input" type="text" id="f-pronouns" data-label="Pronouns" data-req></div>
-        <div class="sat-field"><label for="f-species">Species <span class="req" aria-label="required">*</span></label>
-          <select class="sat-input" id="f-species" data-label="Species" data-req><option value=""></option><option>Human (Vaelan-adapted)</option><option>Elf</option><option>Dwarf</option><option>Centaur</option><option>Merfolk</option><option>??</option></select></div>
-        <div class="sat-field"><label for="f-class">Class (Level 3) <span class="req" aria-label="required">*</span></label>
-          <select class="sat-input" id="f-class" data-label="Class" data-req><option value=""></option><option>Artificer</option><option>Alchemist</option><option>Mage</option><option>Warlock</option><option>Healer</option><option>Cleric</option><option>Paladin</option><option>Ranger</option><option>Fighter</option><option>Rogue</option><option>Bard</option><option>Blood Hunter</option><option>Monk</option><option>Druid</option><option>Barbarian</option><option>Necromancer</option></select></div>
-        <div class="sat-field full"><label for="f-stranger">One sentence a stranger would say about you <span class="req" aria-label="required">*</span></label><input class="sat-input" type="text" id="f-stranger" data-label="A stranger would say" data-req placeholder="A tall, tired woman with ink on her cuffs."></div>
-        <div class="sat-field"><label for="f-region">Home region <span class="req" aria-label="required">*</span></label>
-          <select class="sat-input" id="f-region" data-label="Home region" data-req><option value=""></option><option>Flaneur</option><option>Victory Isles</option><option>Golgotha</option><option>Kreimhilde</option><option>Levanter</option><option>Aquias</option><option>Tacenda</option><option>Nemalos and Valo</option><option>Frozen Crescents</option><option>The Border Zone</option><option>??</option></select></div>
-        <div class="sat-field"><label for="f-left">The reason you left <span class="req" aria-label="required">*</span></label><input class="sat-input" type="text" id="f-left" data-label="Why I left" data-req></div>
-        <div class="sat-field"><label for="f-sponsor">Licence sponsor <span class="req" aria-label="required">*</span></label><input class="sat-input" type="text" id="f-sponsor" data-label="Licence sponsor" data-req placeholder="(a guild, a college, a captain, a temple, nobody)"><span class="sat-hint">Who vouched for you to the Board.</span></div>
-        <div class="sat-field"><label for="f-cheap">Why the Board hired you cheaply <span class="req" aria-label="required">*</span></label><input class="sat-input" type="text" id="f-cheap" data-label="Why hired cheaply" data-req placeholder="(new, unlucky, unaffiliated, in debt, overlooked)"></div>
-        <div class="sat-field full"><label for="f-desc">Description</label><textarea class="sat-input" id="f-desc" data-label="Description" placeholder="What you look like, how you carry yourself."></textarea></div>
-      </div>
-    </fieldset>
-
-    <fieldset>
-      <legend class="sat-h3">Resonance</legend>
-      <div class="sat-grid fields">
-        <div class="sat-field"><label for="f-prof">Vaelan proficiency <span class="req" aria-label="required">*</span></label>
-          <select class="sat-input" id="f-prof" data-label="Vaelan proficiency" data-req><option value=""></option><option>None</option><option>Apprentice</option><option>Journeyman</option></select></div>
-        <div class="sat-field"><label for="f-force">Force <span class="req" aria-label="required">*</span></label>
-          <select class="sat-input" id="f-force" data-label="Force" data-req><option value=""></option><option>Arcaen</option><option>Vitalen</option><option>Somalen</option><option>Magic-Mute</option><option>??</option></select></div>
-        <div class="sat-field"><label for="f-dialect">Dialect</label>
-          <select class="sat-input" id="f-dialect" data-label="Dialect"><option value=""></option><option>Eldorian</option><option>Verdant</option><option>Frostholm</option><option>Emberisle</option><option>Crystalian</option></select></div>
-        <div class="sat-field"><label for="f-incant">Known incantations</label><input class="sat-input" type="text" id="f-incant" data-label="Known incantations" placeholder="(what you say, and what it does)"><span class="sat-hint">Simple costs 1 RP, Complex 3 RP.</span></div>
-      </div>
-    </fieldset>
-
-    <fieldset>
-      <legend class="sat-h3">Numbers</legend>
-      <p class="sat-small sat-muted" style="margin-bottom: var(--sat-space-4)">Roll a d20 each, or assign 16, 15, 13, 12, 11, 10. The modifier fills in from the Vaela table.</p>
-      <div class="scores">
-        <div class="score sat-well"><label class="sat-caption" for="f-str">Str</label><input class="sat-input" type="number" id="f-str" min="1" max="20" data-label="STR" inputmode="numeric"><span class="mod" data-mod="f-str"></span></div>
-        <div class="score sat-well"><label class="sat-caption" for="f-dex">Dex</label><input class="sat-input" type="number" id="f-dex" min="1" max="20" data-label="DEX" inputmode="numeric"><span class="mod" data-mod="f-dex"></span></div>
-        <div class="score sat-well"><label class="sat-caption" for="f-con">Con</label><input class="sat-input" type="number" id="f-con" min="1" max="20" data-label="CON" inputmode="numeric"><span class="mod" data-mod="f-con"></span></div>
-        <div class="score sat-well"><label class="sat-caption" for="f-int">Int</label><input class="sat-input" type="number" id="f-int" min="1" max="20" data-label="INT" inputmode="numeric"><span class="mod" data-mod="f-int"></span></div>
-        <div class="score sat-well"><label class="sat-caption" for="f-wis">Wis</label><input class="sat-input" type="number" id="f-wis" min="1" max="20" data-label="WIS" inputmode="numeric"><span class="mod" data-mod="f-wis"></span></div>
-        <div class="score sat-well"><label class="sat-caption" for="f-cha">Cha</label><input class="sat-input" type="number" id="f-cha" min="1" max="20" data-label="CHA" inputmode="numeric"><span class="mod" data-mod="f-cha"></span></div>
-      </div>
-      <ul class="inline-list" style="margin-top: var(--sat-space-4)" aria-label="Filled in by the DM">
-        <li class="sat-badge sat-badge--muted">HP: DM</li><li class="sat-badge sat-badge--muted">AC: DM</li><li class="sat-badge sat-badge--muted">RP and SP: DM</li><li class="sat-badge sat-badge--muted">Speed: DM</li><li class="sat-badge sat-badge--muted">Proficiency +2</li>
-      </ul>
-      <div class="sat-grid fields" style="margin-top: var(--sat-space-5)">
-        <div class="sat-field"><label for="f-skills">Skills (3 or 4)</label><input class="sat-input" type="text" id="f-skills" data-label="Skills"></div>
-        <div class="sat-field"><label for="f-tools">Tools and languages</label><input class="sat-input" type="text" id="f-tools" data-label="Tools and languages"></div>
-      </div>
-    </fieldset>
-
-    <fieldset>
-      <legend class="sat-h3">Gear</legend>
-      <p class="sat-small sat-muted" style="margin-bottom: var(--sat-space-4)">You carry 50 Silver Marks.</p>
-      <div class="sat-grid fields">
-        <div class="sat-field"><label for="f-item">Signature item <span class="req" aria-label="required">*</span></label><input class="sat-input" type="text" id="f-item" data-label="Signature item" data-req></div>
-        <div class="sat-field"><label for="f-kit">Kit</label><input class="sat-input" type="text" id="f-kit" data-label="Kit"><span class="sat-hint">The DM confirms it.</span></div>
-      </div>
-    </fieldset>
-
-    <fieldset>
-      <legend class="sat-h3">Hooks</legend>
-      <div class="sat-grid fields">
-        <div class="sat-field full"><label for="f-anchor">Anchor <span class="req" aria-label="required">*</span></label><input class="sat-input" type="text" id="f-anchor" data-label="Anchor" data-req><span class="sat-hint">Who or what you will not lose.</span></div>
-        <div class="sat-field full"><label for="f-scar">Scar <span class="req" aria-label="required">*</span></label><input class="sat-input" type="text" id="f-scar" data-label="Scar" data-req><span class="sat-hint">What happened and is not finished.</span></div>
-        <div class="sat-field full"><label for="f-question">Question <span class="req" aria-label="required">*</span></label><input class="sat-input" type="text" id="f-question" data-label="Question" data-req><span class="sat-hint">Make at least one hook about trust in paper: contracts, licences, records, who wrote what.</span></div>
-      </div>
-    </fieldset>
-
-    <fieldset>
-      <legend class="sat-h3">Optional</legend>
-      <div class="sat-grid fields">
-        <div class="sat-field"><label for="f-partner">Your partner: how you know them</label><input class="sat-input" type="text" id="f-partner" data-label="Partner" placeholder="(strangers, or one shared fact)"></div>
-        <div class="sat-field"><label for="f-tie">Prior faction tie</label><input class="sat-input" type="text" id="f-tie" data-label="Faction tie" placeholder="(e.g. former affiliate, Bardic College)"></div>
-        <div class="sat-field"><label for="f-hope">One thing you hope your character gets to do</label><input class="sat-input" type="text" id="f-hope" data-label="Hope to do"></div>
-        <div class="sat-field"><label for="f-hate">One thing you would hate to see happen</label><input class="sat-input" type="text" id="f-hate" data-label="Hate to see"></div>
-        <div class="sat-field"><label for="f-lines">Lines</label><input class="sat-input" type="text" id="f-lines" data-label="Lines"><span class="sat-hint">Never in play.</span></div>
-        <div class="sat-field"><label for="f-veils">Veils</label><input class="sat-input" type="text" id="f-veils" data-label="Veils"><span class="sat-hint">Off-screen only.</span></div>
-      </div>
-    </fieldset>
-
-    <div class="actions sat-cluster">
-      <button type="button" class="sat-btn sat-btn--primary" id="copy"><svg><use href="#i-copy"/></svg>Copy sheet for the DM</button>
-      <button type="button" class="sat-btn sat-btn--ghost" id="clear">Clear sheet</button>
-      <span class="status" id="status" role="status"></span>
-    </div>
-    <textarea class="sat-input" id="fallback" readonly hidden aria-label="Your sheet as text"></textarea>
-  </form>
-</article>
-
-<!-- ================= HOW WE PLAY ================= -->
-<article class="view sat-glass-2 sat-card prose" data-view="session" hidden>
+  <article class="sub sat-glass-2 sat-card prose" data-sub="session" data-label="How we play" hidden>
   <h2>How we play</h2>
-  <p class="sat-lede">The DM writes every turn here. You read it, decide, and tell the host what your character does.</p>
+  <p class="sat-lede">The DM writes every turn here. You read it, decide, and answer in the app.</p>
 
   <h3>The loop</h3>
   <ol>
-    <li><strong>Install the app.</strong> On iPhone, open this page in Safari, tap <strong>Share</strong>, then <strong>Add to Home Screen</strong>. On Android, use the browser menu, then <strong>Install app</strong>.</li>
-    <li><strong>Open your inbox.</strong> Go to <a href="#inbox">Inbox</a>, choose your character and type your inbox code. Your sheet and the DM's letters are there.</li>
-    <li><strong>Read the turn.</strong> Each shared turn appears in <a href="#table">Table</a> about two minutes after the DM posts it. The app checks every 20 seconds and marks anything new.</li>
-    <li><strong>Answer the question at the end of the turn.</strong> Tell the host what your character says and does, on the call or by message.</li>
-    <li><strong>Roll your own dice</strong>, or use the <a href="#dice">Dice</a> tab and read the result out. The full working of any roll the DM makes for you is in your inbox's <strong>Roll log</strong>.</li>
-    <li><strong>Secrets go by file.</strong> A secret action, a private question or anything you want only the DM to read: save it as a <span class="sat-mono">.md</span> or <span class="sat-mono">.txt</span> file and send it to the host. The host passes it on unopened.</li>
+    <li><strong>Install the app.</strong> On iPhone, open this page in Safari, tap <strong>Share</strong>, then <strong>Add to Home Screen</strong>. On Android, use the browser menu, then <strong>Install app</strong>. It opens from your home screen and stays live while it is open.</li>
+    <li><strong>Open your inbox.</strong> Go to <a href="#inbox">Inbox</a>, choose your character and type your inbox code. Your profile, sheet and the DM's letters are there.</li>
+    <li><strong>Read the turn.</strong> Each turn appears in <a href="#table">Table</a> within seconds of the DM posting it.</li>
+    <li><strong>Answer in Your move.</strong> Everyone at the table sees it. The first answer moves the story.</li>
+    <li><strong>Roll your own dice.</strong> When the DM calls a roll, type the die result in its box. No dice: use the <a href="#dice">Dice</a> tab, or press <strong>Roll for me</strong>. The DM adds your bonuses.</li>
+    <li><strong>Secrets go in Private chat.</strong> Only you and the DM see it. A private roll shows up there too.</li>
   </ol>
   <p class="note">Inboxes are sealed: each opens only with its own code. The host plays too, so the host never reads your sheet or your letters.</p>
 
@@ -636,18 +476,119 @@
     <li><strong>Decisions are yours.</strong> The DM presents situations; you choose.</li>
   </ul>
 </article>
+</section>
+
+<!-- ================= NEW SHEET (a replacement character) ================= -->
+<section class="view" data-view="sheet" aria-labelledby="sheet-title" hidden>
+  <div class="page-head">
+    <h1 class="sat-h1"><span class="sat-tip tip-head"><button type="button" class="sat-tip-btn" id="sheet-title" aria-expanded="false">New Sheet</button><span class="sat-tip-body" role="tooltip">Only for a replacement character. Fill in each page, then press Copy sheet for the DM. Paste it into a .txt file and send it to the host, who passes it on unopened. Your draft stays in this browser. Type ?? in up to three fields to let the DM decide them.</span></span></h1>
+    <div class="sat-cluster page-tools" aria-live="polite" style="--sat-gap: var(--sat-space-2)">
+      <span class="sat-badge sat-badge--muted" id="m-req">0 of 15 required</span>
+      <span class="sat-badge sat-badge--muted" id="m-qq">?? used: 0 of 3</span>
+    </div>
+  </div>
+  <nav class="subtabs" role="tablist" aria-label="Sheet pages"></nav>
+<form id="sheet" class="sheet-form sat-glass-2 sat-card" autocomplete="off">
+    <fieldset class="sub" data-sub="identity" data-label="Identity">
+      <legend class="sat-h3"><span class="sat-tip tip-head"><button type="button" class="sat-tip-btn" id="lg-identity" aria-expanded="false">Identity</button><span class="sat-tip-body" role="tooltip">Who your character is: name, people, class, and why the Board took them on.</span></span></legend>
+      <div class="sat-grid fields">
+        <div class="sat-field"><label for="f-name">Name <span class="req" aria-label="required">*</span></label><input class="sat-input" type="text" id="f-name" data-label="Name" data-req></div>
+        <div class="sat-field"><label for="f-pronouns">Pronouns <span class="req" aria-label="required">*</span></label><input class="sat-input" type="text" id="f-pronouns" data-label="Pronouns" data-req></div>
+        <div class="sat-field"><label for="f-species">Species <span class="req" aria-label="required">*</span></label>
+          <select class="sat-input" id="f-species" data-label="Species" data-req><option value=""></option><option>Human (Vaelan-adapted)</option><option>Elf</option><option>Dwarf</option><option>Centaur</option><option>Merfolk</option><option>??</option></select></div>
+        <div class="sat-field"><label for="f-class">Class (Level 3) <span class="req" aria-label="required">*</span></label>
+          <select class="sat-input" id="f-class" data-label="Class" data-req><option value=""></option><option>Artificer</option><option>Alchemist</option><option>Mage</option><option>Warlock</option><option>Healer</option><option>Cleric</option><option>Paladin</option><option>Ranger</option><option>Fighter</option><option>Rogue</option><option>Bard</option><option>Blood Hunter</option><option>Monk</option><option>Druid</option><option>Barbarian</option><option>Necromancer</option></select></div>
+        <div class="sat-field full"><label for="f-stranger">One sentence a stranger would say about you <span class="req" aria-label="required">*</span></label><input class="sat-input" type="text" id="f-stranger" data-label="A stranger would say" data-req placeholder="A tall, tired woman with ink on her cuffs."></div>
+        <div class="sat-field"><label for="f-region">Home region <span class="req" aria-label="required">*</span></label>
+          <select class="sat-input" id="f-region" data-label="Home region" data-req><option value=""></option><option>Flaneur</option><option>Victory Isles</option><option>Golgotha</option><option>Kreimhilde</option><option>Levanter</option><option>Aquias</option><option>Tacenda</option><option>Nemalos and Valo</option><option>Frozen Crescents</option><option>The Border Zone</option><option>??</option></select></div>
+        <div class="sat-field"><label for="f-left">The reason you left <span class="req" aria-label="required">*</span></label><input class="sat-input" type="text" id="f-left" data-label="Why I left" data-req></div>
+        <div class="sat-field"><div class="lab"><label for="f-sponsor">Licence sponsor <span class="req" aria-label="required">*</span></label><span class="sat-tip"><button type="button" class="sat-tip-btn" aria-expanded="false" aria-label="About licence sponsor">i</button><span class="sat-tip-body" role="tooltip">Who vouched for you to the Board.</span></span></div><input class="sat-input" type="text" id="f-sponsor" data-label="Licence sponsor" data-req placeholder="(a guild, a college, a captain, a temple, nobody)"></div>
+        <div class="sat-field"><label for="f-cheap">Why the Board hired you cheaply <span class="req" aria-label="required">*</span></label><input class="sat-input" type="text" id="f-cheap" data-label="Why hired cheaply" data-req placeholder="(new, unlucky, unaffiliated, in debt, overlooked)"></div>
+        <div class="sat-field full"><label for="f-desc">Description</label><textarea class="sat-input" id="f-desc" data-label="Description" placeholder="What you look like, how you carry yourself."></textarea></div>
+      </div>
+    </fieldset>
+
+    <fieldset class="sub" data-sub="resonance" data-label="Resonance">
+      <legend class="sat-h3"><span class="sat-tip tip-head"><button type="button" class="sat-tip-btn" id="lg-resonance" aria-expanded="false">Resonance</button><span class="sat-tip-body" role="tooltip">How your character relates to magic. A Magic-Mute character cannot cast, and notices what casters miss.</span></span></legend>
+      <div class="sat-grid fields">
+        <div class="sat-field"><label for="f-prof">Vaelan proficiency <span class="req" aria-label="required">*</span></label>
+          <select class="sat-input" id="f-prof" data-label="Vaelan proficiency" data-req><option value=""></option><option>None</option><option>Apprentice</option><option>Journeyman</option></select></div>
+        <div class="sat-field"><label for="f-force">Force <span class="req" aria-label="required">*</span></label>
+          <select class="sat-input" id="f-force" data-label="Force" data-req><option value=""></option><option>Arcaen</option><option>Vitalen</option><option>Somalen</option><option>Magic-Mute</option><option>??</option></select></div>
+        <div class="sat-field"><label for="f-dialect">Dialect</label>
+          <select class="sat-input" id="f-dialect" data-label="Dialect"><option value=""></option><option>Eldorian</option><option>Verdant</option><option>Frostholm</option><option>Emberisle</option><option>Crystalian</option></select></div>
+        <div class="sat-field"><div class="lab"><label for="f-incant">Known incantations</label><span class="sat-tip"><button type="button" class="sat-tip-btn" aria-expanded="false" aria-label="About known incantations">i</button><span class="sat-tip-body" role="tooltip">Simple costs 1 RP, Complex 3 RP.</span></span></div><input class="sat-input" type="text" id="f-incant" data-label="Known incantations" placeholder="(what you say, and what it does)"></div>
+      </div>
+    </fieldset>
+
+    <fieldset class="sub" data-sub="numbers" data-label="Numbers">
+      <legend class="sat-h3"><span class="sat-tip tip-head"><button type="button" class="sat-tip-btn" id="lg-numbers" aria-expanded="false">Numbers</button><span class="sat-tip-body" role="tooltip">Roll a d20 for each score, or assign 16, 15, 13, 12, 11 and 10. The modifier fills in from the Vaela table. The DM finishes HP, AC, RP, SP and speed.</span></span></legend>
+      <div class="scores">
+        <div class="score sat-well"><label class="sat-caption" for="f-str">Str</label><input class="sat-input" type="number" id="f-str" min="1" max="20" data-label="STR" inputmode="numeric"><span class="mod" data-mod="f-str"></span></div>
+        <div class="score sat-well"><label class="sat-caption" for="f-dex">Dex</label><input class="sat-input" type="number" id="f-dex" min="1" max="20" data-label="DEX" inputmode="numeric"><span class="mod" data-mod="f-dex"></span></div>
+        <div class="score sat-well"><label class="sat-caption" for="f-con">Con</label><input class="sat-input" type="number" id="f-con" min="1" max="20" data-label="CON" inputmode="numeric"><span class="mod" data-mod="f-con"></span></div>
+        <div class="score sat-well"><label class="sat-caption" for="f-int">Int</label><input class="sat-input" type="number" id="f-int" min="1" max="20" data-label="INT" inputmode="numeric"><span class="mod" data-mod="f-int"></span></div>
+        <div class="score sat-well"><label class="sat-caption" for="f-wis">Wis</label><input class="sat-input" type="number" id="f-wis" min="1" max="20" data-label="WIS" inputmode="numeric"><span class="mod" data-mod="f-wis"></span></div>
+        <div class="score sat-well"><label class="sat-caption" for="f-cha">Cha</label><input class="sat-input" type="number" id="f-cha" min="1" max="20" data-label="CHA" inputmode="numeric"><span class="mod" data-mod="f-cha"></span></div>
+      </div>
+      <ul class="inline-list" style="margin-top: var(--sat-space-4)" aria-label="Filled in by the DM">
+        <li class="sat-badge sat-badge--muted">HP: DM</li><li class="sat-badge sat-badge--muted">AC: DM</li><li class="sat-badge sat-badge--muted">RP and SP: DM</li><li class="sat-badge sat-badge--muted">Speed: DM</li><li class="sat-badge sat-badge--muted">Proficiency +2</li>
+      </ul>
+      <div class="sat-grid fields" style="margin-top: var(--sat-space-5)">
+        <div class="sat-field"><label for="f-skills">Skills (3 or 4)</label><input class="sat-input" type="text" id="f-skills" data-label="Skills"></div>
+        <div class="sat-field"><label for="f-tools">Tools and languages</label><input class="sat-input" type="text" id="f-tools" data-label="Tools and languages"></div>
+      </div>
+    </fieldset>
+
+    <fieldset class="sub" data-sub="gear" data-label="Gear">
+      <legend class="sat-h3"><span class="sat-tip tip-head"><button type="button" class="sat-tip-btn" id="lg-gear" aria-expanded="false">Gear</button><span class="sat-tip-body" role="tooltip">What you carry. You start with 50 Silver Marks.</span></span></legend>
+      <div class="sat-grid fields">
+        <div class="sat-field"><label for="f-item">Signature item <span class="req" aria-label="required">*</span></label><input class="sat-input" type="text" id="f-item" data-label="Signature item" data-req></div>
+        <div class="sat-field"><div class="lab"><label for="f-kit">Kit</label><span class="sat-tip"><button type="button" class="sat-tip-btn" aria-expanded="false" aria-label="About kit">i</button><span class="sat-tip-body" role="tooltip">The DM confirms it.</span></span></div><input class="sat-input" type="text" id="f-kit" data-label="Kit"></div>
+      </div>
+    </fieldset>
+
+    <fieldset class="sub" data-sub="hooks" data-label="Hooks">
+      <legend class="sat-h3"><span class="sat-tip tip-head"><button type="button" class="sat-tip-btn" id="lg-hooks" aria-expanded="false">Hooks</button><span class="sat-tip-body" role="tooltip">Three threads the DM builds the story around.</span></span></legend>
+      <div class="sat-grid fields">
+        <div class="sat-field full"><div class="lab"><label for="f-anchor">Anchor <span class="req" aria-label="required">*</span></label><span class="sat-tip"><button type="button" class="sat-tip-btn" aria-expanded="false" aria-label="About anchor">i</button><span class="sat-tip-body" role="tooltip">Who or what you will not lose.</span></span></div><input class="sat-input" type="text" id="f-anchor" data-label="Anchor" data-req></div>
+        <div class="sat-field full"><div class="lab"><label for="f-scar">Scar <span class="req" aria-label="required">*</span></label><span class="sat-tip"><button type="button" class="sat-tip-btn" aria-expanded="false" aria-label="About scar">i</button><span class="sat-tip-body" role="tooltip">What happened and is not finished.</span></span></div><input class="sat-input" type="text" id="f-scar" data-label="Scar" data-req></div>
+        <div class="sat-field full"><div class="lab"><label for="f-question">Question <span class="req" aria-label="required">*</span></label><span class="sat-tip"><button type="button" class="sat-tip-btn" aria-expanded="false" aria-label="About question">i</button><span class="sat-tip-body" role="tooltip">Make at least one hook about trust in paper: contracts, licences, records, who wrote what.</span></span></div><input class="sat-input" type="text" id="f-question" data-label="Question" data-req></div>
+      </div>
+    </fieldset>
+
+    <fieldset class="sub" data-sub="optional" data-label="Optional">
+      <legend class="sat-h3"><span class="sat-tip tip-head"><button type="button" class="sat-tip-btn" id="lg-optional" aria-expanded="false">Optional</button><span class="sat-tip-body" role="tooltip">Anything else the DM should know, including your Lines and Veils.</span></span></legend>
+      <div class="sat-grid fields">
+        <div class="sat-field"><label for="f-partner">Your partner: how you know them</label><input class="sat-input" type="text" id="f-partner" data-label="Partner" placeholder="(strangers, or one shared fact)"></div>
+        <div class="sat-field"><label for="f-tie">Prior faction tie</label><input class="sat-input" type="text" id="f-tie" data-label="Faction tie" placeholder="(e.g. former affiliate, Bardic College)"></div>
+        <div class="sat-field"><label for="f-hope">One thing you hope your character gets to do</label><input class="sat-input" type="text" id="f-hope" data-label="Hope to do"></div>
+        <div class="sat-field"><label for="f-hate">One thing you would hate to see happen</label><input class="sat-input" type="text" id="f-hate" data-label="Hate to see"></div>
+        <div class="sat-field"><div class="lab"><label for="f-lines">Lines</label><span class="sat-tip"><button type="button" class="sat-tip-btn" aria-expanded="false" aria-label="About lines">i</button><span class="sat-tip-body" role="tooltip">Never in play.</span></span></div><input class="sat-input" type="text" id="f-lines" data-label="Lines"></div>
+        <div class="sat-field"><div class="lab"><label for="f-veils">Veils</label><span class="sat-tip"><button type="button" class="sat-tip-btn" aria-expanded="false" aria-label="About veils">i</button><span class="sat-tip-body" role="tooltip">Off-screen only.</span></span></div><input class="sat-input" type="text" id="f-veils" data-label="Veils"></div>
+      </div>
+    </fieldset>
+
+    <div class="actions sat-cluster">
+      <button type="button" class="sat-btn sat-btn--primary" id="copy"><svg><use href="#i-copy"/></svg>Copy sheet for the DM</button>
+      <button type="button" class="sat-btn sat-btn--ghost" id="clear">Clear sheet</button>
+      <span class="status" id="status" role="status"></span>
+    </div>
+    <textarea class="sat-input" id="fallback" readonly hidden aria-label="Your sheet as text"></textarea>
+  </form>
+</section>
 
 </main>
 
 <footer class="sat-shell">
-  <p class="sat-source">Player-facing app for the Gantry table, a campaign in the world of Vaela. Built by Saturday Solutions. <span id="build-line"></span></p>
+  <p class="sat-source"><span id="build-line"></span></p>
 </footer>
 
 <nav class="tabbar sat-glass-2 sat-mobile-only" aria-label="App sections">
   <a href="#table" data-tab="table"><svg><use href="#i-feed"/></svg><span>Table</span><i class="dot" data-dot="table" hidden></i></a>
   <a href="#inbox" data-tab="inbox"><svg><use href="#i-inbox"/></svg><span>Inbox</span><i class="dot" data-dot="inbox" hidden></i></a>
   <a href="#dice" data-tab="dice"><svg><use href="#i-dice"/></svg><span>Dice</span></a>
-  <a href="#start" data-tab="kit"><svg><use href="#i-book"/></svg><span>Kit</span></a>
+  <a href="#kit" data-tab="kit"><svg><use href="#i-book"/></svg><span>Kit</span></a>
   <a href="#sheet" data-tab="sheet"><svg><use href="#i-sheet"/></svg><span>Sheet</span></a>
 </nav>
 

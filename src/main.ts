@@ -7,6 +7,9 @@ import { marked } from "marked";
 import { openInbox, openNote, sealNote, WrongCode } from "./lib/crypto.js";
 import { initSheet } from "./sheet";
 import { initDice } from "./dice";
+import { initNav, onRoute, currentRoute, setAbsent, openingBook } from "./nav";
+import { enhance, profileHtml, type Profile } from "./enhance";
+import { rollBox, missingRoll, type RollCheck, type RollState } from "./rollbox";
 
 type Post = { id: string; title: string; file: string };
 type InboxMeta = { slug: string; name: string; letters: number; newest: string | null; salt?: string; file: string };
@@ -17,21 +20,21 @@ type Relay = { server: string; topic: string; host?: string; close?: CloseConf }
 type CloseMsg = { v: 1; kind: "close"; op: "ask" | "agree" | "cancel"; turn: number; who: string; at: number };
 type CloseReq = { by: string; turn: number; agreed: string[]; waiting: string[]; ready: boolean };
 type Index = { rev: string; built: string; story: Post[]; inboxes: InboxMeta[]; relay?: Relay | null };
-/** One player's action for one turn, carried by the relay. The newest one per player wins. */
-type Action = { v: 1; kind: "action"; turn: number; who: string; text: string; at: number; checks?: Record<string, number> };
-/** A check the DM called in the latest post (`table.py check`). No DC or modifier ever reaches the app. */
-type Check = { id: string; who: string; label: string; mode: string };
-type Item = { id: string; kind: "sheet" | "letter" | "rolls" | "pack" | "asides"; title: string; body: string };
+/** One player's answer for one turn, carried by the relay. The newest one per player wins.
+ *  checks: the die result typed for each check; forMe: checks the player asked the DM to roll. */
+type Action = { v: 1; kind: "action"; turn: number; who: string; text: string; at: number; checks?: Record<string, number>; forMe?: string[] };
+/** A roll the DM called (`table.py check`). No DC or modifier ever reaches the app. */
+type Check = RollCheck & { who: string };
+type Item = { id: string; kind: "sheet" | "letter" | "rolls" | "pack" | "asides" | "profile"; title: string; body: string };
 /** The DM's new turn on the relay (`table.py send`). `text` is missing when the post is over 4 KB. */
 type LivePost = { kind: "post"; turn: number; id: string; title: string; text?: string };
 
-const VIEWS = ["table", "inbox", "dice", "start", "world", "rules", "session", "sheet"];
-const KIT = ["start", "world", "rules", "session"];
 const POLL_MS = 20_000;
 const BASE_TITLE = document.title;
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const md = (text: string) => marked.parse(text, { async: false }) as string;
+const HIDDEN = /<!--[\s\S]*?-->/g;
 
 // ---- small storage helpers (storage can be blocked: every call is guarded) ----
 const store = {
@@ -42,51 +45,6 @@ const store = {
 const codeKey = (slug: string) => `vaela-table-code:${slug}`;
 const seenKey = (slug: string) => `vaela-table-seen:${slug}`;
 const SEEN_POST = "vaela-table-seen-post";
-
-// ======================= routing =======================
-let current = "table";
-let lastKit = "start";
-
-function section(view: string) { return KIT.includes(view) ? "kit" : view; }
-
-function show(view: string, anchor?: string | null) {
-  if (!VIEWS.includes(view)) view = "table";
-  current = view;
-  if (KIT.includes(view)) lastKit = view;
-  document.querySelectorAll<HTMLElement>("[data-view]").forEach((v) => { v.hidden = v.dataset.view !== view; });
-  $("kit-nav").hidden = !KIT.includes(view);
-  setSeg($("sections"), section(view));
-  setSeg($("kitnav"), lastKit);
-  document.querySelectorAll<HTMLAnchorElement>(".tabbar a").forEach((a) => {
-    if (a.dataset.tab === section(view)) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
-  });
-  if (view === "table") markPostSeen();
-  if (view === "inbox") enterInbox();
-  updateDots();
-  if (anchor) { const el = document.getElementById(anchor); if (el) { el.scrollIntoView(); return; } }
-  window.scrollTo(0, 0);
-}
-
-function setSeg(group: HTMLElement, value: string) {
-  group.querySelectorAll<HTMLElement>('[role="radio"]').forEach((b) => {
-    const on = b.dataset.value === value;
-    b.setAttribute("aria-checked", String(on));
-    b.tabIndex = on ? 0 : -1;
-  });
-}
-
-function fromHash(): [string, string | null] {
-  const h = location.hash.replace("#", "");
-  if (h === "commission") return ["session", "commission"];
-  return [h || "table", null];
-}
-
-window.addEventListener("hashchange", () => { const [v, a] = fromHash(); show(v, a); });
-$("sections").addEventListener("sat-change", (e) => {
-  const value = (e as CustomEvent).detail.value as string;
-  location.hash = value === "kit" ? lastKit : value;
-});
-$("kitnav").addEventListener("sat-change", (e) => { location.hash = (e as CustomEvent).detail.value; });
 
 // ======================= content index + polling =======================
 let index: Index | null = null;
@@ -115,12 +73,12 @@ async function check(manual = false) {
       await renderFeed();
       renderPick();
       await refreshOpenInbox(prev);
-      if (!prev && current === "inbox") enterInbox(); // first load: a remembered code can open its inbox now
+      if (!prev && currentRoute()?.view === "inbox") enterInbox(); // first load: a remembered code can open its inbox now
       $("build-line").textContent = `Content built ${fmtDate(new Date(index.built))}.`;
     }
     if (newTurn) arrivedAt = checkedAt;
     status.textContent = arrivedAt && checkedAt.getTime() - arrivedAt.getTime() < 5 * 60_000
-      ? `New turn arrived at ${fmtTime(arrivedAt)}`
+      ? `New turn at ${fmtTime(arrivedAt)}`
       : `Checked at ${fmtTime(checkedAt)}`;
     updateDots();
   } catch {
@@ -136,16 +94,19 @@ const fmtTime = (d: Date) => d.toLocaleTimeString([], { hour: "2-digit", minute:
 const fmtDate = (d: Date) => `${d.getDate()} ${d.toLocaleString("en-GB", { month: "short" })} ${d.getFullYear()}, ${fmtTime(d)}`;
 
 // ======================= test mode (?test) =======================
-// Opening the app with ?test shows a practice turn 9999 on this device only, with a check for every player,
-// so the action box, lights and 1-20 picker can be tried on real phones without posting a turn. The DM pulls it
+// Opening the app with ?test shows a practice turn 9999 on this device only, with a roll for every player,
+// so the answer box, lights and roll entry can be tried on real phones without posting a turn. The DM pulls it
 // with `table.py inbox --turn 9999`.
 const TEST_MODE = new URLSearchParams(location.search).has("test");
 const TEST_ID = "9999-table-test";
 
 function testTurn() {
-  const checks = (index?.inboxes ?? []).map((m, i) => ({ id: `t${i + 1}`, who: m.slug, label: "Perception check", mode: i % 2 ? "advantage" : "" }));
+  const checks = (index?.inboxes ?? []).flatMap((m, i) => [
+    { id: `t${i + 1}`, who: m.slug, label: "Perception check", mode: i % 2 ? "advantage" : "", die: "d20" },
+    ...(i === 0 ? [{ id: `t${i + 1}b`, who: m.slug, label: "Dagger damage", mode: "", die: "1d4" }] : []),
+  ]);
   return `# Turn 9999: Table test\n\n**Practice turn, on this device only.** Nothing here is part of the story. ` +
-    `Pick a number, write anything, press Send, and watch the lights.\n\n<!-- checks: ${JSON.stringify(checks)} -->\n`;
+    `Type a roll, write anything, press Send, and watch the lights.\n\n<!-- checks: ${JSON.stringify(checks)} -->\n`;
 }
 
 // ======================= table feed =======================
@@ -163,7 +124,7 @@ async function renderFeed() {
   const latest = $("feed-latest");
   if (!index.story.length) {
     latest.innerHTML = `<h2>No turns yet</h2><p class="sat-muted">The DM posts the first turn here when Session 1 begins.</p>`;
-    $("feed-earlier-wrap").hidden = true;
+    setAbsent("table", "earlier", true);
     return;
   }
   const [first, ...rest] = index.story;
@@ -172,7 +133,7 @@ async function renderFeed() {
     : await (await fetchFresh(`content/${first.file}`)).text();
   latestChecks = parseChecks(text);
   sessionClosed = text.includes(CLOSED_MARK);
-  latest.innerHTML = `<span class="sat-caption post-meta">Latest turn</span><h2>${escapeHtml(first.title)}</h2>${renderTurn(text)}`;
+  latest.innerHTML = `<h2>${escapeHtml(first.title)}</h2>${renderTurn(text)}`;
 
   const earlier = $("feed-earlier");
   earlier.innerHTML = "";
@@ -189,19 +150,20 @@ async function renderFeed() {
     });
     earlier.appendChild(d);
   }
-  $("feed-earlier-wrap").hidden = rest.length === 0;
-  if (current === "table") markPostSeen();
+  setAbsent("table", "earlier", rest.length === 0);
+  if (currentRoute()?.view === "table") markPostSeen();
   void pollActions();
 }
 
-// ======================= relay: shared answers, asides, live posts =======================
-// One free ntfy.sh topic (relay.json) carries three kinds of message (plans/table-live.md):
-//   action  a shared answer. Both players see it; the first one moves the story, a second one is read too.
-//   aside   a private thread with the DM, sealed with this player's inbox code. Other players' asides are never opened.
+// ======================= relay: shared answers, private chat, live posts =======================
+// One free ntfy.sh topic (relay.json) carries four kinds of message (plans/table-live.md):
+//   action  a shared answer. Everyone sees it; the first one moves the story, a second one is read too.
+//   aside   Private chat with the DM, sealed with this player's inbox code. Other players' messages are never opened.
+//           A DM message may call a private roll (a hidden checks line inside the sealed text).
 //   post    the DM's new turn, so it shows here at once instead of after the Pages deploy.
+//   close   End the session, Agree, Keep playing.
 // The app holds ONE connection to the topic (ntfy server-sent events): it replays every cached message, then pushes
-// new ones as they arrive. Polling every 5 s got phones blocked: ntfy refills about one request per 10 s after a
-// burst of 60 (HTTP 429, seen in the step 5 test; plans/table-live.md step 5b).
+// new ones as they arrive. Polling every 5 s got phones blocked (HTTP 429; plans/table-live.md step 5b).
 const RETRY_MS = 30_000;
 const relayMsgs = new Map<string, any>(); // ntfy message id -> payload, oldest first
 let stream: EventSource | null = null;
@@ -216,11 +178,13 @@ const asideText = new Map<string, string>(); // relay message id -> opened text 
 let livePost: LivePost | null = null;
 let draftTurn = 0;
 let latestChecks: Check[] = [];
-let faces = new Map<string, number>(); // check id -> the d20 face this player tapped
+let publicRolls: RollState = { faces: new Map(), forMe: new Set() };
+const privateRolls: RollState = { faces: new Map(), forMe: new Set() };
 let checksKey = "";
+let privKey = "";
 const asideSeenKey = (slug: string) => `vaela-table-aside-seen:${slug}`;
 // Session close (step 5): `table.py close` ends its recap post with this mark. While it is the latest post, the
-// answer and aside boxes stay closed; the next session's first post reopens them.
+// answer and chat boxes stay closed; the next session's first post reopens them.
 const CLOSED_MARK = "<!-- session: closed -->";
 let sessionClosed = false;
 let closeMsgs: CloseMsg[] = [];
@@ -252,7 +216,7 @@ function closeRequest(): CloseReq | null {
   return { ...req, waiting, ready: conf.needs === "one" || waiting.length === 0 };
 }
 
-/** `table.py send` writes the called checks as a hidden line: <!-- checks: [...] --> */
+/** `table.py send` (and `aside` for a private roll) writes the called checks as a hidden line: <!-- checks: [...] --> */
 function parseChecks(text: string): Check[] {
   const m = text.match(/<!-- checks: (\[.*?\]) -->/s);
   if (!m) return [];
@@ -264,7 +228,7 @@ function parseChecks(text: string): Check[] {
 
 function myChecks(slug: string) { return latestChecks.filter((c) => c.who === slug); }
 
-/** One 1-20 grid per check called for this player. Rebuilt only when the turn or the checks change. */
+/** One roll box per check called for this player. Rebuilt only when the turn or the checks change. */
 function renderChecks(slug: string, turn: number) {
   const mine = myChecks(slug);
   const wrap = $("move-checks");
@@ -273,31 +237,10 @@ function renderChecks(slug: string, turn: number) {
   if (key === checksKey) return;
   checksKey = key;
   wrap.innerHTML = "";
-  for (const c of mine) {
-    const how = c.mode === "advantage" ? "Roll two d20 and tap the higher." : c.mode === "disadvantage" ? "Roll two d20 and tap the lower." : "Roll your d20 and tap the number.";
-    const group = document.createElement("div");
-    group.className = "sat-stack check";
-    group.innerHTML = `<p class="sat-small"><strong></strong> <span class="sat-muted"></span></p><div class="faces" role="radiogroup"></div>`;
-    group.querySelector("strong")!.textContent = `${c.label}${c.mode ? ` (${c.mode})` : ""}.`;
-    group.querySelector(".sat-muted")!.textContent = how;
-    const grid = group.querySelector<HTMLElement>(".faces")!;
-    grid.setAttribute("aria-label", `${c.label}: your d20`);
-    for (let n = 1; n <= 20; n++) {
-      const b = document.createElement("button");
-      b.type = "button";
-      b.className = "face";
-      b.textContent = String(n);
-      b.setAttribute("role", "radio");
-      b.setAttribute("aria-checked", String(faces.get(c.id) === n));
-      b.addEventListener("click", () => {
-        faces.set(c.id, n);
-        grid.querySelectorAll(".face").forEach((x) => x.setAttribute("aria-checked", String(x === b)));
-      });
-      grid.appendChild(b);
-    }
-    wrap.appendChild(group);
-  }
+  for (const c of mine) wrap.appendChild(rollBox(c, publicRolls, () => clearHint("move-status")));
 }
+
+function clearHint(id: string) { const s = $(id); if (s.dataset.hint) { s.textContent = ""; delete s.dataset.hint; } }
 
 const turnOf = (id?: string) => (id ? parseInt(id.slice(0, 4), 10) || 0 : 0);
 function currentTurn() { return turnOf(index?.story[0]?.id); }
@@ -350,7 +293,7 @@ function connectRelay() {
   };
 }
 
-/** Rebuild answers, asides, close requests and the live post from every relay message, then redraw. */
+/** Rebuild answers, private chat, close requests and the live post from every relay message, then redraw. */
 async function pollActions() {
   const url = relayUrl();
   if (!url) return renderMove();
@@ -365,7 +308,6 @@ async function pollActions() {
     const closes: CloseMsg[] = [];
     let live: LivePost | null = null;
     for (const [id, a] of relayMsgs) {
-      const msg = { id };
       try {
         // Oldest first, so a later answer from the same player replaces the earlier one.
         if (a?.kind === "action" && a.turn === turn && typeof a.who === "string") next.set(a.who, a as Action);
@@ -374,11 +316,11 @@ async function pollActions() {
         else if (a?.kind === "post" && typeof a.turn === "number" && typeof a.id === "string" && (!live || a.turn >= live.turn)) live = a as LivePost;
         else if (a?.kind === "aside" && who && a.who === who.slug) {
           const code = myCode(who.slug);
-          if (!asideText.has(msg.id) && code) {
-            try { asideText.set(msg.id, await openNote(code, a)); } catch { asideText.set(msg.id, ""); }
+          if (!asideText.has(id) && code) {
+            try { asideText.set(id, await openNote(code, a)); } catch { asideText.set(id, ""); }
           }
-          const text = asideText.get(msg.id);
-          if (text) mine.push({ id: msg.id, from: a.from === "dm" ? "dm" : "player", at: a.at, text });
+          const text = asideText.get(id);
+          if (text) mine.push({ id, from: a.from === "dm" ? "dm" : "player", at: a.at, text });
         }
       } catch { /* not ours */ }
     }
@@ -393,7 +335,7 @@ async function pollActions() {
       await renderFeed();
     } else {
       renderMove();
-      renderAside();
+      renderChat();
     }
   } finally {
     relayBusy = false;
@@ -444,10 +386,9 @@ function renderMove() {
   list.innerHTML = "";
   for (const a of sent) {
     const li = document.createElement("li");
-    const name = index.inboxes.find((m) => m.slug === a.who)?.name.split(" ")[0] ?? a.who;
     li.innerHTML = `<strong></strong> <span></span>`;
-    li.querySelector("strong")!.textContent = `${name}:`;
-    li.querySelector("span")!.textContent = a.text || "(rolled the check)";
+    li.querySelector("strong")!.textContent = `${firstName(a.who)}:`;
+    li.querySelector("span")!.textContent = a.text || "(sent a roll)";
     list.appendChild(li);
   }
 
@@ -459,22 +400,21 @@ function renderMove() {
   const mine = actions.get(who.slug);
   if (draftTurn !== turn) { // a new turn starts with an empty box, or with what this player already sent
     text.value = mine?.text ?? "";
-    faces = new Map(Object.entries(mine?.checks ?? {}));
+    publicRolls = { faces: new Map(Object.entries(mine?.checks ?? {})), forMe: new Set(mine?.forMe ?? []) };
     checksKey = "";
     $("move-status").textContent = "";
     draftTurn = turn;
   }
   renderChecks(who.slug, turn);
-  // A hint like "tap your number first" stays until the player acts; only a confirmed send overwrites it.
-  if ($("move-status").dataset.busy) return;
+  // A hint like "type your roll first" stays until the player acts; only a confirmed send overwrites it.
+  const status = $("move-status");
+  if (status.dataset.busy || status.dataset.hint) return;
   const first = sent[0];
-  if (mine) {
-    $("move-status").textContent = `Sent at ${fmtTime(new Date(mine.at))}. Send again to replace it.`;
-  } else if (first) {
-    const name = index.inboxes.find((m) => m.slug === first.who)?.name.split(" ")[0] ?? first.who;
-    $("move-status").textContent = `${name} answered first. Add yours before the DM replies and the DM reads both.`;
-  }
+  if (mine) status.textContent = `Sent at ${fmtTime(new Date(mine.at))}. Send again to replace it.`;
+  else if (first) status.textContent = `${firstName(first.who)} answered first. Add yours before the DM replies and the DM reads both.`;
 }
+
+function hint(id: string, text: string) { const s = $(id); s.textContent = text; s.dataset.hint = "1"; }
 
 $("move-form").addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -484,16 +424,22 @@ $("move-form").addEventListener("submit", async (e) => {
   const status = $("move-status");
   if (!who || !url) return;
   const pending = myChecks(who.slug);
-  const missing = pending.find((c) => !faces.has(c.id));
-  if (missing) { status.textContent = `Tap your d20 number for ${missing.label} first.`; return; }
-  if (!text && !pending.length) { status.textContent = "Write what your character does first."; return; }
-  const picked = Object.fromEntries(pending.map((c) => [c.id, faces.get(c.id)!]));
+  const missing = missingRoll(pending, publicRolls);
+  if (missing) {
+    hint("move-status", `Type your roll for ${missing.label}, or press Roll for me.`);
+    document.querySelector<HTMLInputElement>("#move-checks .roll-input:not(:disabled)")?.focus();
+    return;
+  }
+  if (!text && !pending.length) { hint("move-status", "Write what your character does first."); return; }
+  const picked = Object.fromEntries(pending.filter((c) => publicRolls.faces.has(c.id)).map((c) => [c.id, publicRolls.faces.get(c.id)!]));
+  const forMe = pending.filter((c) => publicRolls.forMe.has(c.id)).map((c) => c.id);
   const send = $<HTMLButtonElement>("move-send");
   send.setAttribute("aria-disabled", "true");
   status.dataset.busy = "1";
+  delete status.dataset.hint;
   status.textContent = "Sending";
   const action: Action = { v: 1, kind: "action", turn: currentTurn(), who: who.slug, text, at: Date.now(),
-    ...(pending.length ? { checks: picked } : {}) };
+    ...(Object.keys(picked).length ? { checks: picked } : {}), ...(forMe.length ? { forMe } : {}) };
   try {
     const res = await fetch(url, { method: "POST", body: JSON.stringify(action) });
     if (!res.ok) throw new Error(String(res.status));
@@ -560,53 +506,93 @@ $("close-agree").addEventListener("click", () => sendClose("agree"));
 $("close-keep").addEventListener("click", () => sendClose("cancel"));
 $("close-cancel").addEventListener("click", () => sendClose("cancel"));
 
-// ---- aside: a private thread with the DM ----
-function renderAside() {
+// ---- Private chat: a sealed thread with the DM, plus any private roll the DM calls in it ----
+const ROLLS_LINE = /<!-- rolls: (\{.*?\}) -->/s;
+
+/** Private rolls the DM called that this player has not answered yet. */
+function pendingPrivate(): Check[] {
+  const answered = new Set<string>();
+  for (const m of asides) {
+    if (m.from !== "player") continue;
+    const r = m.text.match(ROLLS_LINE);
+    if (r) try { Object.keys(JSON.parse(r[1])).forEach((k) => answered.add(k)); } catch { /* not ours */ }
+  }
+  return asides.filter((m) => m.from === "dm").flatMap((m) => parseChecks(m.text)).filter((c) => !answered.has(c.id));
+}
+
+function renderChat() {
   const who = me();
-  const box = $<HTMLDetailsElement>("aside");
-  const usable = !!index?.relay && !!who && !!myCode(who.slug);
-  box.hidden = !usable || sessionClosed;
-  $("aside-closed").hidden = !usable || !sessionClosed;
-  if (box.hidden || !who) return;
+  const box = $("chat");
+  const usable = !!index?.relay && !!who && !!myCode(who.slug) && !!currentTurn();
+  box.hidden = !usable;
+  if (!usable || !who) return;
+  $("chat-closed").hidden = !sessionClosed;
+  $("chat-form").hidden = sessionClosed;
   const others = index!.inboxes.filter((m) => m.slug !== who.slug).map((m) => m.slug);
-  $("aside-who").textContent = others.length ? nameList(others) : "the other players";
-  const thread = $("aside-thread");
-  thread.innerHTML = asides.length ? "" : `<li class="sat-muted">No asides yet this session. Earlier ones are in your inbox.</li>`;
+  $("chat-who").textContent = others.length ? nameList(others) : "The other players";
+  const thread = $("chat-thread");
+  thread.innerHTML = asides.length ? "" : `<li class="sat-muted sat-small">No messages yet this session.</li>`;
   for (const m of asides) {
     const li = document.createElement("li");
     li.dataset.from = m.from;
     li.innerHTML = `<strong></strong> <span></span>`;
     li.querySelector("strong")!.textContent = m.from === "dm" ? "DM:" : "You:";
-    li.querySelector("span")!.textContent = m.text;
+    li.querySelector("span")!.textContent = m.text.replace(HIDDEN, "").trim();
     thread.appendChild(li);
+  }
+  thread.scrollTop = thread.scrollHeight;
+  // Private rolls: one box each, rebuilt only when the set changes.
+  const pend = pendingPrivate();
+  const key = pend.map((c) => c.id).join(",");
+  const wrap = $("chat-checks");
+  wrap.hidden = pend.length === 0 || sessionClosed;
+  if (key !== privKey) {
+    privKey = key;
+    wrap.innerHTML = "";
+    for (const c of pend) wrap.appendChild(rollBox(c, privateRolls, () => clearHint("chat-status")));
   }
   const seen = Number(store.get(asideSeenKey(who.slug)) ?? 0);
   const fresh = asides.filter((m) => m.from === "dm" && m.at > seen).length;
-  if (box.open && fresh) store.set(asideSeenKey(who.slug), String(Date.now()));
-  const badge = $("aside-new");
-  badge.hidden = box.open || fresh === 0;
+  const badge = $("chat-new");
+  badge.hidden = fresh === 0;
   badge.textContent = `${fresh} new`;
 }
-$("aside").addEventListener("toggle", renderAside);
+// Reading the box clears its "new" badge.
+["pointerdown", "focusin"].forEach((ev) => $("chat").addEventListener(ev, () => {
+  const who = me();
+  if (who && !$("chat-new").hidden) { store.set(asideSeenKey(who.slug), String(Date.now())); renderChat(); }
+}));
 
-$("aside-form").addEventListener("submit", async (e) => {
+$("chat-form").addEventListener("submit", async (e) => {
   e.preventDefault();
   const who = me();
   const url = relayUrl();
   const code = who && myCode(who.slug);
-  const box = $<HTMLTextAreaElement>("aside-text");
-  const status = $("aside-status");
-  const text = box.value.trim();
+  const box = $<HTMLTextAreaElement>("chat-text");
+  const status = $("chat-status");
   if (!who || !url || !code) return;
-  if (!text) { status.textContent = "Write your aside first."; return; }
-  const send = $<HTMLButtonElement>("aside-send");
+  const pend = pendingPrivate();
+  const done = pend.filter((c) => privateRolls.faces.has(c.id) || privateRolls.forMe.has(c.id));
+  let text = box.value.trim();
+  if (!text && !done.length) {
+    hint("chat-status", pend.length ? `Type your roll for ${pend[0].label}, or press Roll for me.` : "Write your message first.");
+    return;
+  }
+  if (done.length) {
+    const rolls = Object.fromEntries(done.map((c) => [c.id, privateRolls.forMe.has(c.id) ? "dm" : privateRolls.faces.get(c.id)!]));
+    const said = done.map((c) => privateRolls.forMe.has(c.id) ? `${c.label}: roll for me.` : `${c.label}: rolled ${privateRolls.faces.get(c.id)}.`).join(" ");
+    text = `${text ? `${text}\n\n` : ""}${said}\n\n<!-- rolls: ${JSON.stringify(rolls)} -->`;
+  }
+  const send = $<HTMLButtonElement>("chat-send");
   send.setAttribute("aria-disabled", "true");
+  delete status.dataset.hint;
   status.textContent = "Sealing";
   try {
     const sealed = await sealNote(code, text);
     const res = await fetch(url, { method: "POST", body: JSON.stringify({ v: 1, kind: "aside", who: who.slug, from: "player", at: Date.now(), ...sealed }) });
     if (!res.ok) throw new Error(String(res.status));
     box.value = "";
+    done.forEach((c) => { privateRolls.faces.delete(c.id); privateRolls.forMe.delete(c.id); });
     status.textContent = "Sent privately. The DM answers here.";
     void pollActions();
   } catch {
@@ -646,7 +632,7 @@ function renderPick() {
     const b = document.createElement("button");
     b.type = "button";
     b.className = "sat-glass inbox-card";
-    b.innerHTML = `<span class="sat-caption">Inbox</span><span class="sat-h2">${escapeHtml(meta.name)}</span>
+    b.innerHTML = `<span class="sat-h2">${escapeHtml(meta.name)}</span>
       <span class="sat-cluster" style="--sat-gap: var(--sat-space-2)"><span class="sat-small sat-muted">${meta.letters} letter${meta.letters === 1 ? "" : "s"}</span>${fresh ? `<span class="sat-badge">${fresh} new</span>` : ""}</span>`;
     b.addEventListener("click", () => startUnlock(meta));
     pick.appendChild(b);
@@ -666,6 +652,8 @@ function showInboxPanel(which: "pick" | "unlock" | "open") {
   $("inbox-pick").hidden = which !== "pick";
   $("inbox-unlock").hidden = which !== "unlock";
   $("inbox-open").hidden = which !== "open";
+  $("lock").hidden = which !== "open";
+  $("inbox-title").textContent = which === "open" && opened ? `${opened.meta.name.split(" ")[0]}'s Inbox` : "Inbox";
 }
 
 function startUnlock(meta: InboxMeta) {
@@ -707,7 +695,7 @@ async function unlock(meta: InboxMeta, code: string, remember: boolean, silent: 
   } catch (e) {
     if (silent) { store.del(codeKey(meta.slug)); showInboxPanel("pick"); return; }
     err.textContent = e instanceof WrongCode
-      ? "Code does not match this inbox. Check the code the host sent you (e.g. K7QF-M2XD-9PRA)."
+      ? "Code does not match this inbox. Check the code the host sent you (e.g. K7QF4M)."
       : "Inbox unable to load. Check internet connection and try again.";
     err.hidden = false;
     $<HTMLInputElement>("code").setAttribute("aria-invalid", "true");
@@ -717,9 +705,16 @@ async function unlock(meta: InboxMeta, code: string, remember: boolean, silent: 
   }
 }
 
+/** Fill one inbox subpage, or mark it absent (no tab) when the inbox has no such item. */
+function fillSub(sub: string, el: HTMLElement, html: string | null, enhanceIt = false) {
+  setAbsent("inbox", sub, html === null);
+  if (html === null) return;
+  el.innerHTML = html;
+  if (enhanceIt) enhance(el);
+}
+
 function renderOpen(newCount: number) {
   if (!opened) return;
-  $("open-title").textContent = `${opened.meta.name}'s inbox`;
   const badge = $("open-new");
   badge.hidden = newCount === 0;
   badge.textContent = `${newCount} new`;
@@ -731,30 +726,25 @@ function renderOpen(newCount: number) {
     const d = document.createElement("details");
     d.className = "sat-glass-2 sat-card letter";
     d.open = i === 0;
-    d.innerHTML = `<summary><span class="sat-caption">${i < newCount ? "New letter" : "Letter"}</span><span class="letter-title">${escapeHtml(l.title)}</span></summary><div class="prose">${md(l.body)}</div>`;
+    d.innerHTML = `<summary><span class="letter-title">${escapeHtml(l.title)}</span>${i < newCount ? `<span class="sat-badge">New</span>` : ""}</summary><div class="prose">${md(l.body)}</div>`;
     list.appendChild(d);
   });
 
-  const sheet = opened.items.find((i) => i.kind === "sheet");
-  $("open-sheet").hidden = !sheet;
-  if (sheet) {
-    $("open-sheet-title").textContent = sheet.title;
-    $("open-sheet-body").innerHTML = md(sheet.body);
-  }
-  const pack = opened.items.find((i) => i.kind === "pack");
-  $("open-pack").hidden = !pack;
-  if (pack) $("open-pack-body").innerHTML = md(pack.body);
-  const asideLog = opened.items.find((i) => i.kind === "asides");
-  $("open-asides").hidden = !asideLog;
-  if (asideLog) $("open-asides-body").innerHTML = md(asideLog.body);
-  const rolls = opened.items.find((i) => i.kind === "rolls");
-  $("open-rolls").hidden = !rolls;
-  if (rolls) $("open-rolls-body").innerHTML = md(rolls.body);
-  // Sheet links point at ../sheet.md in the source; inside the app the sheet sits below the letters.
-  list.querySelectorAll<HTMLAnchorElement>('a[href$="sheet.md"]').forEach((a) => {
-    a.href = "#inbox";
-    a.addEventListener("click", (e) => { e.preventDefault(); const s = $<HTMLDetailsElement>("open-sheet"); s.open = true; s.scrollIntoView({ behavior: "smooth" }); });
-  });
+  const item = (kind: Item["kind"]) => opened!.items.find((i) => i.kind === kind);
+  const profile = item("profile");
+  let pf: string | null = null;
+  if (profile) try { pf = profileHtml(JSON.parse(profile.body) as Profile); } catch { pf = null; }
+  fillSub("profile", $("open-profile"), pf);
+  const sheet = item("sheet");
+  fillSub("sheet", $("open-sheet-body"), sheet ? `<h2>${escapeHtml(sheet.title)}</h2>${md(sheet.body)}` : null, true);
+  const pack = item("pack");
+  fillSub("pack", $("open-pack-body"), pack ? md(pack.body) : null);
+  const rolls = item("rolls");
+  fillSub("rolls", $("open-rolls-body"), rolls ? md(stripH1(rolls.body)) : null);
+  const asideLog = item("asides");
+  fillSub("asides", $("open-asides-body"), asideLog ? md(stripH1(asideLog.body)) : null);
+  // Sheet links point at ../sheet.md in the source; inside the app the sheet is its own subpage.
+  list.querySelectorAll<HTMLAnchorElement>('a[href$="sheet.md"]').forEach((a) => { a.href = "#inbox/sheet"; });
 }
 
 async function refreshOpenInbox(prev: Index | null) {
@@ -768,7 +758,7 @@ async function refreshOpenInbox(prev: Index | null) {
     const seen = Number(store.get(seenKey(meta.slug)) ?? 0);
     opened = { meta, code: opened.code, items: data.items };
     renderOpen(Math.max(0, meta.letters - seen));
-    if (current === "inbox") store.set(seenKey(meta.slug), String(meta.letters));
+    if (currentRoute()?.view === "inbox") store.set(seenKey(meta.slug), String(meta.letters));
   } catch {
     // The DM changed this inbox's code: lock it and ask for the new one.
     lockInbox();
@@ -782,17 +772,18 @@ function lockInbox() {
   showInboxPanel("pick");
   updateDots();
   renderMove();
-  renderAside();
+  renderChat();
 }
 $("lock").addEventListener("click", lockInbox);
 
 // ======================= new-content dots =======================
 function updateDots() {
-  const postNew = !!index?.story[0] && store.get(SEEN_POST) !== index.story[0].id && current !== "table";
+  const view = currentRoute()?.view;
+  const postNew = !!index?.story[0] && store.get(SEEN_POST) !== index.story[0].id && view !== "table";
   const inboxNew = !!index?.inboxes.some((m) => {
     const seen = store.get(seenKey(m.slug));
     return seen !== null && store.get(codeKey(m.slug)) !== null && m.letters > Number(seen);
-  }) && current !== "inbox";
+  }) && view !== "inbox";
   document.querySelectorAll<HTMLElement>('[data-dot="table"]').forEach((d) => { d.hidden = !postNew; });
   document.querySelectorAll<HTMLElement>('[data-dot="inbox"]').forEach((d) => { d.hidden = !inboxNew; });
   // A tab left in the background shows new content in its title.
@@ -801,8 +792,14 @@ function updateDots() {
 }
 
 // ======================= start =======================
+onRoute((r) => {
+  if (r.view === "table") markPostSeen();
+  if (r.view === "inbox") enterInbox();
+  updateDots();
+});
 initSheet();
 initDice();
-const [v, a] = fromHash();
-show(v, a);
+initNav();
+enhance(document.querySelector<HTMLElement>('[data-sub="rules"]')!);
+openingBook();
 void check();

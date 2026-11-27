@@ -6,7 +6,7 @@ const STORE = "au1-sheet-v1";
 export function initSheet(): void {
   const form = document.getElementById("sheet") as HTMLFormElement | null;
   if (!form) return;
-  const fields = Array.from(form.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>("[data-label]"));
+  const fields = Array.from(form.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>(":is(input, select, textarea)[data-label]"));
   const reqFields = fields.filter((f) => f.hasAttribute("data-req"));
   const status = document.getElementById("status")!;
   const fallback = document.getElementById("fallback") as HTMLTextAreaElement;
@@ -44,7 +44,8 @@ export function initSheet(): void {
     const lines = [`VAELA CHARACTER SHEET: ${name}`, ""];
     let group: string | null = null;
     fields.forEach((f) => {
-      const fs = f.closest("fieldset")!.querySelector("legend")!.textContent!.trim();
+      // The part name, not the legend's text: the legend also holds its tip.
+      const fs = (f.closest("fieldset") as HTMLElement).dataset.label ?? "";
       if (fs !== group) { if (group) lines.push(""); lines.push("## " + fs); group = fs; }
       let v = f.value.trim();
       if ((f as HTMLInputElement).type === "number" && v) v = `${v} (${modifier(v)})`;
