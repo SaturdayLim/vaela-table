@@ -34,6 +34,7 @@ html { scroll-padding-top: calc(var(--safe-top) + var(--header-h) + var(--sat-sp
 @media (max-width: 639px) { .sat-header-bar { flex-wrap: nowrap; } .sat-header-bar .sat-brand { flex: 1 1 auto; } }
 .sat-header .sat-brand { text-decoration: none; color: var(--sat-text); }
 .vaela-mark { color: var(--sat-accent-text); }
+.brand-mark { display: block; flex: none; width: 36px; height: 36px; border-radius: 9px; object-fit: cover; }
 .sections { order: 3; flex-basis: 100%; }
 @media (min-width: 1024px) { .sections { order: 0; flex-basis: auto; margin-left: auto; } }
 .sections > button { flex: 1; justify-content: center; }

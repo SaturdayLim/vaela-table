@@ -106,21 +106,41 @@ export function initSheet(): void {
 
   const draft = () => saved.drafts.find((x) => `new:${x.id}` === current);
 
+  /** Free text shows in full at a glance: a textarea grows to fit what is written (never below its rows). */
+  function grow(t: HTMLTextAreaElement) {
+    t.style.height = "";
+    if (!t.offsetParent) return; // on a hidden subpage: sized when it is shown
+    t.style.height = "auto";
+    t.style.height = t.scrollHeight + 2 + "px";
+  }
+  form.addEventListener("input", (e) => { if (e.target instanceof HTMLTextAreaElement) grow(e.target); });
+  const growAll = () => requestAnimationFrame(() => form.querySelectorAll<HTMLTextAreaElement>("textarea[data-label]").forEach(grow));
+  window.addEventListener("hashchange", growAll);
+  window.addEventListener("resize", growAll);
+
   function values(): Values {
     const v: Values = {};
     fields.forEach((f) => { if (f.value !== "") v[f.id] = f.value; });
     return v;
   }
   function fill(v: Values) {
+    form!.querySelectorAll("option[data-kept]").forEach((o) => o.remove());
     fields.forEach((f) => {
       const want = v[f.id] ?? "";
       f.value = want;
       // A select whose exact option is missing takes the option the value starts with ("Mage (Scholar)" -> Mage).
       if (f instanceof HTMLSelectElement && want && f.value !== want) {
         const o = [...f.options].find((x) => x.value && want.toLowerCase().startsWith(x.value.toLowerCase()));
-        f.value = o ? o.value : "";
+        if (o) f.value = o.value;
+        else {
+          // A free-text answer from an older sheet stays visible as its own choice rather than vanishing.
+          const keep = document.createElement("option");
+          keep.textContent = want; keep.dataset.kept = "1";
+          f.appendChild(keep); f.value = want;
+        }
       }
     });
+    form!.querySelectorAll<HTMLTextAreaElement>("textarea[data-label]").forEach(grow);
     dirty = false;
     fallback.hidden = true;
     refresh();

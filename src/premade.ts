@@ -60,8 +60,16 @@ const LEFT = [
   "My family's seam ran out; my cousins stayed to argue about it.",
   "A guild clerk wrote my name on the wrong list.",
 ];
-const SPONSOR = ["A mining guild", "The Transport Guild", "The Survey Dispatch Board", "Nobody", "A forge-city temple"];
-const CHEAP = ["New", "Unaffiliated", "In debt", "Overlooked", "Unlucky"];
+// These two match the sheet's dropdowns exactly.
+const SPONSOR = ["A mining guild", "The Transport Guild", "A former employer", "Nobody: on probation", "A ship's or caravan captain"];
+const CHEAP = ["New to the work", "No guild or college behind me", "In debt, and they know it",
+  "A bad job on my record", "Good, but overlooked"];
+const BACKSTORY = [
+  (where: string) => `Grew up in ${where}, the third child of a shift foreman. Learned to read the ground before learning to read paper, and ran messages for the guild surveyors.`,
+  (where: string) => `Born in ${where} to a family that worked the same seam for four generations. Kept the guild's tally books from the age of twelve, and noticed when the numbers stopped adding up.`,
+  (where: string) => `Raised in ${where} by an aunt who mended safety lamps. Spent years underground, then a year in a forge-city's yards, and never quite settled in either.`,
+  (where: string) => `From ${where}. Apprenticed to a carter on the ore roads, saw most of Golgotha from a wagon seat, and learned which guild owned which road.`,
+];
 const STRANGER = [
   "Smells of slag and lamp oil, and counts the exits.",
   "Short words, long silences, grey dust in every seam.",
@@ -120,7 +128,8 @@ export function randomGolgotha(): Values {
     "f-left": pick(LEFT),
     "f-sponsor": pick(SPONSOR),
     "f-cheap": pick(CHEAP),
-    "f-desc": `${pick(LOOK)} Grew up in ${home.where}.`,
+    "f-desc": pick(LOOK),
+    "f-backstory": pick(BACKSTORY)(home.where),
     "f-prof": prof,
     "f-force": pick(c.force),
     "f-item": pick(ITEM),

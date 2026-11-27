@@ -164,7 +164,7 @@ export function openingBook() {
   store.set("vaela-table-opened", "1");
   el.hidden = false;
   const end = () => { el.classList.add("is-done"); window.setTimeout(() => el.remove(), 420); };
-  const t = window.setTimeout(end, 1900);
+  const t = window.setTimeout(end, 2900);
   el.addEventListener("click", () => { window.clearTimeout(t); end(); }, { once: true });
   requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add("is-open")));
 }

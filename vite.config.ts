@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["favicon.svg", "icon.svg", "apple-touch-icon.png"],
+      includeAssets: ["favicon.png", "apple-touch-icon.png", "brand/*.webp"],
       manifest: {
         name: "Vaela Table",
         short_name: "Vaela Table",
@@ -28,7 +28,7 @@ export default defineConfig({
       workbox: {
         // The app shell is precached; the feed and inboxes (content/) are always fetched fresh,
         // with the last copy kept for offline reading.
-        globPatterns: ["**/*.{js,css,html,svg,png,webmanifest,woff2}"],
+        globPatterns: ["**/*.{js,css,html,svg,png,webp,webmanifest,woff2}"],
         globIgnores: ["content/**"],
         runtimeCaching: [
           {

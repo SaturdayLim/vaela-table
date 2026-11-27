@@ -335,20 +335,20 @@ main.turn-in { animation: page-settle 360ms cubic-bezier(0.4, 0, 0.2, 1); transf
 /* ---- the opening book: a closed book with the V opens into the Table ---- */
 .splash { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; background: var(--sat-bg); perspective: 1600px; transition: opacity 400ms var(--sat-ease); }
 .splash.is-done { opacity: 0; pointer-events: none; }
-.book { position: relative; width: min(46vw, 200px); aspect-ratio: 3 / 4; transform-style: preserve-3d; transition: transform 700ms cubic-bezier(0.6, 0, 0.3, 1) 900ms; }
-.book-pages, .book-cover { position: absolute; inset: 0; border-radius: 4px 10px 10px 4px; display: grid; place-items: center; }
-.book-pages { background: var(--sat-glass-2); border: 1px solid var(--sat-line-strong); box-shadow: inset 6px 0 10px -6px rgba(0,0,0,0.3); }
-.book-pages .vaela-mark { width: 70%; height: auto; opacity: 0; transition: opacity 300ms var(--sat-ease) 700ms; }
+.book { position: relative; width: min(86vw, 400px); aspect-ratio: 4 / 5; transform-style: preserve-3d; transition: transform 700ms cubic-bezier(0.6, 0, 0.3, 1) 1500ms; }
+.book-pages, .book-cover { position: absolute; inset: 0; border-radius: 4px 10px 10px 4px; display: grid; place-items: center; overflow: hidden; }
+/* The open book shows the wordmark on its pages; the cover is navy leather with the gilded V (design/brand/). */
+.book-pages { background: #0D1424; border: 1px solid #2A3550; box-shadow: inset 8px 0 14px -8px rgba(0,0,0,0.6); }
+.book-wordmark { width: 96%; height: auto; opacity: 0; transform: scale(0.96); transition: opacity 400ms var(--sat-ease) 800ms, transform 900ms var(--sat-ease) 800ms; }
 .book-cover {
-  background: color-mix(in srgb, var(--sat-accent-fill) 70%, var(--sat-bg)); border: 1px solid color-mix(in srgb, var(--sat-accent-fill) 80%, black);
+  background: #0D1424; border: 1px solid #3A4466;
   transform-origin: left center; transform: rotateY(0); backface-visibility: hidden;
-  transition: transform 800ms cubic-bezier(0.55, 0, 0.25, 1) 260ms; box-shadow: 4px 8px 24px rgba(0,0,0,0.35);
+  transition: transform 800ms cubic-bezier(0.55, 0, 0.25, 1) 300ms; box-shadow: 4px 8px 24px rgba(0,0,0,0.45);
 }
-.book-v { width: 56%; height: auto; fill: none; stroke: var(--sat-on-accent); stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; }
-.splash .vaela-mark { fill: none; stroke: var(--sat-accent-text); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.book-emblem { width: 88%; height: auto; }
 .splash.is-open .book-cover { transform: rotateY(-170deg); }
-.splash.is-open .book-pages .vaela-mark { opacity: 1; }
-.splash.is-open .book { transform: scale(7); }
+.splash.is-open .book-wordmark { opacity: 1; transform: none; }
+.splash.is-open .book { transform: scale(1.06); }
 @media (prefers-reduced-motion: reduce) { .splash { display: none; } }
 
 /* reduced motion: no turning, no tumbling */

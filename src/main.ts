@@ -408,7 +408,7 @@ function renderMove() {
   const text = $<HTMLTextAreaElement>("move-text");
   const mine = actions.get(who.slug);
   if (draftTurn !== turn) { // a new turn starts with an empty box, or with what this player already sent
-    text.value = mine?.text ?? "";
+    text.value = mine?.text ?? ""; text.style.height = "";
     publicRolls = { faces: new Map(Object.entries(mine?.checks ?? {})), forMe: new Set(mine?.forMe ?? []) };
     checksKey = "";
     $("move-status").textContent = "";
@@ -600,7 +600,7 @@ $("chat-form").addEventListener("submit", async (e) => {
     const sealed = await sealNote(code, text);
     const res = await fetch(url, { method: "POST", body: JSON.stringify({ v: 1, kind: "aside", who: who.slug, from: "player", at: Date.now(), ...sealed }) });
     if (!res.ok) throw new Error(String(res.status));
-    box.value = "";
+    box.value = ""; box.style.height = "";
     done.forEach((c) => { privateRolls.faces.delete(c.id); privateRolls.forMe.delete(c.id); });
     status.textContent = "Sent privately. The DM answers here.";
     void pollActions();
@@ -850,6 +850,12 @@ onRoute((r) => {
 });
 initSheet();
 initTextSize();
+// Your move and Private chat grow with what is typed, so a long answer reads at a glance (up to 60% of the screen).
+for (const id of ["move-text", "chat-text"]) {
+  const t = $<HTMLTextAreaElement>(id);
+  const grow = () => { t.style.height = "auto"; t.style.height = Math.min(t.scrollHeight + 2, innerHeight * 0.6) + "px"; };
+  t.addEventListener("input", grow);
+}
 initDice();
 initNav();
 enhance(document.querySelector<HTMLElement>('[data-sub="rules"]')!);
