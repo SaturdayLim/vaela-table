@@ -5,7 +5,7 @@ import "./kit.css";
 import "./styles.css";
 import { marked } from "marked";
 import { openInbox, openNote, sealNote, WrongCode } from "./lib/crypto.js";
-import { initSheet } from "./sheet";
+import { initSheet, setSheetIdentity } from "./sheet";
 import { initDice } from "./dice";
 import { initNav, onRoute, currentRoute, setAbsent, openingBook } from "./nav";
 import { enhance, profileHtml, type Profile } from "./enhance";
@@ -686,6 +686,7 @@ async function unlock(meta: InboxMeta, code: string, remember: boolean, silent: 
     const seenBefore = store.get(seenKey(meta.slug));
     opened = { meta, code, items: data.items as Item[] };
     renderOpen(seenBefore === null ? 0 : Math.max(0, meta.letters - Number(seenBefore)));
+    shareIdentity();
     store.set(seenKey(meta.slug), String(meta.letters));
     picking = null;
     showInboxPanel("open");
@@ -703,6 +704,15 @@ async function unlock(meta: InboxMeta, code: string, remember: boolean, silent: 
     go.removeAttribute("aria-disabled");
     go.textContent = "Open inbox";
   }
+}
+
+/** Hand the open inbox's character to the Character Sheet (or none when locked). */
+function shareIdentity() {
+  if (!opened) return setSheetIdentity(null);
+  const p = opened.items.find((i) => i.kind === "profile");
+  let profile: Profile | null = null;
+  if (p) try { profile = JSON.parse(p.body) as Profile; } catch { profile = null; }
+  setSheetIdentity({ slug: opened.meta.slug, name: opened.meta.name, profile });
 }
 
 /** Fill one inbox subpage, or mark it absent (no tab) when the inbox has no such item. */
@@ -758,6 +768,7 @@ async function refreshOpenInbox(prev: Index | null) {
     const seen = Number(store.get(seenKey(meta.slug)) ?? 0);
     opened = { meta, code: opened.code, items: data.items };
     renderOpen(Math.max(0, meta.letters - seen));
+    shareIdentity();
     if (currentRoute()?.view === "inbox") store.set(seenKey(meta.slug), String(meta.letters));
   } catch {
     // The DM changed this inbox's code: lock it and ask for the new one.
@@ -768,6 +779,7 @@ async function refreshOpenInbox(prev: Index | null) {
 function lockInbox() {
   if (opened) store.del(codeKey(opened.meta.slug));
   opened = null;
+  shareIdentity();
   renderPick();
   showInboxPanel("pick");
   updateDots();

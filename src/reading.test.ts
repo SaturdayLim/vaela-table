@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { parseLookup } from "./enhance";
 import { rollError, dieRange } from "./rollbox";
 import { keepD20 } from "./dice";
+import { prefillFrom, sheetMarkdown } from "./sheet";
 
 describe("lookup lists", () => {
   it("reads a labelled modifier lookup", () => {
@@ -45,5 +46,28 @@ describe("advantage", () => {
     expect(keepD20(1, 4, 17)).toBe(17);
     expect(keepD20(-1, 4, 17)).toBe(4);
     expect(keepD20(0, 4, 17)).toBe(4);
+  });
+});
+
+describe("character sheet", () => {
+  it("pre-fills a live character from the inbox profile", () => {
+    const v = prefillFrom({ name: "Test Hero", cls: "Mage (Scholar)", level: 3, pb: 2,
+      abilities: { str: 8, dex: 14, con: 12, int: 16, wis: 10, cha: 0 }, saves: [], skills: ["arcana", "sleight-of-hand"], expertise: [], derived: [] }, "Fallback");
+    expect(v["f-name"]).toBe("Test Hero");
+    expect(v["f-class"]).toBe("Mage (Scholar)");
+    expect(v["f-int"]).toBe("16");
+    expect(v["f-cha"]).toBeUndefined();
+    expect(v["f-skill2"]).toBe("Sleight of Hand");
+    expect(prefillFrom(null, "Only A Name")).toEqual({ "f-name": "Only A Name" });
+  });
+  it("writes Markdown with marks for required and blank fields", () => {
+    const md = sheetMarkdown([{ part: "Stats", rows: [
+      { label: "STR", value: "14", req: false, score: true },
+      { label: "Anchor", value: "", req: true, score: false }] }],
+      { name: "Test Hero", kind: "new", owner: "Pip", date: new Date("2026-11-27T00:00:00Z") });
+    expect(md).toMatch(/^# Character sheet: Test Hero/);
+    expect(md).toContain("drafted by Pip");
+    expect(md).toContain("- **STR:** 14 (+2)");
+    expect(md).toContain("- **Anchor *:** (blank)");
   });
 });

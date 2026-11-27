@@ -47,6 +47,7 @@ main { --sat-gap: var(--sat-space-5); }
 .tip-head .sat-tip-body, .sat-tip .sat-tip-body { animation: tip-in 150ms var(--sat-ease); }
 @keyframes tip-in { from { opacity: 0; transform: scale(0.95); } }
 .lab { display: flex; align-items: center; gap: var(--sat-space-2); }
+.lab > label { font-size: var(--sat-fs-small); font-weight: 600; } /* same as a plain field label */
 
 /* ---- feed ---- */
 details.letter > summary { list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: var(--sat-space-3); min-height: 44px; }
@@ -255,6 +256,26 @@ details.letter[open] > summary { margin-bottom: var(--sat-space-4); padding-bott
 /* ---- new sheet: one part per subpage ---- */
 .sheet-form fieldset { min-height: 0; }
 .sheet-form .actions { margin-top: var(--sat-space-6); }
+/* Character sheet: picker, stat tips, Randomize, slots (table/DESIGN.md, "Character sheet") */
+.char-pick { max-width: 26rem; margin-bottom: var(--sat-space-4); }
+.stats-head { display: flex; justify-content: flex-end; margin: calc(-1 * var(--sat-space-2)) 0 var(--sat-space-3); }
+.icon-btn { display: inline-flex; align-items: center; gap: var(--sat-space-2); }
+.icon-btn svg { width: 20px; height: 20px; flex: none; }
+.score-tip .sat-tip-btn {
+  min-height: 32px; padding: 2px var(--sat-space-2); border: 0; border-radius: var(--sat-radius-sm); background: none; cursor: help;
+  font-family: var(--sat-font-ui); font-style: normal; font-size: var(--sat-fs-caption); font-weight: 700; letter-spacing: 0.02em; color: var(--sat-text);
+  text-decoration: underline dotted color-mix(in srgb, var(--sat-text) 45%, transparent); text-underline-offset: 3px;
+}
+.score-tip .sat-tip-btn:hover, .score-tip .sat-tip-btn[aria-expanded="true"] { color: var(--sat-accent-text); }
+.slot-head { margin: var(--sat-space-6) 0 var(--sat-space-3); font-size: var(--sat-fs-body); }
+.slot-head .sat-muted { font-weight: 400; }
+.slots { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sat-space-3); }
+@media (min-width: 900px) { .slots { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.slots label { font-size: var(--sat-fs-small); color: var(--sat-muted); }
+/* An open stat tip sits above the neighbouring score boxes. */
+.score { position: relative; }
+.score:has(.sat-tip-btn[aria-expanded="true"]) { z-index: 5; }
+#save[aria-disabled] { opacity: 0.6; cursor: default; }
 
 /* ---- phone tab bar (the kit's bottom bar, holding the five sections, as Felt does) ---- */
 .tabbar { display: none; }
@@ -281,21 +302,35 @@ main { view-transition-name: page; }
 .tabbar { view-transition-name: tabbar; }
 .sat-header { view-transition-name: header; }
 ::view-transition-old(root), ::view-transition-new(root) { animation: none; }
-::view-transition-group(page) { animation-duration: 400ms; }
-::view-transition-old(page), ::view-transition-new(page) { animation-duration: 400ms; animation-timing-function: cubic-bezier(0.45, 0, 0.25, 1); animation-fill-mode: both; mix-blend-mode: normal; }
-/* Forward: the old page lifts off its spine (left edge) and turns away over the new one. */
+::view-transition-group(page) { animation-duration: 440ms; }
+/* Pages are paper: fully opaque (a solid backing behind the glass cards), never faded. Shade, not transparency, shows depth. */
+::view-transition-old(page), ::view-transition-new(page) {
+  animation-duration: 440ms; animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1); animation-fill-mode: both;
+  mix-blend-mode: normal; opacity: 1; background: var(--sat-bg);
+}
+/* Forward: the old page lifts off its spine (left edge), bends a little, and turns away edge-on over the new one. */
 html[data-turn="fwd"]::view-transition-old(page) { z-index: 2; transform-origin: left center; animation-name: turn-away; }
 html[data-turn="fwd"]::view-transition-new(page) { animation-name: page-under; }
-/* Back: the earlier page turns back in from the spine over the current one. */
+/* Back: the earlier page turns back in from the spine, bends, and settles flat over the current one. */
 html[data-turn="back"]::view-transition-new(page) { z-index: 2; transform-origin: left center; animation-name: turn-back; }
 html[data-turn="back"]::view-transition-old(page) { animation-name: page-under-out; }
-@keyframes turn-away { 0% { transform: perspective(1800px) rotateY(0); opacity: 1; } 70% { opacity: 1; } 100% { transform: perspective(1800px) rotateY(-96deg); opacity: 0; } }
-@keyframes turn-back { 0% { transform: perspective(1800px) rotateY(-96deg); opacity: 0; } 30% { opacity: 1; } 100% { transform: perspective(1800px) rotateY(0); opacity: 1; } }
-@keyframes page-under { from { opacity: 0.35; transform: scale(0.985); } }
-@keyframes page-under-out { to { opacity: 0.35; transform: scale(0.985); } }
-/* Browsers without View Transitions: the new page settles in. */
-main.turn-in { animation: page-settle 320ms var(--sat-ease); }
-@keyframes page-settle { from { opacity: 0; transform: perspective(1800px) rotateY(-8deg); transform-origin: left center; } }
+@keyframes turn-away {
+  0%   { transform: perspective(2000px) rotateY(0) skewY(0); filter: brightness(1); }
+  35%  { transform: perspective(2000px) rotateY(-28deg) skewY(-2.5deg) scaleX(0.985); filter: brightness(0.96); }
+  100% { transform: perspective(2000px) rotateY(-90deg) skewY(-5deg) scaleX(0.97); filter: brightness(0.72); }
+}
+@keyframes turn-back {
+  0%   { transform: perspective(2000px) rotateY(-90deg) skewY(-5deg) scaleX(0.97); filter: brightness(0.72); }
+  70%  { transform: perspective(2000px) rotateY(-6deg) skewY(-1deg); filter: brightness(0.97); }
+  86%  { transform: perspective(2000px) rotateY(2deg) skewY(0.3deg); filter: brightness(1); }
+  100% { transform: perspective(2000px) rotateY(0) skewY(0); filter: brightness(1); }
+}
+/* The page underneath sits in the turning page's shadow, then comes into full light. */
+@keyframes page-under { from { filter: brightness(0.8); transform: scale(0.992); } }
+@keyframes page-under-out { to { filter: brightness(0.8); transform: scale(0.992); } }
+/* Browsers without View Transitions: the new page swings in from the spine, opaque throughout. */
+main.turn-in { animation: page-settle 360ms cubic-bezier(0.4, 0, 0.2, 1); transform-origin: left center; }
+@keyframes page-settle { from { transform: perspective(2000px) rotateY(-12deg) skewY(-1deg); filter: brightness(0.85); } }
 
 /* ---- the opening book: a closed book with the V opens into the Table ---- */
 .splash { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; background: var(--sat-bg); perspective: 1600px; transition: opacity 400ms var(--sat-ease); }

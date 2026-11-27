@@ -19,6 +19,7 @@
   <symbol id="i-sun" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/></g></symbol>
   <symbol id="i-moon" viewBox="0 0 24 24"><path d="M19 14.5A7.5 7.5 0 0 1 9.5 5a7.5 7.5 0 1 0 9.5 9.5z" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"/></symbol>
   <symbol id="i-list" viewBox="0 0 24 24"><path d="M5 7h14M5 12h14M5 17h14" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 19h14"/></g></symbol>
   <symbol id="i-copy" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></g></symbol>
   <symbol id="i-feed" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 9h8M8 13h8M8 17h5"/></g></symbol>
   <symbol id="i-inbox" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"><rect x="3.5" y="6" width="17" height="12" rx="2"/><path d="M4 7l8 6 8-6"/></g></symbol>
@@ -47,7 +48,7 @@
       <button role="radio" aria-checked="false" data-value="inbox">Inbox<i class="dot" data-dot="inbox" hidden></i></button>
       <button role="radio" aria-checked="false" data-value="dice">Dice</button>
       <button role="radio" aria-checked="false" data-value="kit">Player kit</button>
-      <button role="radio" aria-checked="false" data-value="sheet">New sheet</button>
+      <button role="radio" aria-checked="false" data-value="sheet">Character sheet</button>
     </div>
     <div class="sat-seg sat-desktop-only" role="radiogroup" aria-label="Theme">
       <button role="radio" data-sat-theme="auto" aria-checked="true" aria-label="Theme: auto"><svg><use href="#i-auto"/></svg></button>
@@ -219,12 +220,6 @@
   <div class="sub sat-stack" data-sub="start" data-label="Start here">
   <section class="hero sat-stack">
     <p class="sat-lede">Two strangers under one roof on Tallow Street, in the cart city of Gantry. This kit holds what anyone in town knows. Your inbox holds what only you know.</p>
-    <div class="sat-grid stats">
-      <div class="sat-glass sat-stat"><span class="sat-caption">Players</span><span class="sat-kpi">2</span><span class="sat-note">Each with a character of their own</span></div>
-      <div class="sat-glass sat-stat"><span class="sat-caption">Level</span><span class="sat-kpi">3</span><span class="sat-note">Level 4 after Session 3</span></div>
-      <div class="sat-glass sat-stat"><span class="sat-caption">Base</span><span class="sat-kpi">1 inn</span><span class="sat-note">The Lamp and Pick, Tallow Street</span></div>
-      <div class="sat-glass sat-stat"><span class="sat-caption">Money <span class="sat-qual">(SM per Crown)</span></span><span class="sat-kpi">100</span><span class="sat-note">1 Gold Crown = 100 Silver Marks</span></div>
-    </div>
   </section>
 
   <article class="sat-glass-2 sat-card prose">
@@ -478,17 +473,22 @@
 </article>
 </section>
 
-<!-- ================= NEW SHEET (a replacement character) ================= -->
+<!-- ================= CHARACTER SHEET (yours, or a new character) ================= -->
 <section class="view" data-view="sheet" aria-labelledby="sheet-title" hidden>
   <div class="page-head">
-    <h1 class="sat-h1"><span class="sat-tip tip-head"><button type="button" class="sat-tip-btn" id="sheet-title" aria-expanded="false">New Sheet</button><span class="sat-tip-body" role="tooltip">Only for a replacement character. Fill in each page, then press Copy sheet for the DM. Paste it into a .txt file and send it to the host, who passes it on unopened. Your draft stays in this browser. Type ?? in up to three fields to let the DM decide them.</span></span></h1>
+    <h1 class="sat-h1"><span class="sat-tip tip-head"><button type="button" class="sat-tip-btn" id="sheet-title" aria-expanded="false">Character Sheet</button><span class="sat-tip-body" role="tooltip">Your character, filled in from your open inbox. Pick New character to draft another one for yourself: it stays on this device. Save keeps your changes here. Copy or Download sends the sheet to the DM as Markdown. A new character goes live with its own inbox code once every required field is filled and you have played its Session 0. Type ?? in up to three fields to let the DM decide.</span></span></h1>
     <div class="sat-cluster page-tools" aria-live="polite" style="--sat-gap: var(--sat-space-2)">
+      <span class="sat-badge sat-badge--muted" id="m-state">Draft</span>
       <span class="sat-badge sat-badge--muted" id="m-req">0 of 15 required</span>
       <span class="sat-badge sat-badge--muted" id="m-qq">?? used: 0 of 3</span>
     </div>
   </div>
+  <div class="sat-field char-pick">
+    <label for="char">Character</label>
+    <select class="sat-input" id="char"></select>
+  </div>
   <nav class="subtabs" role="tablist" aria-label="Sheet pages"></nav>
-<form id="sheet" class="sheet-form sat-glass-2 sat-card" autocomplete="off">
+<form id="char-sheet" class="sheet-form sat-glass-2 sat-card" autocomplete="off">
     <fieldset class="sub" data-sub="identity" data-label="Identity">
       <legend class="sat-h3"><span class="sat-tip tip-head"><button type="button" class="sat-tip-btn" id="lg-identity" aria-expanded="false">Identity</button><span class="sat-tip-body" role="tooltip">Who your character is: name, people, class, and why the Board took them on.</span></span></legend>
       <div class="sat-grid fields">
@@ -521,22 +521,33 @@
       </div>
     </fieldset>
 
-    <fieldset class="sub" data-sub="numbers" data-label="Numbers">
-      <legend class="sat-h3"><span class="sat-tip tip-head"><button type="button" class="sat-tip-btn" id="lg-numbers" aria-expanded="false">Numbers</button><span class="sat-tip-body" role="tooltip">Roll a d20 for each score, or assign 16, 15, 13, 12, 11 and 10. The modifier fills in from the Vaela table. The DM finishes HP, AC, RP, SP and speed.</span></span></legend>
-      <div class="scores">
-        <div class="score sat-well"><label class="sat-caption" for="f-str">Str</label><input class="sat-input" type="number" id="f-str" min="1" max="20" data-label="STR" inputmode="numeric"><span class="mod" data-mod="f-str"></span></div>
-        <div class="score sat-well"><label class="sat-caption" for="f-dex">Dex</label><input class="sat-input" type="number" id="f-dex" min="1" max="20" data-label="DEX" inputmode="numeric"><span class="mod" data-mod="f-dex"></span></div>
-        <div class="score sat-well"><label class="sat-caption" for="f-con">Con</label><input class="sat-input" type="number" id="f-con" min="1" max="20" data-label="CON" inputmode="numeric"><span class="mod" data-mod="f-con"></span></div>
-        <div class="score sat-well"><label class="sat-caption" for="f-int">Int</label><input class="sat-input" type="number" id="f-int" min="1" max="20" data-label="INT" inputmode="numeric"><span class="mod" data-mod="f-int"></span></div>
-        <div class="score sat-well"><label class="sat-caption" for="f-wis">Wis</label><input class="sat-input" type="number" id="f-wis" min="1" max="20" data-label="WIS" inputmode="numeric"><span class="mod" data-mod="f-wis"></span></div>
-        <div class="score sat-well"><label class="sat-caption" for="f-cha">Cha</label><input class="sat-input" type="number" id="f-cha" min="1" max="20" data-label="CHA" inputmode="numeric"><span class="mod" data-mod="f-cha"></span></div>
+    <fieldset class="sub" data-sub="stats" data-label="Stats">
+      <legend class="sat-h3"><span class="sat-tip tip-head"><button type="button" class="sat-tip-btn" id="lg-stats" aria-expanded="false">Stats</button><span class="sat-tip-body" role="tooltip">Roll a d20 for each score (the dice button does it for you), or assign 16, 15, 13, 12, 11 and 10. The modifier fills in from the Vaela table. The DM will assign HP, AC, RP, SP, Speed and Proficiency bonuses.</span></span></legend>
+      <div class="stats-head">
+        <button type="button" class="sat-btn sat-btn--ghost icon-btn" id="randomize" aria-label="Randomize: roll a d20 for each score"><svg aria-hidden="true"><use href="#i-dice"/></svg><span>Randomize</span></button>
       </div>
-      <ul class="inline-list" style="margin-top: var(--sat-space-4)" aria-label="Filled in by the DM">
-        <li class="sat-badge sat-badge--muted">HP: DM</li><li class="sat-badge sat-badge--muted">AC: DM</li><li class="sat-badge sat-badge--muted">RP and SP: DM</li><li class="sat-badge sat-badge--muted">Speed: DM</li><li class="sat-badge sat-badge--muted">Proficiency +2</li>
-      </ul>
-      <div class="sat-grid fields" style="margin-top: var(--sat-space-5)">
-        <div class="sat-field"><label for="f-skills">Skills (3 or 4)</label><input class="sat-input" type="text" id="f-skills" data-label="Skills"></div>
-        <div class="sat-field"><label for="f-tools">Tools and languages</label><input class="sat-input" type="text" id="f-tools" data-label="Tools and languages"></div>
+      <div class="scores">
+        <div class="score sat-well"><span class="sat-tip score-tip"><button type="button" class="sat-tip-btn" aria-expanded="false" aria-label="About STR">Str</button><span class="sat-tip-body" role="tooltip">Strength. Physical power: lifting, climbing, forcing a door, hitting hard.</span></span><input class="sat-input" type="number" id="f-str" min="1" max="20" data-label="STR" aria-label="STR score" inputmode="numeric"><span class="mod" data-mod="f-str"></span></div>
+        <div class="score sat-well"><span class="sat-tip score-tip"><button type="button" class="sat-tip-btn" aria-expanded="false" aria-label="About DEX">Dex</button><span class="sat-tip-body" role="tooltip">Dexterity. Agility and reflexes: balance, stealth, quick hands, aim.</span></span><input class="sat-input" type="number" id="f-dex" min="1" max="20" data-label="DEX" aria-label="DEX score" inputmode="numeric"><span class="mod" data-mod="f-dex"></span></div>
+        <div class="score sat-well"><span class="sat-tip score-tip"><button type="button" class="sat-tip-btn" aria-expanded="false" aria-label="About CON">Con</button><span class="sat-tip-body" role="tooltip">Constitution. Endurance and health: hit points, holding out against poison, cold and exhaustion.</span></span><input class="sat-input" type="number" id="f-con" min="1" max="20" data-label="CON" aria-label="CON score" inputmode="numeric"><span class="mod" data-mod="f-con"></span></div>
+        <div class="score sat-well"><span class="sat-tip score-tip"><button type="button" class="sat-tip-btn" aria-expanded="false" aria-label="About INT">Int</button><span class="sat-tip-body" role="tooltip">Intelligence. Reasoning and memory: lore, investigation, working things out.</span></span><input class="sat-input" type="number" id="f-int" min="1" max="20" data-label="INT" aria-label="INT score" inputmode="numeric"><span class="mod" data-mod="f-int"></span></div>
+        <div class="score sat-well"><span class="sat-tip score-tip"><button type="button" class="sat-tip-btn" aria-expanded="false" aria-label="About WIS">Wis</button><span class="sat-tip-body" role="tooltip">Wisdom. Awareness and judgement: noticing things, reading people, trusting your instinct.</span></span><input class="sat-input" type="number" id="f-wis" min="1" max="20" data-label="WIS" aria-label="WIS score" inputmode="numeric"><span class="mod" data-mod="f-wis"></span></div>
+        <div class="score sat-well"><span class="sat-tip score-tip"><button type="button" class="sat-tip-btn" aria-expanded="false" aria-label="About CHA">Cha</button><span class="sat-tip-body" role="tooltip">Charisma. Force of personality: persuading, deceiving, performing, leading.</span></span><input class="sat-input" type="number" id="f-cha" min="1" max="20" data-label="CHA" aria-label="CHA score" inputmode="numeric"><span class="mod" data-mod="f-cha"></span></div>
+      </div>
+      <h3 class="sat-h4 slot-head">Tools, Skills &amp; Proficiencies <span class="sat-muted">(Add 4)</span></h3>
+      <div class="sat-grid fields slots">
+        <div class="sat-field"><label class="sat-sr-only" for="f-skill1">Tool, skill or proficiency 1</label><input class="sat-input" type="text" id="f-skill1" list="skill-list" placeholder="Skill or tool 1" data-label="Tool, skill or proficiency 1"></div>
+        <div class="sat-field"><label class="sat-sr-only" for="f-skill2">Tool, skill or proficiency 2</label><input class="sat-input" type="text" id="f-skill2" list="skill-list" placeholder="Skill or tool 2" data-label="Tool, skill or proficiency 2"></div>
+        <div class="sat-field"><label class="sat-sr-only" for="f-skill3">Tool, skill or proficiency 3</label><input class="sat-input" type="text" id="f-skill3" list="skill-list" placeholder="Skill or tool 3" data-label="Tool, skill or proficiency 3"></div>
+        <div class="sat-field"><label class="sat-sr-only" for="f-skill4">Tool, skill or proficiency 4</label><input class="sat-input" type="text" id="f-skill4" list="skill-list" placeholder="Skill or tool 4" data-label="Tool, skill or proficiency 4"></div>
+      </div>
+      <datalist id="skill-list"><option>Acrobatics</option><option>Animal Handling</option><option>Arcana</option><option>Athletics</option><option>Deception</option><option>History</option><option>Insight</option><option>Intimidation</option><option>Investigation</option><option>Medicine</option><option>Nature</option><option>Perception</option><option>Performance</option><option>Persuasion</option><option>Religion</option><option>Sleight of Hand</option><option>Stealth</option><option>Survival</option><option>Alchemist's supplies</option><option>Calligrapher's supplies</option><option>Cartographer's tools</option><option>Disguise kit</option><option>Forgery kit</option><option>Herbalism kit</option><option>Healer's kit</option><option>Musical instrument</option><option>Navigator's tools</option><option>Smith's tools</option><option>Thieves' tools</option><option>Tinker's tools</option></datalist>
+      <h3 class="sat-h4 slot-head"><span class="sat-tip tip-head"><button type="button" class="sat-tip-btn" aria-expanded="false">Languages</button><span class="sat-tip-body" role="tooltip">Everyone speaks Vaelan. Pick the dialect you grew up with, and one more if you learned it. Eldorian is the language of contracts, licences and the colleges.</span></span></h3>
+      <div class="sat-grid fields slots">
+        <div class="sat-field"><label for="f-lang1">Primary</label>
+          <select class="sat-input" id="f-lang1" data-label="Primary language"><option value=""></option><option>Eldorian</option><option>Verdant</option><option>Frostholm</option><option>Emberisle</option><option>Crystalian</option><option>Crescents creole</option><option>??</option></select></div>
+        <div class="sat-field"><label for="f-lang2">Secondary</label>
+          <select class="sat-input" id="f-lang2" data-label="Secondary language"><option value=""></option><option>None</option><option>Eldorian</option><option>Verdant</option><option>Frostholm</option><option>Emberisle</option><option>Crystalian</option><option>Crescents creole</option><option>??</option></select></div>
       </div>
     </fieldset>
 
@@ -549,32 +560,36 @@
     </fieldset>
 
     <fieldset class="sub" data-sub="hooks" data-label="Hooks">
-      <legend class="sat-h3"><span class="sat-tip tip-head"><button type="button" class="sat-tip-btn" id="lg-hooks" aria-expanded="false">Hooks</button><span class="sat-tip-body" role="tooltip">Three threads the DM builds the story around.</span></span></legend>
+      <legend class="sat-h3"><span class="sat-tip tip-head"><button type="button" class="sat-tip-btn" id="lg-hooks" aria-expanded="false">Hooks</button><span class="sat-tip-body" role="tooltip">Three threads the DM builds the story around. Make at least one about trust in paper: contracts, licences, records, who wrote what.</span></span></legend>
       <div class="sat-grid fields">
-        <div class="sat-field full"><div class="lab"><label for="f-anchor">Anchor <span class="req" aria-label="required">*</span></label><span class="sat-tip"><button type="button" class="sat-tip-btn" aria-expanded="false" aria-label="About anchor">i</button><span class="sat-tip-body" role="tooltip">Who or what you will not lose.</span></span></div><input class="sat-input" type="text" id="f-anchor" data-label="Anchor" data-req></div>
-        <div class="sat-field full"><div class="lab"><label for="f-scar">Scar <span class="req" aria-label="required">*</span></label><span class="sat-tip"><button type="button" class="sat-tip-btn" aria-expanded="false" aria-label="About scar">i</button><span class="sat-tip-body" role="tooltip">What happened and is not finished.</span></span></div><input class="sat-input" type="text" id="f-scar" data-label="Scar" data-req></div>
-        <div class="sat-field full"><div class="lab"><label for="f-question">Question <span class="req" aria-label="required">*</span></label><span class="sat-tip"><button type="button" class="sat-tip-btn" aria-expanded="false" aria-label="About question">i</button><span class="sat-tip-body" role="tooltip">Make at least one hook about trust in paper: contracts, licences, records, who wrote what.</span></span></div><input class="sat-input" type="text" id="f-question" data-label="Question" data-req></div>
+        <div class="sat-field full"><div class="lab"><label for="f-anchor">Anchor <span class="req" aria-label="required">*</span></label><span class="sat-tip"><button type="button" class="sat-tip-btn" aria-expanded="false" aria-label="About anchor">i</button><span class="sat-tip-body" role="tooltip">What your character holds true and is reluctant to sacrifice.</span></span></div><input class="sat-input" type="text" id="f-anchor" data-label="Anchor" data-req></div>
+        <div class="sat-field full"><div class="lab"><label for="f-scar">Scar <span class="req" aria-label="required">*</span></label><span class="sat-tip"><button type="button" class="sat-tip-btn" aria-expanded="false" aria-label="About scar">i</button><span class="sat-tip-body" role="tooltip">What your character carries from the past and has not finished with.</span></span></div><input class="sat-input" type="text" id="f-scar" data-label="Scar" data-req></div>
+        <div class="sat-field full"><div class="lab"><label for="f-question">Question <span class="req" aria-label="required">*</span></label><span class="sat-tip"><button type="button" class="sat-tip-btn" aria-expanded="false" aria-label="About question">i</button><span class="sat-tip-body" role="tooltip">What your character needs to find out and keeps coming back to.</span></span></div><input class="sat-input" type="text" id="f-question" data-label="Question" data-req></div>
       </div>
     </fieldset>
 
     <fieldset class="sub" data-sub="optional" data-label="Optional">
       <legend class="sat-h3"><span class="sat-tip tip-head"><button type="button" class="sat-tip-btn" id="lg-optional" aria-expanded="false">Optional</button><span class="sat-tip-body" role="tooltip">Anything else the DM should know, including your Lines and Veils.</span></span></legend>
       <div class="sat-grid fields">
-        <div class="sat-field"><label for="f-partner">Your partner: how you know them</label><input class="sat-input" type="text" id="f-partner" data-label="Partner" placeholder="(strangers, or one shared fact)"></div>
-        <div class="sat-field"><label for="f-tie">Prior faction tie</label><input class="sat-input" type="text" id="f-tie" data-label="Faction tie" placeholder="(e.g. former affiliate, Bardic College)"></div>
-        <div class="sat-field"><label for="f-hope">One thing you hope your character gets to do</label><input class="sat-input" type="text" id="f-hope" data-label="Hope to do"></div>
-        <div class="sat-field"><label for="f-hate">One thing you would hate to see happen</label><input class="sat-input" type="text" id="f-hate" data-label="Hate to see"></div>
-        <div class="sat-field"><div class="lab"><label for="f-lines">Lines</label><span class="sat-tip"><button type="button" class="sat-tip-btn" aria-expanded="false" aria-label="About lines">i</button><span class="sat-tip-body" role="tooltip">Never in play.</span></span></div><input class="sat-input" type="text" id="f-lines" data-label="Lines"></div>
-        <div class="sat-field"><div class="lab"><label for="f-veils">Veils</label><span class="sat-tip"><button type="button" class="sat-tip-btn" aria-expanded="false" aria-label="About veils">i</button><span class="sat-tip-body" role="tooltip">Off-screen only.</span></span></div><input class="sat-input" type="text" id="f-veils" data-label="Veils"></div>
+        <div class="sat-field"><div class="lab"><label for="f-partner">Partner name</label><span class="sat-tip"><button type="button" class="sat-tip-btn" aria-expanded="false" aria-label="About partner">i</button><span class="sat-tip-body" role="tooltip">The other player's character. Strangers is fine.</span></span></div><input class="sat-input" type="text" id="f-partner" data-label="Partner name"></div>
+        <div class="sat-field"><label for="f-tie">Prior faction tie</label>
+          <select class="sat-input" id="f-tie" data-label="Faction tie"><option value=""></option><option>None</option><option>The Celestial College</option><option>The Arcane University</option><option>The Bardic College</option><option>The Order of the Eternal Flame</option><option>The Hollow Hand</option><option>The Rift Watchers</option><option>The Transport Guild</option><option>A mining guild</option><option>??</option></select></div>
+        <div class="sat-field full"><label for="f-partner-how">How you know them</label><textarea class="sat-input" id="f-partner-how" data-label="How you know your partner" placeholder="(strangers, or one fact you share)"></textarea></div>
+        <div class="sat-field"><label for="f-hope">Character enjoys</label><input class="sat-input" type="text" id="f-hope" data-label="Character enjoys"></div>
+        <div class="sat-field"><label for="f-hate">Character hates</label><input class="sat-input" type="text" id="f-hate" data-label="Character hates"></div>
+        <div class="sat-field"><div class="lab"><label for="f-lines">Lines</label><span class="sat-tip"><button type="button" class="sat-tip-btn" aria-expanded="false" aria-label="About lines">i</button><span class="sat-tip-body" role="tooltip">A line is a hard limit: something that never happens in the story, not even off-screen. Example: harm to animals.</span></span></div><input class="sat-input" type="text" id="f-lines" data-label="Lines"></div>
+        <div class="sat-field"><div class="lab"><label for="f-veils">Veils</label><span class="sat-tip"><button type="button" class="sat-tip-btn" aria-expanded="false" aria-label="About veils">i</button><span class="sat-tip-body" role="tooltip">A veil is a soft limit: it can happen in the story, but off-screen. The scene fades before the details. Example: torture.</span></span></div><input class="sat-input" type="text" id="f-veils" data-label="Veils"></div>
       </div>
     </fieldset>
 
     <div class="actions sat-cluster">
-      <button type="button" class="sat-btn sat-btn--primary" id="copy"><svg><use href="#i-copy"/></svg>Copy sheet for the DM</button>
-      <button type="button" class="sat-btn sat-btn--ghost" id="clear">Clear sheet</button>
+      <button type="button" class="sat-btn sat-btn--primary" id="save">Save</button>
+      <button type="button" class="sat-btn sat-btn--ghost icon-btn" id="copy"><svg aria-hidden="true"><use href="#i-copy"/></svg><span>Copy</span></button>
+      <button type="button" class="sat-btn sat-btn--ghost icon-btn" id="download"><svg aria-hidden="true"><use href="#i-download"/></svg><span>Download .md</span></button>
+      <button type="button" class="sat-btn sat-btn--ghost" id="clear">Delete draft</button>
       <span class="status" id="status" role="status"></span>
     </div>
-    <textarea class="sat-input" id="fallback" readonly hidden aria-label="Your sheet as text"></textarea>
+    <textarea class="sat-input" id="fallback" readonly hidden aria-label="Your sheet as Markdown"></textarea>
   </form>
 </section>
 

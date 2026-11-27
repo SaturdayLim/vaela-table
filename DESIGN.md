@@ -21,7 +21,7 @@ Test for any line of small text: would a player miss it if it were gone? If not,
 | Five sections | Table, Inbox, Dice, Kit, Sheet. Bottom tab bar on phones, top bar on wide screens. |
 | Subpages as notebook tabs | Long content splits into subpages, reached from tabs at the top of the section (`.subtabs`), not by scrolling. A subpage with nothing in it gets no tab. |
 | Hash routes | `#section/sub`. Old links (`#world`, `#rules`, `#session`, `#start`, `#commission`) still resolve. The last subpage per section is remembered for the browser session. |
-| Chapter turn | Moving forward turns the page like a book chapter; moving back turns it the other way (View Transitions, CSS fallback). Screen band: 300 to 400 ms. Off under reduced motion. |
+| Chapter turn | Moving forward turns the page like a book chapter; moving back turns it the other way (View Transitions, CSS fallback). Pages are paper: **fully opaque, never faded**. The turning page bends slightly and settles; the page underneath sits in its shadow (brightness, not transparency). About 440 ms. Off under reduced motion. |
 | Opening book | Once per browser session a closed book with the V opens into the Table. Tap to skip. Off under reduced motion. |
 | One screen on a phone | Each subpage aims to fit 375 x 812 above the tab bar. Never any sideways scroll at 375 px. |
 
@@ -52,6 +52,17 @@ Test for any line of small text: would a player miss it if it were gone? If not,
 | Roll for me | A toggle beside each box. On: the box reads "DM" and the DM rolls on the player's behalf. |
 | Public or private | A check called on the post appears in Your move. A private check appears in Private chat and travels sealed. |
 | Send needs every roll | Each check needs a result or Roll for me before Send works. |
+
+## Character sheet
+
+| Rule | Detail |
+|---|---|
+| Picker | The open inbox's character (pre-filled from its profile: name, class, scores, skills), the player's new-character drafts, and "+ New character". |
+| New character | Belongs to the player who drafted it and stays on that device. It goes live, with its own inbox code, once every required field is filled and its Session 0 is played. |
+| Save | Explicit. Switching away with unsaved changes asks once; a second pick discards them. |
+| Share | Copy and Download give the same Markdown file for the DM, one bullet per field, required fields marked *. |
+| Stats | Each score's label is a tip saying what it covers. Randomize rolls a d20 per score (the Vaela rule). The DM assigns HP, AC, RP, SP, Speed and Proficiency: said in the Stats tip, not as badges. |
+| Slots | Four slots for tools, skills and proficiencies; Primary and Secondary language. |
 
 ## Table page
 
