@@ -37,7 +37,7 @@ const built = (await walk(join(ROOT, "dist"))).concat(await walk(join(ROOT, "pub
 const hits = [];
 for (const file of [...new Set([...published, ...built])]) {
   if (!existsSync(file) || (await stat(file)).size > 5_000_000) continue;
-  if (/\.(png|woff2|ico|jpg)$/i.test(file)) continue;
+  if (/\.(png|woff2|ico|jpg|jpeg|webp)$/i.test(file)) continue;
   const text = (await readFile(file, "utf8")).replace(/[*_`#>|]/g, "").replace(/\s+/g, " ");
   // Report where a private line leaked, never the line itself: the host may read this output.
   for (const n of needles) if (text.includes(n.line)) hits.push(`${file}: private line ${n.n} of ${n.file.slice(PRIVATE.length + 1)}`);

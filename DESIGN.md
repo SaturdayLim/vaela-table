@@ -106,6 +106,8 @@ Test for any line of small text: would a player miss it if it were gone? If not,
 
 Two boxes, side by side on wide screens: **Your move** (answers everyone sees) and **Private chat** (sealed thread with the DM). Their headers are tip headers carrying the explanation.
 
+A turn may open with a **scene picture** under its title: full card width, `--sat-radius-md`, at most 420 px tall (cropped to fit, `object-fit: cover`), alt text from `table.py scene --alt`. A live post can arrive before its picture is deployed: the picture hides, a muted line says it arrives with the site update, and the app tries again every 30 s (6 tries).
+
 ## Motion bands (from Felt)
 
 | Band | Duration | Examples |

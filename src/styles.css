@@ -57,6 +57,11 @@ details.letter > summary::after { content: "Show"; flex: none; font-size: var(--
 details.letter[open] > summary::after { content: "Hide"; }
 details.letter[open] > summary { margin-bottom: var(--sat-space-4); padding-bottom: var(--sat-space-4); border-bottom: 1px solid var(--sat-line); }
 
+/* scene picture at the top of a turn (table.py scene, plans/table-live.md step 8) */
+.prose figure.scene { margin: 0 0 var(--sat-space-4); }
+.prose figure.scene img { display: block; width: 100%; height: auto; max-height: 420px; object-fit: cover; border-radius: var(--sat-radius-md); background: var(--sat-line); }
+.prose figure.scene .scene-wait { margin: 0; font-size: var(--sat-fs-small); }
+
 /* in-world documents (handouts, forms) quoted in a turn or letter */
 .prose blockquote {
   margin: var(--sat-space-4) 0; padding: var(--sat-space-4) var(--sat-space-5);

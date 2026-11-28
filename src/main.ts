@@ -123,9 +123,38 @@ function stripH1(text: string) {
   return text.replace(/\r\n/g, "\n").replace(/^# .*\n?/m, "").trim();
 }
 
-/** Render a turn: markdown, with the `## Rolls` block that `table.py send` appends styled as a compact list. */
+/** `table.py send` puts a scene picture under the title as a hidden line: <!-- scene: {"src","alt","w","h"} --> */
+const SCENE_LINE = /<!-- scene: (\{.*?\}) -->/s;
+function sceneFigure(text: string) {
+  const m = text.match(SCENE_LINE);
+  if (!m) return "";
+  let d: { src?: unknown; alt?: unknown; w?: unknown; h?: unknown };
+  try { d = JSON.parse(m[1]); } catch { return ""; }
+  if (typeof d.src !== "string" || !/^img\/[a-z0-9-]+\.webp$/.test(d.src)) return "";
+  const w = Number(d.w) || 1280, h = Number(d.h) || 720;
+  return `<figure class="scene"><img src="content/story/${d.src}" alt="${escapeHtml(String(d.alt ?? ""))}" width="${w}" height="${h}" decoding="async">`
+    + `<figcaption class="scene-wait sat-muted" hidden>The picture arrives with the site update, in about 2 minutes.</figcaption></figure>`;
+}
+
+/** Render a turn: scene picture first, then markdown, with the `## Rolls` block that `table.py send` appends styled as a compact list. */
 function renderTurn(text: string) {
-  return md(stripH1(text)).replace(/<h2>Rolls<\/h2>\s*<ul>/, '<h2 class="rolls-head">Rolls</h2><ul class="rolls">');
+  return sceneFigure(text) + md(stripH1(text).replace(SCENE_LINE, ""))
+    .replace(/<h2>Rolls<\/h2>\s*<ul>/, '<h2 class="rolls-head">Rolls</h2><ul class="rolls">');
+}
+
+/** A live post reaches the app before its picture is deployed: show a note and try again every 30 s (6 tries). */
+function wireScenes(root: HTMLElement) {
+  for (const img of root.querySelectorAll<HTMLImageElement>("figure.scene img")) {
+    const base = img.getAttribute("src")!;
+    const note = img.parentElement!.querySelector<HTMLElement>(".scene-wait")!;
+    let tries = 0;
+    img.addEventListener("load", () => { img.hidden = false; note.hidden = true; });
+    img.addEventListener("error", () => {
+      img.hidden = true;
+      note.hidden = false;
+      if (++tries <= 6) setTimeout(() => { if (img.isConnected) img.src = `${base}?try=${tries}`; }, 30_000);
+    });
+  }
 }
 
 async function renderFeed() {
@@ -143,6 +172,7 @@ async function renderFeed() {
   latestChecks = parseChecks(text);
   sessionClosed = text.includes(CLOSED_MARK);
   latest.innerHTML = `<h2>${escapeHtml(first.title)}</h2>${renderTurn(text)}`;
+  wireScenes(latest);
 
   const earlier = $("feed-earlier");
   earlier.innerHTML = "";
@@ -154,7 +184,7 @@ async function renderFeed() {
       if (!d.open || d.dataset.loaded) return;
       d.dataset.loaded = "1";
       const body = d.querySelector(".prose")!;
-      try { body.innerHTML = renderTurn(await (await fetchFresh(`content/${post.file}`)).text()); }
+      try { body.innerHTML = renderTurn(await (await fetchFresh(`content/${post.file}`)).text()); wireScenes(body as HTMLElement); }
       catch { body.innerHTML = `<p class="sat-muted">Turn unable to load. Close and open it again.</p>`; delete d.dataset.loaded; }
     });
     earlier.appendChild(d);

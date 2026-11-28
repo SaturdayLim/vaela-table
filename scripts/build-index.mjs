@@ -26,6 +26,11 @@ for (const file of await list(join(ROOT, "story"), ".md")) {
 }
 story.reverse(); // newest first
 
+// Scene pictures (table.py send writes story/img/NNNN-*.webp; the post names it in a hidden scene line).
+const imgs = await list(join(ROOT, "story", "img"), ".webp");
+if (imgs.length) await mkdir(join(OUT, "story", "img"), { recursive: true });
+for (const file of imgs) await copyFile(join(ROOT, "story", "img", file), join(OUT, "story", "img", file));
+
 const inboxes = [];
 for (const file of await list(join(ROOT, "sealed"), ".json")) {
   const text = await readFile(join(ROOT, "sealed", file), "utf8");
