@@ -420,7 +420,7 @@ function renderMove() {
   if (status.dataset.busy || status.dataset.hint) return;
   const first = sent[0];
   if (mine) status.textContent = `Sent at ${fmtTime(new Date(mine.at))}. Send again to replace it.`;
-  else if (first) status.textContent = `${firstName(first.who)} answered first. Add yours before the DM replies and the DM reads both.`;
+  else if (first) status.textContent = `${firstName(first.who)} answered first. Add yours before the DM replies and the DM reads every answer.`;
 }
 
 function hint(id: string, text: string) { const s = $(id); s.textContent = text; s.dataset.hint = "1"; }
