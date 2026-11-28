@@ -6,7 +6,7 @@ Install it on a phone: open the link, then **Share** and **Add to Home Screen** 
 
 ## Every turn, newest first
 
-- No turns yet.
+- [Turn 1: The Lamp and Pick](story/0001-the-lamp-and-pick.md)
 
 ## For the DM
 
