@@ -13,16 +13,22 @@ main { --sat-gap: var(--sat-space-5); }
 .page-head .sat-h1 { font-size: clamp(1.75rem, 1.3rem + 2vw, 2.5rem); }
 .page-tools { --sat-gap: var(--sat-space-3); }
 
-/* ---- notebook tabs: the subpages of a page, on a line across the screen (Felt's views) ---- */
-.subtabs { display: flex; gap: var(--sat-space-1); border-bottom: 1px solid var(--sat-line-strong); overflow-x: auto; scrollbar-width: none; margin-bottom: calc(var(--sat-space-2) * -1); }
-.subtabs::-webkit-scrollbar { display: none; }
+/* ---- page tabs: the subpages of a page. Felt's rule: sub-navigation is icons; the open tab opens out to its title.
+   The row fits the screen (no sideways list) and cannot be dragged. ---- */
+.subtabs { display: flex; gap: var(--sat-space-1); border-bottom: 1px solid var(--sat-line-strong); overflow: hidden; overscroll-behavior: contain; touch-action: manipulation; margin-bottom: calc(var(--sat-space-2) * -1); padding-inline: var(--sat-space-1); }
 .subtabs [role="tab"] {
-  flex: none; display: inline-flex; align-items: center; min-height: 44px; padding: 0 var(--sat-space-4);
+  flex: 0 1 auto; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; gap: var(--sat-space-2); min-height: 44px; padding: 0 var(--sat-space-3);
   border: 1px solid transparent; border-bottom: 0; border-radius: var(--sat-radius-sm) var(--sat-radius-sm) 0 0;
-  color: var(--sat-muted); font-weight: 600; font-size: var(--sat-fs-small); text-decoration: none; white-space: nowrap;
-  transition: color var(--sat-dur-fast) var(--sat-ease), background-color var(--sat-dur-fast) var(--sat-ease);
+  color: var(--sat-muted); font-weight: 600; font-size: var(--sat-fs-small); text-decoration: none; white-space: nowrap; position: relative;
+  -webkit-user-drag: none; user-select: none;
+  transition: color var(--sat-dur-fast) var(--sat-ease), background-color var(--sat-dur-fast) var(--sat-ease), flex-grow 240ms var(--sat-ease);
 }
-.subtabs [role="tab"][aria-selected="true"] { color: var(--sat-text); background: var(--sat-glass-2); border-color: var(--sat-line-strong); margin-bottom: -1px; padding-bottom: 1px; }
+.subtabs [role="tab"] svg { width: 20px; height: 20px; flex: none; }
+.subtabs [role="tab"] > span { display: none; overflow: hidden; text-overflow: ellipsis; }
+.subtabs [role="tab"][aria-selected="true"] { color: var(--sat-text); background: var(--sat-glass-2); border-color: var(--sat-line-strong); margin-bottom: -1px; padding-bottom: 1px; min-width: 0; }
+.subtabs [role="tab"][aria-selected="true"] > span { display: inline; animation: tab-title 240ms var(--sat-ease); }
+@keyframes tab-title { from { opacity: 0; max-width: 0; } to { opacity: 1; max-width: 12em; } }
+.subtabs [role="tab"] .dot { position: absolute; top: 8px; right: 6px; margin: 0; }
 @media (hover: hover) and (pointer: fine) { .subtabs [role="tab"]:not([aria-selected="true"]):hover { color: var(--sat-text); } }
 .subtabs [role="tab"]:active { transform: scale(0.96); }
 
@@ -30,23 +36,17 @@ main { --sat-gap: var(--sat-space-5); }
 .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--sat-accent-fill); margin-left: 6px; vertical-align: 2px; }
 .dot[hidden] { display: none; }
 
-/* ---- a header that is its own tip: tap it for what the section is; tap outside to close ---- */
+/* ---- a heading that is its own tip: tap the heading for what the section is; tap outside to close.
+   No "i" circle (UAT hd-11): a dotted underline says the heading can be tapped. ---- */
 .tip-head { display: inline-flex; vertical-align: baseline; }
 .tip-head > .sat-tip-btn {
   width: auto; height: auto; border: 0; border-radius: var(--sat-radius-xs); padding: 0 var(--sat-space-1); margin: 0 calc(var(--sat-space-1) * -1);
   background: none; color: inherit; font: inherit; letter-spacing: inherit; text-transform: inherit; cursor: pointer;
-  display: inline-flex; align-items: center; gap: var(--sat-space-2); text-align: left;
+  display: inline-flex; align-items: center; text-align: left;
+  text-decoration: underline dotted color-mix(in srgb, currentColor 40%, transparent); text-decoration-thickness: 2px; text-underline-offset: 0.18em;
+  transition: text-decoration-color var(--sat-dur-fast) var(--sat-ease);
 }
-.tip-head > .sat-tip-btn::before {
-  content: "i"; order: 2; flex: none; display: inline-grid; place-items: center; width: 16px; height: 16px; border-radius: 50%;
-  border: 1px solid var(--sat-muted); color: var(--sat-muted); font: italic 600 10px/1 var(--sat-font-display); letter-spacing: 0;
-}
-/* hit area: 6px past the words, and never under 44px tall (a small heading still gets a full target) */
-.tip-head > .sat-tip-btn::after { inset: min(-6px, calc(50% - 22px)) -6px; }
-/* the kit's brand link and small buttons run under 44px; the Table keeps every target at 44 (kit rule) */
-.sat-header-bar .sat-brand { min-height: 44px; }
-#refresh { min-height: 44px; }
-.tip-head > .sat-tip-btn[aria-expanded="true"]::before { border-color: var(--sat-accent-text); color: var(--sat-accent-text); }
+.tip-head > .sat-tip-btn[aria-expanded="true"] { text-decoration-color: var(--sat-accent-text); }
 .tip-head .sat-tip-body { left: 0; font-family: var(--sat-font-body); font-size: var(--sat-fs-small); font-style: normal; font-weight: 400; text-transform: none; letter-spacing: 0; line-height: 1.45; }
 .tip-head .sat-tip-body, .sat-tip .sat-tip-body { animation: tip-in 150ms var(--sat-ease); }
 @keyframes tip-in { from { opacity: 0; transform: scale(0.95); } }
@@ -306,55 +306,101 @@ details.letter[open] > summary { margin-bottom: var(--sat-space-4); padding-bott
   .tabbar .dot { position: absolute; top: 8px; right: calc(50% - 18px); margin: 0; }
 }
 
-/* ---- chapter turn between pages (View Transitions; header and tab bar stay still) ---- */
-main { view-transition-name: page; }
+/* ---- page changes (View Transitions). The header and tab bar stay still (their own names); the rest of the screen
+   is the root snapshot: exactly one screen tall, so a long page is never cut off half way (UAT nv-3, ib-5). ----
+   Between sections (tab bar, top bar) the screen slides sideways like a scroll (UAT nv-1, nv-2).
+   Between tabs of one section the page turns like a book page; its shade lifts in step, with no jump at the end. */
 .tabbar { view-transition-name: tabbar; }
 .sat-header { view-transition-name: header; }
-::view-transition-old(root), ::view-transition-new(root) { animation: none; }
-::view-transition-group(page) { animation-duration: 440ms; }
-/* Pages are paper: fully opaque (a solid backing behind the glass cards), never faded. Shade, not transparency, shows depth. */
-::view-transition-old(page), ::view-transition-new(page) {
-  animation-duration: 440ms; animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1); animation-fill-mode: both;
-  mix-blend-mode: normal; opacity: 1; background: var(--sat-bg);
+.safe-band { view-transition-name: safe-band; }
+::view-transition-group(root) { animation-duration: 360ms; }
+::view-transition-old(root), ::view-transition-new(root) {
+  animation-duration: 360ms; animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1); animation-fill-mode: both; mix-blend-mode: normal;
 }
-/* Forward: the old page lifts off its spine (left edge), bends a little, and turns away edge-on over the new one. */
-html[data-turn="fwd"]::view-transition-old(page) { z-index: 2; transform-origin: left center; animation-name: turn-away; }
-html[data-turn="fwd"]::view-transition-new(page) { animation-name: page-under; }
-/* Back: the earlier page turns back in from the spine, bends, and settles flat over the current one. */
-html[data-turn="back"]::view-transition-new(page) { z-index: 2; transform-origin: left center; animation-name: turn-back; }
-html[data-turn="back"]::view-transition-old(page) { animation-name: page-under-out; }
+html[data-turn="slide-fwd"]::view-transition-old(root) { animation-name: slide-out-left; }
+html[data-turn="slide-fwd"]::view-transition-new(root) { animation-name: slide-in-right; }
+html[data-turn="slide-back"]::view-transition-old(root) { animation-name: slide-out-right; }
+html[data-turn="slide-back"]::view-transition-new(root) { animation-name: slide-in-left; }
+@keyframes slide-out-left { to { transform: translateX(-100%); } }
+@keyframes slide-in-right { from { transform: translateX(100%); } }
+@keyframes slide-out-right { to { transform: translateX(100%); } }
+@keyframes slide-in-left { from { transform: translateX(-100%); } }
+/* Forward: the old page lifts off its spine (left edge) and turns away over the new one. */
+html[data-turn="turn-fwd"]::view-transition-old(root), html[data-turn="turn-back"]::view-transition-new(root) { animation-duration: 440ms; animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1); }
+html[data-turn="turn-fwd"]::view-transition-new(root), html[data-turn="turn-back"]::view-transition-old(root) { animation-duration: 440ms; animation-timing-function: linear; }
+html[data-turn="turn-fwd"]::view-transition-old(root) { z-index: 2; transform-origin: left center; animation-name: turn-away; }
+html[data-turn="turn-fwd"]::view-transition-new(root) { animation-name: shade-lift; }
+/* Back: the earlier page turns back in from the spine and settles flat. */
+html[data-turn="turn-back"]::view-transition-new(root) { z-index: 2; transform-origin: left center; animation-name: turn-back; }
+html[data-turn="turn-back"]::view-transition-old(root) { animation-name: shade-fall; }
 @keyframes turn-away {
-  0%   { transform: perspective(2000px) rotateY(0) skewY(0); filter: brightness(1); }
-  35%  { transform: perspective(2000px) rotateY(-28deg) skewY(-2.5deg) scaleX(0.985); filter: brightness(0.96); }
-  100% { transform: perspective(2000px) rotateY(-90deg) skewY(-5deg) scaleX(0.97); filter: brightness(0.72); }
+  0%   { transform: perspective(1800px) rotateY(0); filter: brightness(1); }
+  100% { transform: perspective(1800px) rotateY(-92deg); filter: brightness(0.7); }
 }
 @keyframes turn-back {
-  0%   { transform: perspective(2000px) rotateY(-90deg) skewY(-5deg) scaleX(0.97); filter: brightness(0.72); }
-  70%  { transform: perspective(2000px) rotateY(-6deg) skewY(-1deg); filter: brightness(0.97); }
-  86%  { transform: perspective(2000px) rotateY(2deg) skewY(0.3deg); filter: brightness(1); }
-  100% { transform: perspective(2000px) rotateY(0) skewY(0); filter: brightness(1); }
+  0%   { transform: perspective(1800px) rotateY(-92deg); filter: brightness(0.7); }
+  100% { transform: perspective(1800px) rotateY(0); filter: brightness(1); }
 }
-/* The page underneath sits in the turning page's shadow, then comes into full light. */
-@keyframes page-under { from { filter: brightness(0.8); transform: scale(0.992); } }
-@keyframes page-under-out { to { filter: brightness(0.8); transform: scale(0.992); } }
-/* Browsers without View Transitions: the new page swings in from the spine, opaque throughout. */
-main.turn-in { animation: page-settle 360ms cubic-bezier(0.4, 0, 0.2, 1); transform-origin: left center; }
-@keyframes page-settle { from { transform: perspective(2000px) rotateY(-12deg) skewY(-1deg); filter: brightness(0.85); } }
+/* The page underneath starts in the turning page's shade and comes into full light by the end, evenly. */
+@keyframes shade-lift { from { filter: brightness(0.78); } to { filter: brightness(1); } }
+@keyframes shade-fall { from { filter: brightness(1); } to { filter: brightness(0.78); } }
+/* Browsers without View Transitions: the new page settles in from the spine. */
+main.turn-in { animation: page-settle 320ms cubic-bezier(0.4, 0, 0.2, 1); transform-origin: left center; }
+@keyframes page-settle { from { transform: perspective(1800px) rotateY(-10deg); } }
 
-/* ---- the opening book: a closed book with the V opens into the Table ---- */
-.splash { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; background: var(--sat-bg); perspective: 1600px; transition: opacity 400ms var(--sat-ease); }
+/* ---- the opening book: a closed book with the V opens into the Table ----
+   The cover is built, not a flat picture (UAT su-5): navy leather grain, a gilded double frame with corner
+   flourishes, raised bands on the spine, the V set into the leather (its square edges fade out), the title in
+   gold leaf, and the page block showing at the fore-edge. */
+.splash { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; background: radial-gradient(120% 80% at 50% 40%, #1A2440, #070B14); perspective: 1600px; transition: opacity 400ms var(--sat-ease); }
 .splash.is-done { opacity: 0; pointer-events: none; }
-.book { position: relative; width: min(86vw, 400px); aspect-ratio: 4 / 5; transform-style: preserve-3d; transition: transform 700ms cubic-bezier(0.6, 0, 0.3, 1) 1500ms; }
-.book-pages, .book-cover { position: absolute; inset: 0; border-radius: 4px 10px 10px 4px; display: grid; place-items: center; overflow: hidden; }
-/* The open book shows the wordmark on its pages; the cover is navy leather with the gilded V (design/brand/). */
-.book-pages { background: #0D1424; border: 1px solid #2A3550; box-shadow: inset 8px 0 14px -8px rgba(0,0,0,0.6); }
+.book { position: relative; width: min(78vw, 360px); aspect-ratio: 5 / 7; transform-style: preserve-3d; transition: transform 700ms cubic-bezier(0.6, 0, 0.3, 1) 1500ms; }
+.book-pages, .book-cover { position: absolute; inset: 0; border-radius: 3px 12px 12px 3px; display: grid; place-items: center; overflow: hidden; }
+/* The open book shows the wordmark on cream-edged pages. */
+.book-pages { background: linear-gradient(90deg, #0B1120 0%, #121A2E 6%, #121A2E 94%, #0B1120 100%); border: 1px solid #2A3550; box-shadow: inset 10px 0 18px -10px rgba(0,0,0,0.7), 0 20px 40px rgba(0,0,0,0.5); }
 .book-wordmark { width: 96%; height: auto; opacity: 0; transform: scale(0.96); transition: opacity 400ms var(--sat-ease) 800ms, transform 900ms var(--sat-ease) 800ms; }
 .book-cover {
-  background: #0D1424; border: 1px solid #3A4466;
+  --gold: linear-gradient(135deg, #8A6A2B 0%, #F2D58A 22%, #B8913E 45%, #FBE7A8 62%, #8A6A2B 100%);
+  background:
+    radial-gradient(90% 60% at 55% 42%, rgba(70, 92, 150, 0.32), transparent 70%),
+    radial-gradient(140% 100% at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.55)),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.6 0 0 0 0 0.68 0 0 0 0 0.9 0 0 0 0.09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+    #121A2E;
+  border: 1px solid #2E3A5C;
   transform-origin: left center; transform: rotateY(0); backface-visibility: hidden;
-  transition: transform 800ms cubic-bezier(0.55, 0, 0.25, 1) 300ms; box-shadow: 4px 8px 24px rgba(0,0,0,0.45);
+  transition: transform 800ms cubic-bezier(0.55, 0, 0.25, 1) 300ms;
+  box-shadow: inset 14px 0 18px -12px rgba(0,0,0,0.85), inset -2px 0 0 rgba(255,255,255,0.05), 6px 12px 30px rgba(0,0,0,0.6);
+  grid-template-rows: 1fr auto; padding: 13% 11% 11% 15%;
 }
-.book-emblem { width: 88%; height: auto; }
+/* spine: a darker strip with two raised bands */
+.book-cover::before {
+  content: ""; position: absolute; inset: 0 auto 0 0; width: 8%;
+  background:
+    linear-gradient(180deg, transparent 14%, rgba(242,213,138,0.55) 14%, rgba(242,213,138,0.55) 15%, transparent 15%, transparent 85%, rgba(242,213,138,0.55) 85%, rgba(242,213,138,0.55) 86%, transparent 86%),
+    linear-gradient(90deg, rgba(0,0,0,0.55), rgba(255,255,255,0.06) 70%, rgba(0,0,0,0.4));
+}
+/* gilded double frame, inset from the edges, with a fleuron at each corner */
+.book-cover::after {
+  content: ""; position: absolute; inset: 5% 5% 5% 12%; border-radius: 2px; pointer-events: none;
+  border: 2px solid transparent; border-image: var(--gold) 1;
+  outline: 1px solid rgba(242, 213, 138, 0.45); outline-offset: -7px;
+  background:
+    radial-gradient(circle at 0 0, #E9C97A 0 4px, transparent 5px),
+    radial-gradient(circle at 100% 0, #E9C97A 0 4px, transparent 5px),
+    radial-gradient(circle at 0 100%, #E9C97A 0 4px, transparent 5px),
+    radial-gradient(circle at 100% 100%, #E9C97A 0 4px, transparent 5px);
+  filter: drop-shadow(0 1px 0 rgba(0,0,0,0.6));
+}
+/* the V, set into the leather: its square background fades into the cover */
+.book-emblem { position: relative; z-index: 1; width: 100%; height: auto; align-self: center;
+  -webkit-mask-image: radial-gradient(closest-side, #000 62%, transparent 100%); mask-image: radial-gradient(closest-side, #000 62%, transparent 100%);
+  filter: drop-shadow(0 3px 4px rgba(0,0,0,0.6)) saturate(1.05); }
+.book-title { position: relative; z-index: 1; margin: 0; text-align: center; font-family: var(--sat-font-display); font-size: clamp(1.6rem, 7vw, 2.3rem); letter-spacing: 0.28em; line-height: 1; padding-left: 0.28em;
+  background: var(--gold); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 1px 0 rgba(0,0,0,0.7)); }
+.book-title small { display: block; margin-top: 0.6em; font-size: 0.32em; letter-spacing: 0.24em; }
+/* fore-edge: the page block shows past the cover's right edge */
+.book::after { content: ""; position: absolute; top: 1.5%; bottom: 1.5%; right: -1.6%; width: 2.4%; border-radius: 0 3px 3px 0; z-index: -1;
+  background: repeating-linear-gradient(180deg, #E8DDC4 0 1px, #CDBF9F 1px 2px); box-shadow: 2px 2px 6px rgba(0,0,0,0.5); }
 .splash.is-open .book-cover { transform: rotateY(-170deg); }
 .splash.is-open .book-wordmark { opacity: 1; transform: none; }
 .splash.is-open .book { transform: scale(1.06); }
@@ -362,6 +408,60 @@ main.turn-in { animation: page-settle 360ms cubic-bezier(0.4, 0, 0.2, 1); transf
 
 /* reduced motion: no turning, no tumbling */
 @media (prefers-reduced-motion: reduce) {
-  ::view-transition-old(page), ::view-transition-new(page) { animation: none; }
+  ::view-transition-old(root), ::view-transition-new(root) { animation: none; }
   main.turn-in, .roll-box.bad { animation: none; }
 }
+
+/* ---- theme: a sun and moon switch; the chosen mark rides on the knob (Felt). Follows the device until changed;
+   the change lasts until the app is closed (theme.ts). ---- */
+.theme-switch { position: relative; flex: none; width: 64px; height: 44px; padding: 0; border: 0; background: none; cursor: pointer; color: var(--sat-muted); }
+.theme-switch::before { content: ""; position: absolute; left: 2px; right: 2px; top: 7px; bottom: 7px; border-radius: 15px; background: var(--sat-well); border: 1px solid var(--sat-line-strong); }
+.theme-mark { position: absolute; top: 13px; width: 18px; height: 18px; opacity: 0.55; }
+.theme-mark--sun { left: 9px; }
+.theme-mark--moon { right: 9px; }
+.theme-knob { position: absolute; top: 9px; left: 4px; width: 26px; height: 26px; border-radius: 50%; background: var(--sat-glass-2); border: 1px solid var(--sat-line-strong); box-shadow: 0 1px 3px rgba(0,0,0,0.3); color: var(--sat-text); display: grid; place-items: center; transition: transform 220ms var(--sat-ease-spring, var(--sat-ease)); }
+.theme-knob svg { width: 16px; height: 16px; grid-area: 1 / 1; transition: opacity 160ms var(--sat-ease); }
+.theme-switch[aria-checked="true"] .theme-knob { transform: translateX(30px); }
+.theme-switch[aria-checked="true"] .knob-sun, .theme-switch[aria-checked="false"] .knob-moon { opacity: 0; }
+.theme-switch:active .theme-knob { scale: 0.92; }
+
+/* ---- inbox cards open in place to the code boxes; tap outside closes (UAT ib-8) ---- */
+.inbox-grid { --sat-min: 300px; align-items: start; }
+.inbox-card { display: block; padding: 0; min-height: 0; }
+.inbox-card-head { width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: var(--sat-space-2); text-align: left; padding: var(--sat-space-5); min-height: 88px; border: 0; background: none; color: var(--sat-text); font: inherit; cursor: pointer; border-radius: inherit; }
+.inbox-card-body { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 280ms var(--sat-ease); }
+.inbox-card-inner { min-height: 0; overflow: hidden; }
+.inbox-card.is-open { border-color: var(--sat-accent-fill); }
+.inbox-card.is-open .inbox-card-body { grid-template-rows: 1fr; }
+.unlock { display: grid; gap: var(--sat-space-4); padding: 0 var(--sat-space-5) var(--sat-space-5); }
+.unlock .sat-btn--primary { justify-self: start; }
+.otp { display: grid; grid-template-columns: repeat(6, minmax(0, 48px)); gap: var(--sat-space-2); }
+.otp-cell { width: 100%; height: 56px; padding: 0; text-align: center; font-size: 1.5rem; font-weight: 600; text-transform: uppercase; caret-color: var(--sat-accent-fill);
+  border-radius: var(--sat-radius-sm); border: 1.5px solid var(--sat-line-strong); background: var(--sat-well); color: var(--sat-text); outline: none; transition: border-color 150ms var(--sat-ease), transform 150ms var(--sat-ease); }
+.otp-cell:focus { border-color: var(--sat-accent-fill); transform: translateY(-1px); }
+.otp.is-bad .otp-cell { border-color: var(--sat-neg); animation: otp-shake 320ms var(--sat-ease); }
+@keyframes otp-shake { 25% { translate: -4px 0; } 75% { translate: 4px 0; } }
+@media (prefers-reduced-motion: reduce) { .otp.is-bad .otp-cell { animation: none; } .inbox-card-body { transition: none; } }
+
+/* ---- roll box: watermark die, grey die name while empty, Roll for me spins the number ---- */
+.roll-acts { display: flex; flex-direction: column; align-items: flex-start; gap: var(--sat-space-2); }
+.roll-dm[aria-pressed="true"] { background: var(--sat-accent-soft); border-color: var(--sat-accent); color: var(--sat-accent-text); }
+.roll-input::placeholder { color: var(--sat-muted); opacity: 0.85; font-family: var(--sat-font-body); font-size: var(--sat-fs-small); font-weight: 700; letter-spacing: 0.04em; }
+.roll-box[data-die^="1d4"] .roll-shadow, .roll-box[data-die="d4"] .roll-shadow { top: 7px; }
+.roll-box.spin { border-color: var(--sat-accent-fill); }
+.roll-input.tick { animation: roll-tick 90ms var(--sat-ease); }
+@keyframes roll-tick { from { transform: translateY(-35%); opacity: 0.2; } }
+.roll-note { margin: var(--sat-space-1) 0 0; }
+@media (prefers-reduced-motion: reduce) { .roll-input.tick { animation: none; } }
+
+/* ---- footer: name and version; the version opens the version history (no build date anywhere) ---- */
+.app-foot { padding-block: var(--sat-space-6) calc(var(--sat-space-8, 48px) + 72px); text-align: center; }
+@media (min-width: 640px) { .app-foot { padding-bottom: var(--sat-space-8, 48px); } }
+.ver-link { min-height: 44px; padding: 0 var(--sat-space-1); border: 0; background: none; font: inherit; color: var(--sat-accent-text); text-decoration: underline dotted; text-underline-offset: 3px; cursor: pointer; }
+.changelog { padding: 0; border: 0; background: none; width: min(520px, calc(100vw - 2 * var(--sat-gutter-mobile))); max-height: calc(100dvh - var(--safe-top) - 48px); color: var(--sat-text); }
+.changelog::backdrop { background: color-mix(in srgb, var(--sat-bg) 70%, transparent); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+.changelog > article { padding: var(--sat-space-6); border-radius: var(--sat-radius-lg); box-shadow: var(--sat-shadow-lg); }
+.changelog-list { display: grid; gap: var(--sat-space-4); }
+.changelog-list ul { margin: var(--sat-space-1) 0 0; padding-left: 1.2em; }
+.changelog-list li + li { margin-top: 2px; }
+.changelog[open] { animation: welcome-in 260ms var(--sat-ease); }

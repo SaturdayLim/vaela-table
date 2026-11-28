@@ -64,8 +64,12 @@ export function buildTabs(view: string) {
     b.id = `tab-${view}-${s.dataset.sub}`;
     s.setAttribute("role", "tabpanel");
     s.setAttribute("aria-labelledby", b.id);
-    b.innerHTML = `<span></span><i class="dot" hidden></i>`;
-    b.querySelector("span")!.textContent = s.dataset.label ?? s.dataset.sub!;
+    // Felt's rule: sub-navigation is icons; the open tab opens out to its title (CSS shows the span only when selected).
+    const label = s.dataset.label ?? s.dataset.sub!;
+    b.setAttribute("aria-label", label);
+    b.title = label;
+    b.innerHTML = `${s.dataset.icon ? `<svg aria-hidden="true"><use href="#${s.dataset.icon}"/></svg>` : ""}<span></span><i class="dot" hidden></i>`;
+    b.querySelector("span")!.textContent = label;
     bar.appendChild(b);
   }
   if (route?.view === view) markTabs(route);
@@ -97,7 +101,9 @@ function apply(r: Route) {
   else window.scrollTo(0, 0);
 }
 
-/** Show a route. The page turns like a chapter (View Transitions, else a CSS fallback); reduced motion: no turn. */
+/** Show a route. Between sections the page slides sideways like a scroll; between tabs of one section it turns
+ *  like a book page (View Transitions, else a CSS fallback). Reduced motion: an instant change. */
+let running: { skipTransition?: () => void } | null = null;
 export function go(r: Route) {
   const prev = route;
   const same = prev && prev.view === r.view && prev.sub === r.sub;
@@ -105,11 +111,20 @@ export function go(r: Route) {
   if (r.sub) store.set(SUB_KEY(r.view), r.sub);
   const done = () => { apply(r); listeners.forEach((fn) => fn(r, prev)); };
   if (!prev || same || reduced()) return done();
-  const dir = order(r) >= order(prev) ? "fwd" : "back";
-  document.documentElement.dataset.turn = dir;
-  const doc = document as Document & { startViewTransition?: (cb: () => void) => { finished: Promise<void> } };
+  const fwd = order(r) >= order(prev);
+  const kind = prev.view === r.view ? "turn" : "slide";
+  document.documentElement.dataset.turn = `${kind}-${fwd ? "fwd" : "back"}`;
+  type VT = { finished: Promise<void>; ready: Promise<void>; updateCallbackDone: Promise<void>; skipTransition?: () => void };
+  const doc = document as Document & { startViewTransition?: (cb: () => void) => VT };
   if (doc.startViewTransition) {
-    doc.startViewTransition(done).finished.finally(() => { delete document.documentElement.dataset.turn; });
+    running?.skipTransition?.(); // a second tap finishes the first move at once instead of stacking two
+    const vt = doc.startViewTransition(done);
+    vt.ready.catch(() => {}); // a skipped or hidden-tab transition rejects: the page still changed
+    vt.updateCallbackDone.catch(() => {});
+    running = vt;
+    vt.finished.catch(() => {}).finally(() => {
+      if (running === vt) { running = null; delete document.documentElement.dataset.turn; }
+    });
   } else {
     done();
     const main = document.querySelector<HTMLElement>("main")!;
@@ -155,13 +170,25 @@ export function setTabDot(view: string, sub: string, on: boolean) {
   if (dot) dot.hidden = !on;
 }
 
-// ---------- the opening book: a closed book with the V opens into the Table ----------
+// ---------- app launch: every page load except a reload ----------
+// Opening the app (a new tab, a closed home-screen app opened again, a restored tab) is a launch; pressing reload is
+// not. Session storage alone cannot tell: iOS home-screen apps and restored tabs keep it across a close.
+export const isLaunch = (() => {
+  const nav = performance.getEntriesByType?.("navigation")[0] as PerformanceNavigationTiming | undefined;
+  return nav ? nav.type !== "reload" : true;
+})();
+/** One id per launch: the welcome letter shows once per player per launch. */
+export const launchId = (() => {
+  let id = store.get("vaela-table-launch");
+  if (isLaunch || !id) { id = Math.random().toString(36).slice(2); store.set("vaela-table-launch", id); }
+  return id;
+})();
+
+// ---------- the opening book: a closed book with the V opens into the Table, on every launch ----------
 export function openingBook() {
   const el = document.getElementById("splash");
   if (!el) return;
-  const seen = store.get("vaela-table-opened");
-  if (seen || reduced()) { el.remove(); return; }
-  store.set("vaela-table-opened", "1");
+  if (!isLaunch || reduced()) { el.remove(); return; }
   el.hidden = false;
   const end = () => { el.classList.add("is-done"); window.setTimeout(() => el.remove(), 420); };
   const t = window.setTimeout(end, 2900);

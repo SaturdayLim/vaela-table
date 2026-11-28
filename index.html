@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Vaela Table</title>
   <meta name="description" content="Table feed, private inboxes and player kit for the Gantry table, a Vaela campaign.">
-  <script>try{var t=localStorage.getItem('sat-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}
+  <script>try{localStorage.removeItem('sat-theme');var t=sessionStorage.getItem('vaela-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}
   try{var z=localStorage.getItem('vaela-text-size'),p=[87.5,100,112.5,125,137.5][z];if(z!==null&&p)document.documentElement.style.fontSize=p+'%'}catch(e){}</script>
   <link rel="icon" href="./favicon.png" type="image/png">
   <link rel="apple-touch-icon" href="./apple-touch-icon.png">
@@ -28,12 +28,31 @@
   <symbol id="i-book" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"><path d="M12 6.5C10 5 7 4.7 4 5.2v13c3-.5 6-.2 8 1.3 2-1.5 5-1.8 8-1.3v-13c-3-.5-6-.2-8 1.3z"/><path d="M12 6.5v13"/></g></symbol>
   <symbol id="i-dice" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"><path d="M12 3l7.8 4.5v9L12 21l-7.8-4.5v-9z"/><path d="M12 3l-4.2 9h8.4zM7.8 12L4.2 7.5M16.2 12l3.6-4.5M7.8 12L12 21l4.2-9M7.8 12l-3.6 4.5M16.2 12l3.6 4.5"/></g></symbol>
   <symbol id="i-d20" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M32 3 L57 17.5 V46.5 L32 61 L7 46.5 V17.5 Z"/><path d="M32 13 L12 45 H52 Z M32 13 L7 17.5 M32 13 L57 17.5 M12 45 L7 17.5 M12 45 L7 46.5 M12 45 L32 61 L52 45 M52 45 L57 17.5 M52 45 L57 46.5"/></g></symbol>
+  <symbol id="i-quill" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4c-6 1-11 6-13 13l-1 3"/><path d="M20 4c0 6-4 10-10 11M9 9h5"/></g></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></g></symbol>
+  <symbol id="i-person" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="12" cy="8.5" r="3.5"/><path d="M5 20c.8-3.6 3.6-5.5 7-5.5s6.2 1.9 7 5.5"/></g></symbol>
+  <symbol id="i-pack" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"><path d="M6 9a6 6 0 0 1 12 0v10.5H6z"/><path d="M9 4.5V3.5h6v1M8.5 14h7v5.5h-7z"/></g></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"><path d="M4 5.5h16v10H10l-4 3.5v-3.5H4z"/><path d="M10 10.5h4" stroke-linecap="round"/></g></symbol>
+  <symbol id="i-flag" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 21V4M6 4.5h11l-2 4 2 4H6"/></g></symbol>
+  <symbol id="i-map" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"><path d="M3.5 6l5.5-2 6 2 5.5-2v14l-5.5 2-6-2-5.5 2z"/><path d="M9 4v14M15 6v14"/></g></symbol>
+  <symbol id="i-scales" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v16M7 20h10M5 7h14"/><path d="M5 7l-2.5 6a2.5 2.5 0 0 0 5 0zM19 7l-2.5 6a2.5 2.5 0 0 0 5 0z"/></g></symbol>
+  <symbol id="i-people" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="9" cy="9" r="3"/><circle cx="16.5" cy="10" r="2.5"/><path d="M3.5 19c.6-3 2.8-4.5 5.5-4.5s4.9 1.5 5.5 4.5M15 14.6c2.6-.3 4.8 1 5.5 4.4"/></g></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l1.8 6.2L20 11l-6.2 1.8L12 19l-1.8-6.2L4 11l6.2-1.8z" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"/></symbol>
+  <symbol id="i-bars" viewBox="0 0 24 24"><path d="M5 20v-6M10 20V8M15 20v-9M20 20V4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-sword" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 4.5l-9 9M19.5 4.5V8l-7.5 7.5M19.5 4.5H16L8.5 12"/><path d="M7 12.5l4.5 4.5M5.5 18.5l2.5-2.5"/></g></symbol>
+  <symbol id="i-hook" viewBox="0 0 24 24"><path d="M12 3v11a4 4 0 1 1-8 0v-1.5M12 3l-2 2M12 3l2 2" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-more" viewBox="0 0 24 24"><g fill="currentColor"><circle cx="6" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="18" cy="12" r="1.7"/></g></symbol>
+  <symbol id="i-d4" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M32 5 L59 55 H5 Z"/><path d="M32 5 L32 40 M5 55 L32 40 L59 55"/></g></symbol>
+  <symbol id="i-d6" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M32 4 L57 17 V47 L32 60 L7 47 V17 Z"/><path d="M7 17 L32 30 L57 17 M32 30 V60"/></g></symbol>
+  <symbol id="i-d8" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M32 3 L58 32 L32 61 L6 32 Z"/><path d="M6 32 L32 40 L58 32 M32 3 L32 40"/></g></symbol>
+  <symbol id="i-d10" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M32 3 L59 28 L32 61 L5 28 Z"/><path d="M5 28 L20 34 L32 61 L44 34 L59 28 M20 34 L32 3 L44 34 Z"/></g></symbol>
+  <symbol id="i-d12" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M32 3 L59 22 L49 56 H15 L5 22 Z"/><path d="M32 15 L46 25 L41 43 H23 L18 25 Z M32 3 V15 M59 22 L46 25 M49 56 L41 43 M15 56 L23 43 M5 22 L18 25"/></g></symbol>
   <symbol id="i-sheet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3.5H7a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8.5z"/><path d="M14 3.5v5h5M9 13h6M9 17h4"/></g></symbol>
 </svg>
 <div class="splash" id="splash" hidden aria-hidden="true">
   <div class="book">
     <div class="book-pages"><img class="book-wordmark" src="./brand/vaela-wordmark.webp" alt="" width="808" height="480"></div>
-    <div class="book-cover"><img class="book-emblem" src="./brand/vaela-emblem.webp" alt="" width="480" height="480"></div>
+    <div class="book-cover"><img class="book-emblem" src="./brand/vaela-emblem.webp" alt="" width="480" height="480"><p class="book-title">VAELA<small>Chronicles of the Third Age</small></p></div>
   </div>
 </div>
 <div class="safe-band" aria-hidden="true"></div>
@@ -53,26 +72,17 @@
       <button role="radio" aria-checked="false" data-value="sheet">Character sheet</button>
     </div>
     <button class="sat-btn sat-btn--ghost sat-iconbtn" type="button" data-text-size-btn aria-label="Text size" aria-expanded="false" aria-controls="text-size"><svg><use href="#i-text"/></svg></button>
-    <div class="sat-seg sat-desktop-only" role="radiogroup" aria-label="Theme">
-      <button role="radio" data-sat-theme="auto" aria-checked="true" aria-label="Theme: auto"><svg><use href="#i-auto"/></svg></button>
-      <button role="radio" data-sat-theme="light" aria-checked="false" aria-label="Theme: light"><svg><use href="#i-sun"/></svg></button>
-      <button role="radio" data-sat-theme="dark" aria-checked="false" aria-label="Theme: dark"><svg><use href="#i-moon"/></svg></button>
-    </div>
-    <button class="sat-btn sat-btn--ghost sat-iconbtn sat-mobile-only" type="button" data-sat-theme-cycle aria-label="Change theme">
-      <svg class="sat-theme-icon sat-theme-icon--auto"><use href="#i-auto"/></svg>
-      <svg class="sat-theme-icon sat-theme-icon--light"><use href="#i-sun"/></svg>
-      <svg class="sat-theme-icon sat-theme-icon--dark"><use href="#i-moon"/></svg>
+    <button class="theme-switch" type="button" id="theme" role="switch" aria-checked="false" aria-label="Dark theme">
+      <svg class="theme-mark theme-mark--sun" aria-hidden="true"><use href="#i-sun"/></svg>
+      <svg class="theme-mark theme-mark--moon" aria-hidden="true"><use href="#i-moon"/></svg>
+      <span class="theme-knob" aria-hidden="true"><svg class="knob-sun"><use href="#i-sun"/></svg><svg class="knob-moon"><use href="#i-moon"/></svg></span>
     </button>
   </div>
 </header>
 <div class="text-size sat-glass-2" id="text-size" role="dialog" aria-label="Text size" hidden>
-  <div class="text-size-head"><span class="sat-small">Text size</span><output id="text-size-name" for="text-size-range">Standard</output></div>
-  <div class="text-size-row">
-    <button class="sat-btn sat-btn--ghost sat-iconbtn ts-a ts-a--sm" type="button" data-step="-1" aria-label="Smaller text">A</button>
-    <input type="range" id="text-size-range" min="0" max="4" step="1" value="1" list="text-size-ticks" aria-label="Text size">
-    <button class="sat-btn sat-btn--ghost sat-iconbtn ts-a ts-a--lg" type="button" data-step="1" aria-label="Larger text">A</button>
-  </div>
-  <datalist id="text-size-ticks"><option value="0"></option><option value="1"></option><option value="2"></option><option value="3"></option><option value="4"></option></datalist>
+  <button class="ts-a ts-a--sm" type="button" data-step="-1" aria-label="Smaller text">A</button>
+  <input type="range" id="text-size-range" min="0" max="4" step="1" value="1" aria-label="Text size">
+  <button class="ts-a ts-a--lg" type="button" data-step="1" aria-label="Larger text">A</button>
 </div>
 
 <main class="sat-shell">
@@ -88,7 +98,7 @@
   </div>
   <nav class="subtabs" role="tablist" aria-label="Table pages"></nav>
 
-  <div class="sub sat-stack" data-sub="turn" data-label="This turn">
+  <div class="sub sat-stack" data-sub="turn" data-icon="i-quill" data-label="This turn">
     <article class="sat-glass-2 sat-card prose" id="feed-latest" aria-live="polite">
       <p class="sat-muted">Loading the latest turn.</p>
     </article>
@@ -143,7 +153,7 @@
     </div>
   </div>
 
-  <div class="sub sat-stack" data-sub="earlier" data-label="Earlier turns" data-absent hidden>
+  <div class="sub sat-stack" data-sub="earlier" data-icon="i-clock" data-label="Earlier turns" data-absent hidden>
     <div class="sat-stack" id="feed-earlier" style="--sat-gap: var(--sat-space-3)"></div>
   </div>
 </section>
@@ -161,33 +171,26 @@
 
   <div class="sat-grid inbox-grid" id="inbox-pick"></div>
 
-  <form class="sat-glass-2 sat-card sat-stack" id="inbox-unlock" hidden autocomplete="off">
-    <h2 class="sat-h2" id="unlock-title"></h2>
-    <div class="sat-field">
-      <div class="lab"><label for="code">Inbox code</label><span class="sat-tip"><button type="button" class="sat-tip-btn" aria-expanded="false" aria-label="About the inbox code">i</button><span class="sat-tip-body" role="tooltip">The host sends you this code: 6 letters and numbers. Case and spaces do not matter.</span></span></div>
-      <input class="sat-input sat-mono" id="code" name="code" type="text" inputmode="text" autocapitalize="characters" spellcheck="false" maxlength="16" placeholder="(e.g. K7QF4M)">
-      <span class="sat-error" id="code-error" role="alert" hidden></span>
-    </div>
+  <form class="unlock" id="inbox-unlock" hidden autocomplete="off" novalidate>
+    <div class="otp" id="code" role="group" aria-label="Inbox code, 6 letters and numbers"></div>
+    <span class="sat-error" id="code-error" role="alert" hidden></span>
     <div class="sat-switch-row">
-      <span>Remember on this device</span>
-      <button type="button" class="sat-switch" role="switch" aria-checked="true" id="remember"><span class="sat-sr-only">Remember on this device</span></button>
+      <span id="remember-label">Remember on this device</span>
+      <button type="button" class="sat-switch" role="switch" aria-checked="true" id="remember" aria-labelledby="remember-label"></button>
     </div>
-    <div class="sat-cluster">
-      <button type="submit" class="sat-btn sat-btn--primary" id="unlock-go">Open inbox</button>
-      <button type="button" class="sat-btn sat-btn--ghost" id="unlock-back">Back</button>
-    </div>
+    <button type="submit" class="sat-btn sat-btn--primary" id="unlock-go">Open inbox</button>
   </form>
 
   <div class="sat-stack" id="inbox-open" hidden>
     <nav class="subtabs" role="tablist" aria-label="Inbox pages"></nav>
-    <div class="sub sat-stack" data-sub="letters" data-label="Letters">
+    <div class="sub sat-stack" data-sub="letters" data-icon="i-inbox" data-label="Letters">
       <div class="sat-stack" id="open-letters" style="--sat-gap: var(--sat-space-3)"></div>
     </div>
-    <div class="sub sat-glass-2 sat-card profile" data-sub="profile" data-label="Profile" data-absent hidden id="open-profile"></div>
-    <div class="sub sat-glass-2 sat-card prose" data-sub="pack" data-label="Pack" data-absent hidden id="open-pack-body"></div>
-    <div class="sub sat-glass-2 sat-card prose sheet-doc" data-sub="sheet" data-label="Sheet" data-absent hidden id="open-sheet-body"></div>
-    <div class="sub sat-glass-2 sat-card prose" data-sub="rolls" data-label="Roll log" data-absent hidden id="open-rolls-body"></div>
-    <div class="sub sat-glass-2 sat-card prose" data-sub="asides" data-label="Private chat" data-absent hidden id="open-asides-body"></div>
+    <div class="sub sat-glass-2 sat-card profile" data-sub="profile" data-icon="i-person" data-label="Profile" data-absent hidden id="open-profile"></div>
+    <div class="sub sat-glass-2 sat-card prose" data-sub="pack" data-icon="i-pack" data-label="Pack" data-absent hidden id="open-pack-body"></div>
+    <div class="sub sat-glass-2 sat-card prose sheet-doc" data-sub="sheet" data-icon="i-sheet" data-label="Sheet" data-absent hidden id="open-sheet-body"></div>
+    <div class="sub sat-glass-2 sat-card prose" data-sub="rolls" data-icon="i-d20" data-label="Roll log" data-absent hidden id="open-rolls-body"></div>
+    <div class="sub sat-glass-2 sat-card prose" data-sub="asides" data-icon="i-chat" data-label="Private chat" data-absent hidden id="open-asides-body"></div>
   </div>
 </section>
 
@@ -198,7 +201,7 @@
   </div>
   <nav class="subtabs" role="tablist" aria-label="Dice pages"></nav>
 
-  <div class="sub dice-page" data-sub="tray" data-label="Tray">
+  <div class="sub dice-page" data-sub="tray" data-icon="i-dice" data-label="Tray">
     <div class="tray" id="tray">
       <div class="tray-total" id="tray-total" role="status" hidden><span class="tray-total-n sat-num" id="tray-total-n"></span><span class="tray-total-what" id="tray-total-what"></span></div>
       <p class="tray-empty" id="tray-empty">Tap a die below to put it in the tray</p>
@@ -218,7 +221,7 @@
     </div>
   </div>
 
-  <div class="sub sat-stack" data-sub="history" data-label="Recent rolls" hidden>
+  <div class="sub sat-stack" data-sub="history" data-icon="i-clock" data-label="Recent rolls" hidden>
     <ol class="sat-glass-2 sat-card dice-history" id="dice-history"></ol>
     <p class="sat-muted" id="dice-history-empty">No rolls yet.</p>
     <div><button type="button" class="sat-btn sat-btn--sm sat-btn--ghost" id="dice-clear" hidden>Clear</button></div>
@@ -230,7 +233,7 @@
 <section class="view" data-view="kit" aria-labelledby="kit-title" hidden>
   <div class="page-head"><h1 class="sat-h1" id="kit-title">Player Kit</h1></div>
   <nav class="subtabs" role="tablist" aria-label="Player kit pages"></nav>
-  <div class="sub sat-stack" data-sub="start" data-label="Start here">
+  <div class="sub sat-stack" data-sub="start" data-icon="i-flag" data-label="Start here">
   <section class="hero sat-stack">
     <p class="sat-lede">Two strangers under one roof on Tallow Street, in the cart city of Gantry. This kit holds what anyone in town knows. Your inbox holds what only you know.</p>
   </section>
@@ -264,7 +267,7 @@
   </article>
   </div>
 
-  <article class="sub sat-glass-2 sat-card prose" data-sub="world" data-label="Gantry guide" hidden>
+  <article class="sub sat-glass-2 sat-card prose" data-sub="world" data-icon="i-map" data-label="Gantry guide" hidden>
   <h2>A Public Guide to Vaelora and the Cart City of Gantry</h2>
   <p class="lede-book">Kept on the counter at the Carters' Hall for anyone waiting on a rank. It tells you what any carter in Gantry knows, and it is fairly accurate. The Hall reminds readers that a carter's "fairly" covers a lot of road.</p>
   <div class="callout"><p>Skim <strong>sections 1 to 4</strong>. Read <strong>5 to 8</strong>: that is the town you are in.</p></div>
@@ -396,7 +399,7 @@
   <p class="note">This guide is checked against the Hall's own notices. The Hall has not checked its notices against the street.</p>
 </article>
 
-  <article class="sub sat-glass-2 sat-card prose rules" data-sub="rules" data-label="Rules" hidden>
+  <article class="sub sat-glass-2 sat-card prose rules" data-sub="rules" data-icon="i-scales" data-label="Rules" hidden>
   <h2>Rules on one page</h2>
   <p class="sat-lede">The game is D&amp;D 5e. This page lists only what is different.</p>
 
@@ -446,7 +449,7 @@
   </ul>
 </article>
 
-  <article class="sub sat-glass-2 sat-card prose" data-sub="session" data-label="How we play" hidden>
+  <article class="sub sat-glass-2 sat-card prose" data-sub="session" data-icon="i-people" data-label="How we play" hidden>
   <h2>How we play</h2>
   <p class="sat-lede">The DM writes every turn here. You read it, decide, and answer in the app.</p>
 
@@ -502,7 +505,7 @@
   </div>
   <nav class="subtabs" role="tablist" aria-label="Sheet pages"></nav>
 <form id="char-sheet" class="sheet-form sat-glass-2 sat-card" autocomplete="off">
-    <fieldset class="sub" data-sub="identity" data-label="Identity">
+    <fieldset class="sub" data-sub="identity" data-icon="i-person" data-label="Identity">
       <legend class="sat-h3"><span class="sat-tip tip-head"><button type="button" class="sat-tip-btn" id="lg-identity" aria-expanded="false">Identity</button><span class="sat-tip-body" role="tooltip">Who your character is, and how they came to work for the Survey Dispatch Board ("the Board"): a clearing office in Golgotha that hires licensed freelancers to look at things and swear to what they saw.</span></span></legend>
       <div class="sat-grid fields">
         <div class="sat-field"><label for="f-name">Name <span class="req" aria-label="required">*</span></label><input class="sat-input" type="text" id="f-name" data-label="Name" data-req></div>
@@ -522,7 +525,7 @@
       </div>
     </fieldset>
 
-    <fieldset class="sub" data-sub="resonance" data-label="Resonance">
+    <fieldset class="sub" data-sub="resonance" data-icon="i-spark" data-label="Resonance">
       <legend class="sat-h3"><span class="sat-tip tip-head"><button type="button" class="sat-tip-btn" id="lg-resonance" aria-expanded="false">Resonance</button><span class="sat-tip-body" role="tooltip">How your character relates to magic. A Magic-Mute character cannot cast, and notices what casters miss.</span></span></legend>
       <div class="sat-grid fields">
         <div class="sat-field"><div class="lab"><label for="f-prof">Vaelan proficiency <span class="req" aria-label="required">*</span></label><span class="sat-tip"><button type="button" class="sat-tip-btn" aria-expanded="false" aria-label="About Vaelan proficiency">i</button><span class="sat-tip-body" role="tooltip">How far you are licensed to cast. None: you do not cast. Apprentice: Simple incantations (1 RP). Journeyman: Complex ones too (3 RP), and you count as a licensed professional.</span></span></div>
@@ -535,7 +538,7 @@
       </div>
     </fieldset>
 
-    <fieldset class="sub" data-sub="stats" data-label="Stats">
+    <fieldset class="sub" data-sub="stats" data-icon="i-bars" data-label="Stats">
       <legend class="sat-h3"><span class="sat-tip tip-head"><button type="button" class="sat-tip-btn" id="lg-stats" aria-expanded="false">Stats</button><span class="sat-tip-body" role="tooltip">Roll a d20 for each score (the dice button does it for you), or assign 16, 15, 13, 12, 11 and 10. The modifier fills in from the Vaela table. The DM will assign HP, AC, RP, SP, Speed and Proficiency bonuses.</span></span></legend>
       <div class="stats-head">
         <button type="button" class="sat-btn sat-btn--ghost icon-btn" id="randomize" aria-label="Randomize: roll a d20 for each score"><svg aria-hidden="true"><use href="#i-dice"/></svg><span>Randomize</span></button>
@@ -565,7 +568,7 @@
       </div>
     </fieldset>
 
-    <fieldset class="sub" data-sub="gear" data-label="Gear">
+    <fieldset class="sub" data-sub="gear" data-icon="i-sword" data-label="Gear">
       <legend class="sat-h3"><span class="sat-tip tip-head"><button type="button" class="sat-tip-btn" id="lg-gear" aria-expanded="false">Gear</button><span class="sat-tip-body" role="tooltip">What you carry. You start with 50 Silver Marks.</span></span></legend>
       <div class="sat-grid fields">
         <div class="sat-field full"><div class="lab"><label for="f-item">Signature item <span class="req" aria-label="required">*</span></label><span class="sat-tip"><button type="button" class="sat-tip-btn" aria-expanded="false" aria-label="About signature item">i</button><span class="sat-tip-body" role="tooltip">One thing that matters to you more than its price. Say what it is and why you keep it.</span></span></div><textarea class="sat-input" rows="2" id="f-item" data-label="Signature item" data-req placeholder="A brass guild chit from a guild that no longer holds its ground."></textarea></div>
@@ -573,7 +576,7 @@
       </div>
     </fieldset>
 
-    <fieldset class="sub" data-sub="hooks" data-label="Hooks">
+    <fieldset class="sub" data-sub="hooks" data-icon="i-hook" data-label="Hooks">
       <legend class="sat-h3"><span class="sat-tip tip-head"><button type="button" class="sat-tip-btn" id="lg-hooks" aria-expanded="false">Hooks</button><span class="sat-tip-body" role="tooltip">Three threads the DM builds the story around. Make at least one about trust in paper: contracts, licences, records, who wrote what.</span></span></legend>
       <div class="sat-grid fields">
         <div class="sat-field full"><div class="lab"><label for="f-anchor">Anchor <span class="req" aria-label="required">*</span></label><span class="sat-tip"><button type="button" class="sat-tip-btn" aria-expanded="false" aria-label="About anchor">i</button><span class="sat-tip-body" role="tooltip">What your character holds true and is reluctant to sacrifice.</span></span></div><textarea class="sat-input" rows="2" id="f-anchor" data-label="Anchor" data-req></textarea></div>
@@ -582,7 +585,7 @@
       </div>
     </fieldset>
 
-    <fieldset class="sub" data-sub="optional" data-label="Optional">
+    <fieldset class="sub" data-sub="optional" data-icon="i-more" data-label="Optional">
       <legend class="sat-h3"><span class="sat-tip tip-head"><button type="button" class="sat-tip-btn" id="lg-optional" aria-expanded="false">Optional</button><span class="sat-tip-body" role="tooltip">Anything else the DM should know, including your Lines and Veils.</span></span></legend>
       <div class="sat-grid fields">
         <div class="sat-field"><div class="lab"><label for="f-partner">Partner name</label><span class="sat-tip"><button type="button" class="sat-tip-btn" aria-expanded="false" aria-label="About partner">i</button><span class="sat-tip-body" role="tooltip">Another player's character you start out knowing. Strangers is fine.</span></span></div><input class="sat-input" type="text" id="f-partner" data-label="Partner name"></div>
@@ -609,8 +612,8 @@
 
 </main>
 
-<footer class="sat-shell">
-  <p class="sat-source"><span id="build-line"></span></p>
+<footer class="sat-shell app-foot">
+  <p class="sat-source">DnD Virtual table by Saturday Solutions <button type="button" class="ver-link" id="version" aria-haspopup="dialog">v00.00.00</button></p>
 </footer>
 
 <nav class="tabbar sat-glass-2 sat-mobile-only" aria-label="App sections">
@@ -628,6 +631,13 @@
     <div class="prose" id="welcome-body"></div>
     <p class="sig">The DM</p>
     <form method="dialog" class="sat-cluster"><button class="sat-btn sat-btn--primary" id="welcome-close">Take a seat</button></form>
+  </article>
+</dialog>
+<dialog class="changelog" id="changelog" aria-labelledby="changelog-title">
+  <article class="sat-solid sat-card sat-stack">
+    <h2 class="sat-h2" id="changelog-title">Version history</h2>
+    <div class="changelog-list" id="changelog-list"></div>
+    <form method="dialog"><button class="sat-btn" type="submit">Close</button></form>
   </article>
 </dialog>
 </body>

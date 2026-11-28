@@ -27,18 +27,20 @@ export function initTextSize(): void {
   const btns = document.querySelectorAll<HTMLButtonElement>("[data-text-size-btn]");
   const pop = document.getElementById("text-size") as HTMLElement | null;
   const range = document.getElementById("text-size-range") as HTMLInputElement | null;
-  const out = document.getElementById("text-size-name") as HTMLOutputElement | null;
   // The header grows with the text: keep --header-h (panel position, scroll padding) equal to its real height.
   const header = document.querySelector<HTMLElement>(".sat-header");
   if (header && "ResizeObserver" in window) {
     new ResizeObserver(() => document.documentElement.style.setProperty("--header-h", header.offsetHeight + "px")).observe(header);
   }
-  if (!pop || !range || !out) return;
+  if (!pop || !range) return;
 
+  // No captions: the small and large A say what the bar does; the step name is read out to screen readers only.
   const show = (step: number) => {
     range.value = String(step);
-    out.value = TEXT_SIZES[step].name;
     range.setAttribute("aria-valuetext", TEXT_SIZES[step].name);
+    pop.querySelectorAll<HTMLButtonElement>("[data-step]").forEach((b) => {
+      b.disabled = Number(b.dataset.step) < 0 ? step === 0 : step === TEXT_SIZES.length - 1;
+    });
   };
   const set = (step: number) => {
     apply(step);

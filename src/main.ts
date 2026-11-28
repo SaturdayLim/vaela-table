@@ -7,10 +7,12 @@ import { marked } from "marked";
 import { openInbox, openNote, sealNote, WrongCode } from "./lib/crypto.js";
 import { initSheet, setSheetIdentity } from "./sheet";
 import { initTextSize } from "./prefs";
+import { initTheme } from "./theme";
+import { RELEASES } from "./changelog";
 import { initDice } from "./dice";
-import { initNav, onRoute, currentRoute, setAbsent, openingBook } from "./nav";
+import { initNav, onRoute, currentRoute, setAbsent, openingBook, launchId } from "./nav";
 import { enhance, profileHtml, type Profile } from "./enhance";
-import { rollBox, missingRoll, type RollCheck, type RollState } from "./rollbox";
+import { rollBox, missingRoll, flagMissing, type RollCheck, type RollState } from "./rollbox";
 
 type Post = { id: string; title: string; file: string };
 type InboxMeta = { slug: string; name: string; letters: number; newest: string | null; salt?: string; file: string };
@@ -50,6 +52,8 @@ const session = {
   del(key: string) { try { sessionStorage.removeItem(key); } catch { /* blocked */ } },
 };
 const ACTIVE = "vaela-table-active";
+/** Set by Switch player: this tab watches until someone signs in again, even if the device remembers one code. */
+const SPECTATE = "vaela-table-spectate";
 const welcomeKey = (slug: string) => `vaela-table-welcome:${slug}`;
 const codeKey = (slug: string) => `vaela-table-code:${slug}`;
 const seenKey = (slug: string) => `vaela-table-seen:${slug}`;
@@ -58,7 +62,6 @@ const SEEN_POST = "vaela-table-seen-post";
 // ======================= content index + polling =======================
 let index: Index | null = null;
 let checkedAt: Date | null = null;
-let arrivedAt: Date | null = null;
 
 async function fetchFresh(path: string) {
   const res = await fetch(`${path}?t=${Date.now()}`, { cache: "no-store" });
@@ -71,24 +74,19 @@ async function check(manual = false) {
   if (manual) status.textContent = "Checking";
   try {
     const next: Index = await (await fetchFresh("content/index.json")).json();
-    if (TEST_MODE) next.story = [{ id: TEST_ID, title: "Table test", file: "" }, ...next.story];
+    if (TEST_MODE) next.story = [{ id: TEST_ID, title: "Turn 9999: Table test", file: "" }, ...next.story];
     applyLive(next);
     const changed = !index || next.rev !== index.rev;
     const prev = index;
     index = next;
     checkedAt = new Date();
-    const newTurn = !!prev && next.story[0]?.id !== prev.story[0]?.id;
     if (changed) {
       await renderFeed();
       renderPick();
       await refreshOpenInbox(prev);
       if (!prev && currentRoute()?.view === "inbox") enterInbox(); // first load: a remembered code can open its inbox now
-      $("build-line").textContent = `Content built ${fmtDate(new Date(index.built))}.`;
     }
-    if (newTurn) arrivedAt = checkedAt;
-    status.textContent = arrivedAt && checkedAt.getTime() - arrivedAt.getTime() < 5 * 60_000
-      ? `New turn at ${fmtTime(arrivedAt)}`
-      : `Checked at ${fmtTime(checkedAt)}`;
+    status.textContent = `Checked at ${fmtTime(checkedAt)}`;
     updateDots();
   } catch {
     status.textContent = "Table unable to load. Check internet connection and press Check now.";
@@ -100,14 +98,24 @@ window.setInterval(() => { if (document.visibilityState === "visible") check(); 
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") check(); });
 
 const fmtTime = (d: Date) => d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-const fmtDate = (d: Date) => `${d.getDate()} ${d.toLocaleString("en-GB", { month: "short" })} ${d.getFullYear()}, ${fmtTime(d)}`;
 
 // ======================= test mode (?test) =======================
 // Opening the app with ?test shows a practice turn 9999 on this device only, with a roll for every player,
 // so the answer box, lights and roll entry can be tried on real phones without posting a turn. The DM pulls it
 // with `table.py inbox --turn 9999`.
+// It lasts for this page view only. ?test is taken out of the address at once, so a reload (or reopening the app)
+// shows the live table. Before 2026-11-28 ?test stayed in the address: a phone that reloaded kept answering the
+// practice turn after turn 1 was live, and its answers never reached the DM's turn (UAT, device C).
 const TEST_MODE = new URLSearchParams(location.search).has("test");
 const TEST_ID = "9999-table-test";
+if (TEST_MODE) {
+  const u = new URL(location.href);
+  u.searchParams.delete("test");
+  history.replaceState(history.state, "", u.pathname + u.search + u.hash);
+}
+document.addEventListener("click", (e) => {
+  if ((e.target as HTMLElement).closest?.("[data-leave-test]")) location.reload();
+});
 
 function testTurn() {
   const checks = (index?.inboxes ?? []).flatMap((m, i) => [
@@ -115,7 +123,8 @@ function testTurn() {
     ...(i === 0 ? [{ id: `t${i + 1}b`, who: m.slug, label: "Dagger damage", mode: "", die: "1d4" }] : []),
   ]);
   return `# Turn 9999: Table test\n\n**Practice turn, on this device only.** Nothing here is part of the story. ` +
-    `Type a roll, write anything, press Send, and watch the lights.\n\n<!-- checks: ${JSON.stringify(checks)} -->\n`;
+    `Type a roll, write anything, press Send, and watch the lights.\n\n` +
+    `<p><button type="button" class="sat-btn sat-btn--sm" data-leave-test>Leave the practice turn</button></p>\n\n<!-- checks: ${JSON.stringify(checks)} -->\n`;
 }
 
 // ======================= table feed =======================
@@ -184,7 +193,7 @@ async function renderFeed() {
       if (!d.open || d.dataset.loaded) return;
       d.dataset.loaded = "1";
       const body = d.querySelector(".prose")!;
-      try { body.innerHTML = renderTurn(await (await fetchFresh(`content/${post.file}`)).text()); wireScenes(body as HTMLElement); }
+      try { body.innerHTML = renderTurn(await (await fetchFresh(`content/${post.file}`)).text()) + answersHtml(turnOf(post.id)); wireScenes(body as HTMLElement); }
       catch { body.innerHTML = `<p class="sat-muted">Turn unable to load. Close and open it again.</p>`; delete d.dataset.loaded; }
     });
     earlier.appendChild(d);
@@ -192,6 +201,16 @@ async function renderFeed() {
   setAbsent("table", "earlier", rest.length === 0);
   if (currentRoute()?.view === "table") markPostSeen();
   void pollActions();
+}
+
+/** What each player answered on one turn (newest answer per player), from the relay. ntfy keeps 12 hours. */
+function answersHtml(turn: number) {
+  const last = new Map<string, Action>();
+  for (const a of relayMsgs.values()) if (a?.kind === "action" && a.turn === turn && typeof a.who === "string") last.set(a.who, a);
+  if (!last.size) return "";
+  const items = [...last.values()].sort((a, b) => a.at - b.at)
+    .map((a) => `<li><strong>${escapeHtml(firstName(a.who))}:</strong> ${escapeHtml(a.text || "(sent a roll)")}</li>`).join("");
+  return `<h2 class="rolls-head">Answers</h2><ul class="answers">${items}</ul>`;
 }
 
 // ======================= relay: shared answers, private chat, live posts =======================
@@ -284,11 +303,13 @@ function clearHint(id: string) { const s = $(id); if (s.dataset.hint) { s.textCo
 const turnOf = (id?: string) => (id ? parseInt(id.slice(0, 4), 10) || 0 : 0);
 function currentTurn() { return turnOf(index?.story[0]?.id); }
 
-/** The player acting on this device: the open inbox, else the one inbox whose code this device remembers. */
+/** The player acting in this tab: the open inbox; else the player this tab last opened (session storage is per
+ *  tab, local storage is shared by every tab); else the one inbox whose code this device remembers. */
 function me(): InboxMeta | null {
   if (opened) return opened.meta;
   const remembered = index?.inboxes.filter((m) => store.get(codeKey(m.slug))) ?? [];
-  return remembered.length === 1 ? remembered[0] : null;
+  const active = session.get(ACTIVE);
+  return remembered.find((m) => m.slug === active) ?? (remembered.length === 1 && !session.get(SPECTATE) ? remembered[0] : null);
 }
 function myCode(slug: string) { return opened?.meta.slug === slug ? opened.code : store.get(codeKey(slug)); }
 
@@ -369,7 +390,6 @@ async function pollActions() {
     if (live && index && live.turn > currentTurn() && !TEST_MODE) {
       livePost = live;
       applyLive(index);
-      arrivedAt = new Date();
       relayAgain = true; // renderFeed asks for a rebuild for the new turn; it runs once this one ends
       await renderFeed();
     } else {
@@ -465,8 +485,8 @@ $("move-form").addEventListener("submit", async (e) => {
   const pending = myChecks(who.slug);
   const missing = missingRoll(pending, publicRolls);
   if (missing) {
-    hint("move-status", `Type your roll for ${missing.label}, or press Roll for me.`);
-    document.querySelector<HTMLInputElement>("#move-checks .roll-input:not(:disabled)")?.focus();
+    status.textContent = "";
+    flagMissing($("move-checks"), missing);
     return;
   }
   if (!text && !pending.length) { hint("move-status", "Write what your character does first."); return; }
@@ -614,12 +634,12 @@ $("chat-form").addEventListener("submit", async (e) => {
   const done = pend.filter((c) => privateRolls.faces.has(c.id) || privateRolls.forMe.has(c.id));
   let text = box.value.trim();
   if (!text && !done.length) {
-    hint("chat-status", pend.length ? `Type your roll for ${pend[0].label}, or press Roll for me.` : "Write your message first.");
+    if (pend.length) flagMissing($("chat-checks"), pend[0]); else hint("chat-status", "Write your message first.");
     return;
   }
   if (done.length) {
     const rolls = Object.fromEntries(done.map((c) => [c.id, privateRolls.forMe.has(c.id) ? "dm" : privateRolls.faces.get(c.id)!]));
-    const said = done.map((c) => privateRolls.forMe.has(c.id) ? `${c.label}: roll for me.` : `${c.label}: rolled ${privateRolls.faces.get(c.id)}.`).join(" ");
+    const said = done.map((c) => privateRolls.forMe.has(c.id) ? `${c.label}: the DM rolls.` : `${c.label}: rolled ${privateRolls.faces.get(c.id)}.`).join(" ");
     text = `${text ? `${text}\n\n` : ""}${said}\n\n<!-- rolls: ${JSON.stringify(rolls)} -->`;
   }
   const send = $<HTMLButtonElement>("chat-send");
@@ -660,6 +680,10 @@ let opened: { meta: InboxMeta; code: string; items: Item[] } | null = null;
 
 function renderPick() {
   const pick = $("inbox-pick");
+  // Take the code form out of the cards before they are rebuilt (clearing the grid would delete it).
+  const form = $("inbox-unlock");
+  form.hidden = true;
+  pick.parentElement!.appendChild(form);
   pick.innerHTML = "";
   if (!index?.inboxes.length) {
     pick.innerHTML = `<p class="sat-muted">No inboxes yet. The DM opens one for each player before play.</p>`;
@@ -668,17 +692,92 @@ function renderPick() {
   for (const meta of index.inboxes) {
     const seen = store.get(seenKey(meta.slug));
     const fresh = seen !== null && meta.letters > Number(seen) ? meta.letters - Number(seen) : 0;
-    const b = document.createElement("button");
-    b.type = "button";
-    b.className = "sat-glass inbox-card";
+    const card = document.createElement("div");
+    card.className = "sat-glass inbox-card";
+    card.dataset.slug = meta.slug;
     const code = store.get(codeKey(meta.slug));
-    b.innerHTML = `<span class="sat-h2">${escapeHtml(meta.name)}</span>
-      <span class="sat-cluster" style="--sat-gap: var(--sat-space-2)"><span class="sat-small sat-muted">${meta.letters} letter${meta.letters === 1 ? "" : "s"}</span>${code ? `<span class="sat-badge badge-ok">Signed in</span>` : ""}${fresh ? `<span class="sat-badge">${fresh} new</span>` : ""}</span>`;
-    // A player already signed in on this device opens without the code.
-    b.addEventListener("click", () => (code ? void unlock(meta, code, true, true) : startUnlock(meta)));
-    pick.appendChild(b);
+    card.innerHTML = `<button type="button" class="inbox-card-head" aria-expanded="false"><span class="sat-h2">${escapeHtml(meta.name)}</span>
+      <span class="sat-cluster" style="--sat-gap: var(--sat-space-2)"><span class="sat-small sat-muted">${meta.letters} letter${meta.letters === 1 ? "" : "s"}</span>${code ? `<span class="sat-badge badge-ok">Signed in</span>` : ""}${fresh ? `<span class="sat-badge">${fresh} new</span>` : ""}</span></button>
+      <div class="inbox-card-body"><div class="inbox-card-inner"></div></div>`;
+    // A player already signed in on this device opens without the code; anyone else's card opens out to the code boxes.
+    card.querySelector("button")!.addEventListener("click", () => {
+      const now = store.get(codeKey(meta.slug)); // read at tap time: another tab may have signed in or locked
+      if (now) return void unlock(meta, now, true, true);
+      if (picking?.slug === meta.slug) collapseCard(); else startUnlock(meta);
+    });
+    pick.appendChild(card);
+  }
+  if (picking) startUnlock(picking);
+}
+
+// ---- the code: six boxes, one character each (Felt's OTP input). Tap a box and type to replace it. ----
+const CODE_LEN = 6;
+const cells = () => [...$("code").querySelectorAll<HTMLInputElement>("input")];
+const codeValue = () => cells().map((c) => c.value).join("");
+const norm = (v: string) => v.toUpperCase().replace(/[^A-Z0-9]/g, "");
+function buildCode() {
+  const wrap = $("code");
+  wrap.innerHTML = "";
+  for (let i = 0; i < CODE_LEN; i++) {
+    const c = document.createElement("input");
+    c.className = "otp-cell sat-mono";
+    c.type = "text";
+    c.inputMode = "text";
+    c.autocapitalize = "characters";
+    c.spellcheck = false;
+    c.autocomplete = i === 0 ? "one-time-code" : "off";
+    c.setAttribute("autocorrect", "off");
+    c.setAttribute("aria-label", `Code character ${i + 1} of ${CODE_LEN}`);
+    wrap.appendChild(c);
   }
 }
+buildCode();
+function codeError(show: string | null) {
+  const err = $("code-error");
+  err.hidden = !show;
+  if (show) err.textContent = show;
+  $("code").classList.toggle("is-bad", !!show);
+  cells().forEach((c) => (show ? c.setAttribute("aria-invalid", "true") : c.removeAttribute("aria-invalid")));
+}
+$("code").addEventListener("focusin", (e) => (e.target as HTMLInputElement).select?.());
+$("code").addEventListener("pointerup", (e) => (e.target as HTMLInputElement).select?.()); // iOS drops the focus selection
+$("code").addEventListener("input", (e) => {
+  const c = e.target as HTMLInputElement;
+  const all = cells();
+  const i = all.indexOf(c);
+  const chars = norm(c.value);
+  codeError(null);
+  if (!chars) { c.value = ""; return; }
+  // One character replaces this box; a paste or autofill spreads over the boxes from here.
+  const fill = chars.length > 1 ? chars : chars.slice(-1);
+  let j = i;
+  for (const ch of fill) { if (j >= CODE_LEN) break; all[j++].value = ch; }
+  const next = all[Math.min(j, CODE_LEN - 1)];
+  if (codeValue().length === CODE_LEN && j >= CODE_LEN) { c.blur(); $<HTMLFormElement>("inbox-unlock").requestSubmit(); }
+  else next.focus();
+});
+$("code").addEventListener("keydown", (e) => {
+  const c = e.target as HTMLInputElement;
+  const all = cells();
+  const i = all.indexOf(c);
+  if (e.key === "Backspace" && !c.value && i > 0) { all[i - 1].value = ""; all[i - 1].focus(); e.preventDefault(); }
+  else if (e.key === "ArrowLeft" && i > 0) { all[i - 1].focus(); e.preventDefault(); }
+  else if (e.key === "ArrowRight" && i < CODE_LEN - 1) { all[i + 1].focus(); e.preventDefault(); }
+});
+
+/** Close the open card (tap outside it, or tap its name again). */
+function collapseCard() {
+  picking = null;
+  document.querySelectorAll<HTMLElement>(".inbox-card.is-open").forEach((card) => {
+    card.classList.remove("is-open");
+    card.querySelector(".inbox-card-head")?.setAttribute("aria-expanded", "false");
+  });
+}
+document.addEventListener("pointerdown", (e) => {
+  const t = e.target as HTMLElement;
+  if (!picking || t.closest?.(".inbox-card.is-open") || t.closest?.("dialog")) return;
+  collapseCard();
+});
 
 function enterInbox() {
   if (opened) return showInboxPanel("open");
@@ -688,40 +787,48 @@ function enterInbox() {
   const remembered = index.inboxes.filter((m) => store.get(codeKey(m.slug)));
   const last = remembered.find((m) => m.slug === session.get(ACTIVE));
   const auto = remembered.length === 1 ? remembered[0] : last;
-  if (auto) { void unlock(auto, store.get(codeKey(auto.slug))!, true, true); return; }
-  showInboxPanel(picking ? "unlock" : "pick");
+  if (auto && !session.get(SPECTATE)) { void unlock(auto, store.get(codeKey(auto.slug))!, true, true); return; }
+  showInboxPanel("pick");
 }
 
-function showInboxPanel(which: "pick" | "unlock" | "open") {
+function showInboxPanel(which: "pick" | "open") {
   $("inbox-pick").hidden = which !== "pick";
-  $("inbox-unlock").hidden = which !== "unlock";
   $("inbox-open").hidden = which !== "open";
   $("lock").hidden = which !== "open";
   $("switch").hidden = which !== "open";
   $("inbox-title").textContent = which === "open" && opened ? `${opened.meta.name.split(" ")[0]}'s Inbox` : "Inbox";
 }
 
+/** Open this player's card out to the code boxes; the other cards stay where they are. */
 function startUnlock(meta: InboxMeta) {
+  const card = document.querySelector<HTMLElement>(`.inbox-card[data-slug="${CSS.escape(meta.slug)}"]`);
+  if (!card) return;
+  const same = picking?.slug === meta.slug && card.classList.contains("is-open");
+  collapseCard();
   picking = meta;
-  $("unlock-title").textContent = meta.name;
-  $<HTMLInputElement>("code").value = "";
-  $("code-error").hidden = true;
-  $<HTMLInputElement>("code").removeAttribute("aria-invalid");
-  showInboxPanel("unlock");
-  $("code").focus();
+  const form = $("inbox-unlock");
+  card.querySelector(".inbox-card-inner")!.appendChild(form);
+  form.hidden = false;
+  if (!same) { cells().forEach((c) => { c.value = ""; }); codeError(null); }
+  showInboxPanel("pick");
+  // Lay out the closed card first, so it animates open from its closed height.
+  void card.offsetHeight;
+  card.classList.add("is-open");
+  card.querySelector(".inbox-card-head")!.setAttribute("aria-expanded", "true");
+  (cells().find((c) => !c.value) ?? cells()[0]).focus({ preventScroll: true });
 }
 
-$("unlock-back").addEventListener("click", () => { picking = null; showInboxPanel("pick"); });
 $("inbox-unlock").addEventListener("submit", async (e) => {
   e.preventDefault();
   if (!picking) return;
+  const code = codeValue();
+  if (code.length < CODE_LEN) { codeError(`The code has ${CODE_LEN} letters and numbers.`); cells().find((c) => !c.value)?.focus(); return; }
   const remember = $("remember").getAttribute("aria-checked") === "true";
-  await unlock(picking, $<HTMLInputElement>("code").value, remember, false);
+  await unlock(picking, code, remember, false);
 });
 
 async function unlock(meta: InboxMeta, code: string, remember: boolean, silent: boolean) {
   const go = $<HTMLButtonElement>("unlock-go");
-  const err = $("code-error");
   go.setAttribute("aria-disabled", "true");
   go.textContent = "Opening";
   try {
@@ -733,8 +840,9 @@ async function unlock(meta: InboxMeta, code: string, remember: boolean, silent: 
     renderOpen(seenBefore === null ? 0 : Math.max(0, meta.letters - Number(seenBefore)));
     shareIdentity();
     store.set(seenKey(meta.slug), String(meta.letters));
-    picking = null;
+    collapseCard();
     session.set(ACTIVE, meta.slug);
+    session.del(SPECTATE);
     showInboxPanel("open");
     welcome(meta);
     updateDots();
@@ -742,21 +850,20 @@ async function unlock(meta: InboxMeta, code: string, remember: boolean, silent: 
     void pollActions();
   } catch (e) {
     if (silent) { store.del(codeKey(meta.slug)); showInboxPanel("pick"); return; }
-    err.textContent = e instanceof WrongCode
-      ? "Code does not match this inbox. Check the code the host sent you (e.g. K7QF4M)."
-      : "Inbox unable to load. Check internet connection and try again.";
-    err.hidden = false;
-    $<HTMLInputElement>("code").setAttribute("aria-invalid", "true");
+    codeError(e instanceof WrongCode
+      ? "Code does not match this inbox. Tap a box to change it."
+      : "Inbox unable to load. Check internet connection and try again.");
   } finally {
     go.removeAttribute("aria-disabled");
     go.textContent = "Open inbox";
   }
 }
 
-/** Test welcome letter: once per player per app open. Closing the app clears session storage, so it shows again next time. */
+/** Test welcome letter: once per player per app launch (nav.ts: any page load except a reload). Session storage
+ *  alone was not enough: a restored tab and an iOS home-screen app keep it across a close (UAT ib-14). */
 function welcome(meta: InboxMeta) {
-  if (session.get(welcomeKey(meta.slug))) return;
-  session.set(welcomeKey(meta.slug), "1");
+  if (session.get(welcomeKey(meta.slug)) === launchId) return;
+  session.set(welcomeKey(meta.slug), launchId);
   const dlg = $<HTMLDialogElement>("welcome");
   const first = meta.name.split(" ")[0];
   $("welcome-title").textContent = `Welcome back, ${first}`;
@@ -847,6 +954,8 @@ function lockInbox(forget = true) {
   if (opened && forget) store.del(codeKey(opened.meta.slug));
   opened = null;
   session.del(ACTIVE);
+  // Switch player: this tab watches (no player) until someone signs in, even if one code is remembered here.
+  if (forget) session.del(SPECTATE); else session.set(SPECTATE, "1");
   shareIdentity();
   renderPick();
   showInboxPanel("pick");
@@ -879,7 +988,23 @@ onRoute((r) => {
   updateDots();
 });
 initSheet();
+initTheme();
 initTextSize();
+
+// ---- footer: name and version; the version opens the version history (table/DESIGN.md, "Footer and version") ----
+{
+  const ver = $<HTMLButtonElement>("version");
+  ver.textContent = `v${RELEASES[0].v}`;
+  ver.setAttribute("aria-label", `Version ${RELEASES[0].v}: show the version history`);
+  const dlg = $<HTMLDialogElement>("changelog");
+  ver.addEventListener("click", () => {
+    $("changelog-list").innerHTML = RELEASES.map((r) =>
+      `<section class="release"><h3 class="sat-h4">v${r.v} <span class="sat-muted sat-small">${escapeHtml(r.date)}</span></h3>` +
+      `<ul>${r.changes.map((c) => `<li>${escapeHtml(c)}</li>`).join("")}</ul></section>`).join("");
+    if (typeof dlg.showModal === "function") dlg.showModal();
+  });
+  dlg.addEventListener("click", (e) => { if (e.target === dlg) dlg.close(); }); // tap outside closes
+}
 // Your move and Private chat grow with what is typed, so a long answer reads at a glance (up to 60% of the screen).
 for (const id of ["move-text", "chat-text"]) {
   const t = $<HTMLTextAreaElement>(id);

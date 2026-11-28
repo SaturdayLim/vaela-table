@@ -116,14 +116,16 @@ legend { padding: 0; margin-bottom: var(--sat-space-4); }
 footer { padding-block: 0 var(--sat-space-12); }
 
 /* ---- text size panel (prefs.ts): sits outside the masked header so the mask cannot clip it ---- */
-.text-size { position: fixed; z-index: 45; top: calc(var(--safe-top) + var(--header-h) - var(--sat-space-2)); right: max(var(--sat-gutter-mobile), env(safe-area-inset-right, 0px)); width: min(300px, calc(100vw - 2 * var(--sat-gutter-mobile))); padding: var(--sat-space-3) var(--sat-space-4) var(--sat-space-2); border-radius: var(--sat-radius-lg); box-shadow: var(--sat-shadow-lg); }
+/* Text size: a narrow bar, a small A and a large A either side of the slider. No captions (UAT hd-5). */
+.text-size { position: fixed; z-index: 45; top: calc(var(--safe-top) + var(--header-h) - var(--sat-space-2)); right: max(var(--sat-gutter-mobile), env(safe-area-inset-right, 0px)); width: min(260px, calc(100vw - 2 * var(--sat-gutter-mobile))); display: flex; align-items: center; gap: var(--sat-space-2); padding: var(--sat-space-1) var(--sat-space-2); border-radius: var(--sat-radius-pill); box-shadow: var(--sat-shadow-lg); }
+.text-size[hidden] { display: none; }
 @media (min-width: 640px) { .text-size { right: var(--sat-gutter-tablet); } }
 @media (min-width: 1024px) { .text-size { right: max(var(--sat-gutter-desktop), calc((100vw - var(--sat-max)) / 2 + var(--sat-gutter-desktop))); } }
-.text-size-head { display: flex; justify-content: space-between; align-items: baseline; }
-.text-size-head output { font-weight: 600; font-size: var(--sat-fs-small); color: var(--sat-accent-text); }
-.text-size-row { display: flex; align-items: center; gap: var(--sat-space-1); }
-.text-size-row input { flex: 1; min-width: 0; height: 44px; margin: 0; }
-.ts-a { font-family: var(--sat-font-display); line-height: 1; }
+.text-size input { flex: 1; min-width: 0; height: 44px; margin: 0; accent-color: var(--sat-accent-fill); }
+/* The A's are buttons and look it: a raised round key that presses in. */
+.ts-a { flex: none; width: 44px; height: 44px; display: grid; place-items: center; padding: 0; border-radius: 50%; border: 1px solid var(--sat-line-strong); background: var(--sat-glass-2); color: var(--sat-text); box-shadow: var(--sat-shadow-sm, 0 1px 2px rgba(0,0,0,0.25)); font-family: var(--sat-font-display); line-height: 1; cursor: pointer; transition: transform 120ms var(--sat-ease), background-color 120ms var(--sat-ease); }
+.ts-a:active { transform: scale(0.92); }
+.ts-a:disabled { opacity: 0.4; cursor: default; transform: none; }
 .ts-a--sm { font-size: 14px; }
 .ts-a--lg { font-size: 22px; }
 

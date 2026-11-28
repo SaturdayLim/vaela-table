@@ -32,7 +32,7 @@ The Bardic College has no emblem yet; its row keeps an empty slot so names stay 
 |---|---|
 | No eyebrows | No small label above a heading ("No dice at hand", "Player kit"). The heading carries the page. |
 | No subtitles that restate | A line under a heading stays only if it carries information the page lacks elsewhere. "Rolls here stay on this device" is gone. |
-| Explanations live in tips | A heading that needs explaining becomes a tip header: the heading text plus a small "i" circle. Tapping it opens the explanation; tapping anywhere else closes it (`.sat-tip`, `saturday.js`). |
+| Explanations live in tips | A heading that needs explaining becomes a tip heading: the heading itself is the button, marked by a dotted underline, with no "i" circle (Mike, 2026-11-28). Tapping it opens the explanation; tapping anywhere else closes it (`.sat-tip`, `saturday.js`). |
 | Free text shows at a glance | Any answer longer than a few words is a textarea that grows with its text (min 2 to 4 rows). One-line inputs only for names, pronouns, skills. Your move and Private chat grow too, up to 60% of the screen. |
 | No unexplained terms | A field that names something in the world (the Board, Force, Vaelan proficiency) carries a tip saying what it is. A choice with a fixed set of answers is a dropdown, short enough to read at 375 px. |
 | Field hints are tips too | A form hint sits behind an "i" button beside the label, not as grey text under the field. |
@@ -45,14 +45,19 @@ Test for any line of small text: would a player miss it if it were gone? If not,
 | Rule | Detail |
 |---|---|
 | Five sections | Table, Inbox, Dice, Kit, Sheet. Bottom tab bar on phones, top bar on wide screens. |
-| Subpages as notebook tabs | Long content splits into subpages, reached from tabs at the top of the section (`.subtabs`), not by scrolling. A subpage with nothing in it gets no tab. |
+| Page tabs are icons | Long content splits into subpages, reached from a row of tabs under the page title (`.subtabs`), not by scrolling. Each tab is one icon (`data-icon` on the subpage); the open tab opens out to its title (Felt's rule). The row always fits the screen width and cannot be dragged: never a long sideways list. A subpage with nothing in it gets no tab. |
 | Hash routes | `#section/sub`. Old links (`#world`, `#rules`, `#session`, `#start`, `#commission`) still resolve. The last subpage per section is remembered for the browser session. |
-| Chapter turn | Moving forward turns the page like a book chapter; moving back turns it the other way (View Transitions, CSS fallback). Pages are paper: **fully opaque, never faded**. The turning page bends slightly and settles; the page underneath sits in its shadow (brightness, not transparency). About 440 ms. Off under reduced motion. |
-| Opening book | Once per browser session a navy book with the gilded V on its cover opens on the "Vaela, Chronicles of the Third Age" banner, then fades into the Table (about 3 s). Tap to skip. Off under reduced motion. |
+| Page changes | Between sections (tab bar, top bar) the screen slides sideways like a scroll, about 360 ms. Between tabs of one section the page turns like a book page, about 440 ms; the page underneath comes out of its shade evenly, with no jump at the end. Both use View Transitions on the root snapshot (one screen tall), so a long page is never cut off half way; the header and tab bar hold still. Pages are paper: **fully opaque, never faded**. A second tap during a move finishes the first at once. Off under reduced motion. |
+| Opening book | On every app launch (any page load except a reload: a new tab, a closed home-screen app opened again) a navy leather book opens on the "Vaela, Chronicles of the Third Age" banner, then fades into the Table (about 3 s). The cover is built in CSS, not a flat picture: leather grain, gilded double frame, spine bands, the V set into the leather with its square edges faded out, the title in gold leaf, the page block at the fore-edge. Tap to skip. Off under reduced motion. |
 | Header | Sticky glass bar. Installed on a phone, the body starts below the status bar (`--safe-top`), so the bar never slides over the page title. The strip behind the bar blurs and tints what scrolls under it; its bottom edge fades. On phones the bar stays one row at any text size. |
-| Text size | Five steps (Small, Standard, Large, Larger, Largest: 87.5 to 137.5% of the root). Font tokens are rem and spacing px, so words scale and the layout holds. "Aa" in the header opens a slider; a mouse wheel over it steps through. Kept on the device (`vaela-text-size`), applied in `<head>` before first paint. |
+| Text size | Five steps (87.5 to 137.5% of the root). Font tokens are rem and spacing px, so words scale and the layout holds. "Aa" in the header opens a narrow bar: a small A, the slider, a large A. No captions: the A's say what it does and look like keys to press. A mouse wheel over it steps through. Kept on the device (`vaela-text-size`), applied in `<head>` before first paint. |
+| Theme | Follows the device's light or dark setting. A sun and moon switch in the header (the chosen mark rides on the knob) changes it for this app session; closing the app returns to the device setting. There is no Auto button: Auto is what you get by not choosing (`theme.ts`, `vaela-theme` in session storage). |
 | Taps | No double-tap zoom (`touch-action: manipulation`). Pinch zoom still works. |
 | One screen on a phone | Each subpage aims to fit 375 x 812 above the tab bar. Never any sideways scroll at 375 px. |
+
+## Footer and version
+
+The footer reads **"DnD Virtual table by Saturday Solutions vXX.XX.XX"** and nothing else: no build date, no "Content built" line, no description (Mike, 2026-11-28). The version is MAJOR.MINOR.PATCH, two digits each (v00.02.00). The version is a button: it opens the version history, one entry per release with its date and player-facing changes (`src/changelog.ts`; the newest entry sets the footer). Every push that changes what players see adds an entry.
 
 ## Formulae, references, lookups
 
@@ -76,11 +81,12 @@ Test for any line of small text: would a player miss it if it were gone? If not,
 
 | Rule | Detail |
 |---|---|
-| One box per check | A raised box with the die's shadow (the d20 icon for d20 checks, the die name otherwise). The player types the result. |
-| Inline validation | A wrong entry pulses red and a small popup says why ("21 is too high. A d20 shows 1 to 20."). Never a blocking dialog. |
-| Roll for me | A toggle beside each box. On: the box reads "DM" and the DM rolls on the player's behalf. |
+| One box per check | A raised box with its die drawn as a watermark (d4, d6, d8, d10, d12, d20 outlines). While empty, the die's name (D4, D20) sits grey in the middle. The player types the result on a number-only keypad (`inputmode="decimal"`: no letters under the digits). |
+| Roll for me | Rolls on screen: the number spins like a carousel and slows onto a fair result (advantage rolls two and says both). The player can still clear it and type a physical roll. |
+| DM rolls | A toggle beside it hands the roll to the DM instead; on, the box reads "DM". |
+| Inline validation | A wrong entry pulses red and a small popup says why ("21 is too high. A d20 shows 1 to 20."). Leaving the box with a wrong entry clears it. Never a blocking dialog. |
 | Public or private | A check called on the post appears in Your move. A private check appears in Private chat and travels sealed. |
-| Send needs every roll | Each check needs a result or Roll for me before Send works. |
+| Send needs every roll | Each check needs a result or DM rolls before Send works. Pressing Send with one empty puts a popup on that box: "Please enter Perception check result, or select Roll for me." |
 
 ## Character sheet
 
@@ -99,10 +105,13 @@ Test for any line of small text: would a player miss it if it were gone? If not,
 
 | Rule | Detail |
 |---|---|
-| Several players per device | Each player signs in with their code once; "Switch player" changes who is active and keeps everyone signed in. "Lock inbox" signs the active player out (forgets the code). After the app is closed, the pick shows who is signed in. |
-| Welcome letter | A letter opens over the page the first time each player signs in after the app opens. Closing the app resets it (session storage), so it shows again on the next open, not on every sign-in. Test text for now. |
+| Sign in | Each player has a card. Tapping a card opens it out in place (the others stay visible) to six code boxes, one character each (Felt's OTP input): tap a box and type to replace it; a paste fills all six; the sixth character opens the inbox. A wrong code keeps the boxes and says so. Remember on this device is a switch in the open card. Tapping outside the card closes it. |
+| Several players per device | Each player signs in with their code once; "Switch player" changes who is active and keeps everyone signed in. "Lock inbox" signs the active player out (forgets the code). Codes are shared by every tab of the browser; who is active is per tab, so two tabs can be two players. A fresh tab acts as the one player the device remembers; after Switch player the tab only watches. |
+| Welcome letter | A letter opens over the page the first time each player signs in after each app launch (not after a reload). Test text for now. |
 
 ## Table page
+
+The status line says only when the table was last checked; there is no "New turn at" notice. Earlier turns list what each player answered (from the relay, which keeps 12 hours). The practice turn (`?test`) lasts one page view: the address drops `?test` at once and the turn has a Leave the practice turn button, so a reload always shows the live table.
 
 Two boxes, side by side on wide screens: **Your move** (answers everyone sees) and **Private chat** (sealed thread with the DM). Their headers are tip headers carrying the explanation.
 
