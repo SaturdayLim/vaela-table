@@ -138,3 +138,11 @@ footer { padding-block: 0 var(--sat-space-12); }
 .welcome[open] { animation: welcome-in 260ms var(--sat-ease); }
 @keyframes welcome-in { from { transform: translateY(12px) scale(0.98); } to { transform: none; } }
 @media (prefers-reduced-motion: reduce) { .welcome[open] { animation: none; } }
+
+/* ---- faction emblems (design/brand/, cut by scripts/make-icons.mjs): single-ink masks in the accent ink ---- */
+.faction { display: flex; align-items: center; gap: var(--sat-space-3); min-width: 11rem; }
+.emblem { flex: none; width: 32px; height: 32px; background: var(--sat-accent-text); -webkit-mask-position: center; mask-position: center; -webkit-mask-size: contain; mask-size: contain; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; }
+/* The image is set inline in index.html: a url() inside a custom property would resolve against assets/, not the page. */
+.emblem--none { background: none; }
+.faction-head { display: flex; align-items: center; gap: var(--sat-space-3); }
+.faction-head .emblem { width: 36px; height: 36px; }

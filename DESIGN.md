@@ -12,7 +12,19 @@ The logo suite is Mike's art (2026-11-27), kept as source in `../design/brand/`.
 | App icons (home screen, install) | `icon-192.png`, `icon-512.png`, `apple-touch-icon.png` | Gilded V with wings |
 | Opening book | `brand/vaela-emblem.webp` (cover), `brand/vaela-wordmark.webp` (pages) | Emblem; "Vaela, Chronicles of the Third Age" banner |
 
-The faction emblems (`emblems-set-a.webp`, `emblems-set-b.png`) are not used yet: which emblem belongs to which faction is Mike's call.
+Faction emblems (Mike's mapping, 2026-11-28) are single-ink masks in `brand/emblem-*.png`, painted in the accent ink so they work in light and dark. They sit beside each faction in the Player Kit's "Who runs things" table; the Transport Guild's anchor marks the Gantry heading.
+
+| Emblem | Faction |
+|---|---|
+| Crystal under a moon, in an arch | The Celestial College |
+| Open book with a star and a ring | The Arcane University |
+| Shield with a cracked eye | The Rift Watchers |
+| Arch with a sun | The Order of the Eternal Flame |
+| Hand with a circle | The Hollow Hand |
+| Anchor with a wing | The Transport Guild |
+| Wave with a trident | Aquias (region; cut, not shown yet) |
+
+The Bardic College has no emblem yet; its row keeps an empty slot so names stay aligned. Set the mask image inline: a `url()` inside a CSS custom property resolves against `assets/`, not the page.
 
 ## Words on the page
 
