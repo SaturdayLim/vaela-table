@@ -19,10 +19,10 @@ Faction emblems (Mike's mapping, 2026-11-28) are single-ink masks in `brand/embl
 | Crystal under a moon, in an arch | The Celestial College |
 | Open book with a star and a ring | The Arcane University |
 | Shield with a cracked eye | The Rift Watchers |
-| Arch with a sun | The Order of the Eternal Flame |
+| Shrine arch over the radiant hearth-flame (not a sun) | The Order of the Eternal Flame |
 | Hand with a circle | The Hollow Hand |
 | Anchor with a wing | The Transport Guild |
-| Wave with a trident | Aquias (region; cut, not shown yet) |
+| Wave with a trident | Aquias (region; built, not shown until play reaches Aquias or a player is from there) |
 
 The Bardic College has no emblem yet; its row keeps an empty slot so names stay aligned. Set the mask image inline: a `url()` inside a CSS custom property resolves against `assets/`, not the page.
 
