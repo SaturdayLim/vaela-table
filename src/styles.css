@@ -41,7 +41,11 @@ main { --sat-gap: var(--sat-space-5); }
   content: "i"; order: 2; flex: none; display: inline-grid; place-items: center; width: 16px; height: 16px; border-radius: 50%;
   border: 1px solid var(--sat-muted); color: var(--sat-muted); font: italic 600 10px/1 var(--sat-font-display); letter-spacing: 0;
 }
-.tip-head > .sat-tip-btn::after { inset: -6px; }
+/* hit area: 6px past the words, and never under 44px tall (a small heading still gets a full target) */
+.tip-head > .sat-tip-btn::after { inset: min(-6px, calc(50% - 22px)) -6px; }
+/* the kit's brand link and small buttons run under 44px; the Table keeps every target at 44 (kit rule) */
+.sat-header-bar .sat-brand { min-height: 44px; }
+#refresh { min-height: 44px; }
 .tip-head > .sat-tip-btn[aria-expanded="true"]::before { border-color: var(--sat-accent-text); color: var(--sat-accent-text); }
 .tip-head .sat-tip-body { left: 0; font-family: var(--sat-font-body); font-size: var(--sat-fs-small); font-style: normal; font-weight: 400; text-transform: none; letter-spacing: 0; line-height: 1.45; }
 .tip-head .sat-tip-body, .sat-tip .sat-tip-body { animation: tip-in 150ms var(--sat-ease); }
@@ -228,9 +232,9 @@ details.letter[open] > summary { margin-bottom: var(--sat-space-4); padding-bott
 
 /* graduated slider: Disadvantage, Normal, Advantage. Only shown with one d20 in the tray. */
 .adv { display: grid; gap: var(--sat-space-1); opacity: 0; max-height: 0; overflow: hidden; transition: opacity 240ms var(--sat-ease), max-height 240ms var(--sat-ease); }
-.adv.is-on { opacity: 1; max-height: 6rem; }
+.adv.is-on { opacity: 1; max-height: 8rem; }
 .adv-stops { display: grid; grid-template-columns: repeat(3, 1fr); }
-.adv-stops button { min-height: 32px; border: 0; background: none; color: var(--sat-muted); font: inherit; font-size: var(--sat-fs-small); font-weight: 600; cursor: pointer; transition: color 200ms var(--sat-ease); }
+.adv-stops button { min-height: 44px; border: 0; background: none; color: var(--sat-muted); font: inherit; font-size: var(--sat-fs-small); font-weight: 600; cursor: pointer; transition: color 200ms var(--sat-ease); }
 .adv-stops button:first-child { text-align: left; }
 .adv-stops button:last-child { text-align: right; }
 .adv-stops button.is-on { color: var(--sat-text); }
